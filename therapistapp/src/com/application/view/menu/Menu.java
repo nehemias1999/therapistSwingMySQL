@@ -21,20 +21,14 @@ import com.application.view.mode.ToolBarAccentColor;
 public class Menu extends JPanel {
 
     private final String menuItems[][] = {
-        {"~MAIN~"},
+        {"Nueva Consulta"},
+        {"~INICIO~"},
         {"Dashboard"},
-        {"~WEB APP~"},
-        {"Email", "Inbox", "Read", "Compost"},
-        {"Chat"},
-        {"Calendar"},
-        {"~COMPONENT~"},
-        {"Advanced UI", "Cropper", "Owl Carousel", "Sweet Alert"},
-        {"Forms", "Basic Elements", "Advanced Elements", "Editors", "Wizard"},
-        {"~OTHER~"},
-        {"Charts", "Apex", "Flot", "Peity", "Sparkline"},
-        {"Icons", "Feather Icons", "Flag Icons", "Mdi Icons"},
-        {"Special Pages", "Blank page", "Faq", "Invoice", "Profile", "Pricing", "Timeline"},
-        {"Logout"}
+        {"~APLICACION~"},
+        {"Calendario"},
+        {"Pacientes"},
+        {"~CONFIGURACIONES~"},
+        {"Configuraciones", "Ciudades", "Pagos", "Alertas"}
     };
 
     public boolean isMenuFull() {
@@ -61,7 +55,7 @@ public class Menu extends JPanel {
 
     private final List<MenuEvent> events = new ArrayList<>();
     private boolean menuFull = true;
-    private final String headerName = "Raven Channel";
+    private final String headerName = "Thera Kairos";
 
     protected final boolean hideMenuTitleOnMinimum = true;
     protected final int menuTitleLeftInset = 5;
@@ -81,7 +75,7 @@ public class Menu extends JPanel {
                 + "background:$Menu.background;"
                 + "arc:10");
         header = new JLabel(headerName);
-        header.setIcon(new ImageIcon(getClass().getResource("/com/application/view/png/logo.png")));
+        header.setIcon(new ImageIcon(getClass().getResource("/com/application/view/menu/png/logo.png")));
         header.putClientProperty(FlatClientProperties.STYLE, ""
                 + "font:$Menu.header.font;"
                 + "foreground:$Menu.foreground");
@@ -98,12 +92,12 @@ public class Menu extends JPanel {
                 + "border:null");
         JScrollBar vscroll = scroll.getVerticalScrollBar();
         vscroll.setUnitIncrement(10);
-        vscroll.putClientProperty(FlatClientProperties.STYLE, ""
-                + "width:$Menu.scroll.width;"
-                + "trackInsets:$Menu.scroll.trackInsets;"
-                + "thumbInsets:$Menu.scroll.thumbInsets;"
-                + "background:$Menu.ScrollBar.background;"
-                + "thumb:$Menu.ScrollBar.thumb");
+//        vscroll.putClientProperty(FlatClientProperties.STYLE, ""
+//                + "width:$Menu.scroll.width;"
+//                + "trackInsets:$Menu.scroll.trackInsets;"
+//                + "thumbInsets:$Menu.scroll.thumbInsets;"
+//                + "background:$Menu.ScrollBar.background;"
+//                + "thumb:$Menu.ScrollBar.thumb");
         createMenu();
         lightDarkMode = new LightDarkMode();
         toolBarAccentColor = new ToolBarAccentColor(this);

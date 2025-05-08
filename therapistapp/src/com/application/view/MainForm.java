@@ -16,11 +16,15 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import com.application.Application;
-import com.application.view.panels.FormDashboard;
-import com.application.view.panels.FormInbox;
-import com.application.view.panels.FormRead;
+import com.application.controllers.entities.CityController;
+import com.application.controllers.entities.PatientController;
+import com.application.controllers.panels.PatientsFormController;
+import com.application.services.CityService;
+import com.application.services.PatientService;
+import com.application.view.menu.panels.patient.PatientsForm;
 import com.application.view.menu.Menu;
 import com.application.view.menu.MenuAction;
+import com.application.view.menu.panels.TODOForm;
 
 public class MainForm extends JLayeredPane {
 
@@ -60,27 +64,36 @@ public class MainForm extends JLayeredPane {
             menuButton = new JButton();
         }
         String icon = (getComponentOrientation().isLeftToRight()) ? "menu_left.svg" : "menu_right.svg";
-        menuButton.setIcon(new FlatSVGIcon("com/application/view/svg/" + icon, 0.8f));
+        menuButton.setIcon(new FlatSVGIcon("com/application/view/menu/svg/" + icon, 0.8f));
     }
 
     private void initMenuEvent() {
+        PatientController patientController = new PatientController(new PatientService());
+        CityController cityController = new CityController(new CityService());
+        
         menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
             // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
+            
             if (index == 0) {
-                Application.showForm(new FormDashboard());
-            } else if (index == 1) {
-                if (subIndex == 1) {
-                    Application.showForm(new FormInbox());
-                } else if (subIndex == 2) {
-                    Application.showForm(new FormRead());
-                } else {
-                    action.cancel();
-                }
-            } else if (index == 9) {
-               // Application.logout();
-            } else {
-                action.cancel();
+                Application.showForm(new TODOForm());
             }
+            
+            if (index == 1) {
+                Application.showForm(new TODOForm());
+            }
+            
+            if (index == 2) {
+                Application.showForm(new TODOForm());
+            }
+            
+            if (index == 3) {
+                Application.showForm(new PatientsFormController(patientController, cityController).getView());
+            }
+            
+            if (index == 4) {
+                Application.showForm(new TODOForm());
+            }
+            
         });
     }
 
@@ -91,7 +104,7 @@ public class MainForm extends JLayeredPane {
         } else {
             icon = (full) ? "menu_right.svg" : "menu_left.svg";
         }
-        menuButton.setIcon(new FlatSVGIcon("com/application/view/svg/" + icon, 0.8f));
+        menuButton.setIcon(new FlatSVGIcon("com/application/view/menu/svg/" + icon, 0.8f));
         menu.setMenuFull(full);
         revalidate();
     }

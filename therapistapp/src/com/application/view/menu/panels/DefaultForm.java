@@ -1,13 +1,14 @@
-package com.application.view.panels;
+package com.application.view.menu.panels;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
-public class FormInbox extends javax.swing.JPanel {
+public class DefaultForm extends javax.swing.JPanel {
 
-    public FormInbox() {
+    public DefaultForm(String text) {
         initComponents();
         lb.putClientProperty(FlatClientProperties.STYLE, ""
                 + "font:$h1.font");
+        lb.setText(text);
     }
 
     @SuppressWarnings("unchecked")
@@ -17,7 +18,7 @@ public class FormInbox extends javax.swing.JPanel {
         lb = new javax.swing.JLabel();
 
         lb.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lb.setText("Inbox");
+        lb.setText("Form");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
