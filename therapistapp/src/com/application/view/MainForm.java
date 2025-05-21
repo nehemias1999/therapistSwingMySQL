@@ -21,7 +21,7 @@ import com.application.controllers.entities.PatientController;
 import com.application.controllers.panels.PatientsFormController;
 import com.application.services.CityService;
 import com.application.services.PatientService;
-import com.application.view.menu.panels.patient.PatientsForm;
+import com.application.view.panels.patient.PatientsForm;
 import com.application.view.menu.Menu;
 import com.application.view.menu.MenuAction;
 import com.application.view.menu.panels.TODOForm;

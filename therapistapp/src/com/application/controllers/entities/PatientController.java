@@ -4,10 +4,9 @@ import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.PatientDTO;
 import com.application.services.PatientService;
+import java.io.IOException;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 public class PatientController {
     private final PatientService patientService;
@@ -15,14 +14,7 @@ public class PatientController {
     public PatientController(PatientService patientService) {
         this.patientService = patientService;
     }
-    
-    public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException {
-    
-        // Validaciones basicas
-        
-        patientService.insertPatient(patientDTO);
-    }
-
+ 
     /**
      * Retrieves all patients from the system
      * @return List of PatientDTO objects
@@ -33,42 +25,54 @@ public class PatientController {
     }
 
     /**
-     * Registers a new patient in the system
-     * @param patientDTO Patient data to register
-     * @throws ValidationException If input data is invalid
-     * @throws BusinessException If there's a business error
+     * Inserta un nuevo paciente
+     * @param patientDTO Datos del paciente a insertar
+     * @throws ValidationException Si los datos no son válidos o el paciente ya existe
+     * @throws BusinessException Si ocurre otro error de negocio
+     * @throws java.io.IOException
      */
-    public void registerPatient(PatientDTO patientDTO) throws ValidationException, BusinessException {
+    public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        validatePatientData(patientDTO);
         patientService.insertPatient(patientDTO);
     }
-
+    
     /**
-     * Validates patient data before registration
-     * @param patientDTO Patient data to validate
-     * @throws ValidationException If validation fails
+     * Modificar paciente existente
+     * @param patientDTO Datos del paciente a modificar
+     * @throws ValidationException Si los datos no son válidos
+     * @throws BusinessException Si ocurre otro error de negocio
+     * @throws java.io.IOException
      */
-    public void validatePatientData(PatientDTO patientDTO) throws ValidationException {
-        if (patientDTO.getPatientDTODNI() == null || patientDTO.getPatientDTODNI().trim().isEmpty()) {
-            throw new ValidationException("El DNI del paciente es requerido");
+    public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        validatePatientData(patientDTO);
+        patientService.updatePatient(patientDTO);
+    }
+    
+    /**
+     * Eliminar paciente existente
+     * @param patientId del paciente a eliminar
+     * @throws ValidationException Si los datos no son válidos o el paciente ya existe
+     * @throws BusinessException Si ocurre otro error de negocio
+     */
+    public void deletePatient(String patientId) throws ValidationException, BusinessException {
+        if (patientId == null) {
+            throw new ValidationException("El Id del paciente es requerido");
         }
-        // Additional validations are handled by the service layer
+        
+        patientService.deletePatient(patientId);
     }
 
     /**
-     * Checks if a patient with given DNI already exists
-     * @param dni Patient DNI to check
-     * @return true if exists, false otherwise
-     * @throws BusinessException If there's an error checking
+     * Gets a patient by their Id
+     * @param patientId
+     * @return PatientDTO if found
+     * @throws BusinessException If there's an error accessing data
+     * @throws ValidationException If patient is not found
      */
-    public boolean patientExistsByDNI(String dni) throws BusinessException {
-        try {
-            return patientService.getAllPatients().stream()
-                    .anyMatch(p -> p.getPatientDTODNI().equalsIgnoreCase(dni.trim()));
-        } catch (BusinessException e) {
-            throw new BusinessException("Error al verificar existencia de paciente", e);
-        }
-    }
-
+    public PatientDTO getPatientById(String patientId) throws BusinessException, ValidationException {
+        return patientService.getPatientById(patientId);
+    } 
+    
     /**
      * Searches patients by name (partial match)
      * @param searchTerm Search term
@@ -82,18 +86,56 @@ public class PatientController {
                            p.getPatientDTOLastName().toLowerCase().contains(term))
                 .toList();
     }
-
+    
     /**
-     * Gets a patient by their DNI
-     * @param dni Patient DNI
-     * @return PatientDTO if found
-     * @throws BusinessException If there's an error accessing data
-     * @throws ValidationException If patient is not found
+     * Validates patient data before registration
+     * @param patientDTO Patient data to validate
+     * @throws ValidationException If validation fails
      */
-    public PatientDTO getPatientByDNI(String dni) throws BusinessException, ValidationException {
-        return patientService.getAllPatients().stream()
-                .filter(p -> p.getPatientDTODNI().equalsIgnoreCase(dni.trim()))
-                .findFirst()
-                .orElseThrow(() -> new ValidationException("No se encontró paciente con DNI: " + dni));
+    private void validatePatientData(PatientDTO dto) throws ValidationException {
+        
+        // DNI
+        if (dto.getPatientDTODNI() == null || dto.getPatientDTODNI().trim().isEmpty()) {
+            throw new ValidationException("El DNI del paciente es requerido");
+        }
+        
+        // Nombre
+        if (dto.getPatientDTOName() == null || dto.getPatientDTOName().trim().isEmpty()) {
+            throw new ValidationException("El nombre del paciente es requerido");
+        }
+        
+        // Apellido
+        if (dto.getPatientDTOLastName() == null || dto.getPatientDTOLastName().trim().isEmpty()) {
+            throw new ValidationException("El apellido del paciente es requerido");
+        }
+        
+        // Fecha de nacimiento
+        if (dto.getPatientDTOBirthDate() == null || dto.getPatientDTOBirthDate().trim().isEmpty()) {
+            throw new ValidationException("La fecha de nacimiento es requerida");
+        }
+                
+        // Teléfono
+        if (dto.getPatientDTOPhone() == null || dto.getPatientDTOPhone().trim().isEmpty()) {
+            throw new ValidationException("El numero de celular del paciente es requerido");
+        }
+        
+        // E-mail
+        if (dto.getPatientDTOEmail() == null || dto.getPatientDTOEmail().trim().isEmpty()) {
+            throw new ValidationException("E-mail inválido");
+        }
+        
+        // Ciudad
+        if (dto.getCityId() == null || dto.getCityId().trim().isEmpty()) {
+            throw new ValidationException("La ciudad es requerida");
+        }
+        
+        // Dirección y número
+        if (dto.getPatientDTOAddress() == null || dto.getPatientDTOAddress().trim().isEmpty()) {
+            throw new ValidationException("La dirección del paciente es requerida");
+        }
+        
+        if (dto.getPatientDTOAddressNumber() == null || dto.getPatientDTOAddressNumber().trim().isEmpty()) {
+            throw new ValidationException("El numero de la direccion del paciente es requerido");
+        }
     }
 }

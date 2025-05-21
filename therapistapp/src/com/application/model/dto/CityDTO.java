@@ -39,5 +39,9 @@ public class CityDTO {
     public void setCityZIPCode(String cityZIPCode) {
         this.cityZIPCode = cityZIPCode;
     }
-
+    
+    @Override
+    public String toString() {
+        return this.cityName; // Solo muestra el nombre en el combo.
+    }
 }

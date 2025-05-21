@@ -6,9 +6,12 @@ import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.CityDTO;
 import com.application.model.dto.PatientDTO;
-import com.application.view.menu.panels.patient.PatientsForm;
+import com.application.view.panels.patient.PatientsForm;
+import java.io.IOException;
 import java.util.List;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PatientsFormController {
     
@@ -33,7 +36,7 @@ public class PatientsFormController {
             List<PatientDTO> patients = patientController.getAllPatients();
             return patients != null ? patients : Collections.emptyList();
         } catch (BusinessException e) {
-            patientsForm.showErrorMessage("Error al cargar pacientes: " + e.getMessage());
+            patientsForm.showErrorMessage(e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -43,10 +46,45 @@ public class PatientsFormController {
             List<CityDTO> cities = cityController.getAllCities();
             return cities != null ? cities : Collections.emptyList();
         } catch (BusinessException e) {
-            patientsForm.showErrorMessage("Error al cargar ciudades: " + e.getMessage());
+            patientsForm.showErrorMessage(e.getMessage());
             return Collections.emptyList();
         }
     }
+    
+    public String getCityNameById(String cityId) {
+        try {
+            return cityController.getCityNameById(cityId);
+        } catch (BusinessException e) {
+            patientsForm.showErrorMessage(e.getMessage());
+            return null;
+        } catch (ValidationException e) {
+            patientsForm.showErrorMessage(e.getMessage());
+            return null;
+        }
+    }
+        
+    public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        patientController.insertPatient(patientDTO);
+    }
+    
+    public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        patientController.updatePatient(patientDTO);
+    }
+    
+    public void deletePatient(String patientId) throws ValidationException, BusinessException {
+        patientController.deletePatient(patientId);
+    }
+    
+    /**
+     * Gets a patient by their Id
+     * @param patientId
+     * @return PatientDTO if found
+     * @throws BusinessException If there's an error accessing data
+     * @throws ValidationException If patient is not found
+     */
+    public PatientDTO getPatientById(String patientId) throws BusinessException, ValidationException {
+        return patientController.getPatientById(patientId);
+    } 
     
     public void searchPatients(String query) {
 //        try {
@@ -54,60 +92,6 @@ public class PatientsFormController {
 //            patientsForm.displayPatients(results);
 //        } catch (BusinessException e) {
 //            patientsForm.showErrorMessage("Error en búsqueda: " + e.getMessage());
-//        }
-    }
-    
-    public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException {
-        try {
-            
-            // Validación básica antes de enviar al servicio
-            if (patientDTO == null) {
-                throw new ValidationException("Datos del paciente no pueden ser nulos");
-            }
-            
-            patientController.insertPatient(patientDTO);
-            //patientsForm.showSuccessMessage("Paciente agregado exitosamente");
-            
-            //getAllPatients(); 
-            
-        } catch (ValidationException e) {
-            patientsForm.showErrorMessage(e.getMessage());
-        } catch (BusinessException e) {
-            patientsForm.showErrorMessage("Error al guardar paciente: " + e.getMessage());
-        }
-    }
-    
-    public void updatePatient(PatientDTO patientDTO) {
-//        try {
-//            if (patientDTO == null || patientDTO.getId() == null) {
-//                throw new ValidationException("Datos inválidos para actualización");
-//            }
-//            
-//            patientService.updatePatient(patientDTO);
-//            patientsForm.showSuccessMessage("Paciente actualizado exitosamente");
-//            loadPatients(); // Refrescar la lista
-//            
-//        } catch (ValidationException e) {
-//            patientsForm.showValidationError(e.getMessage());
-//        } catch (BusinessException e) {
-//            patientsForm.showErrorMessage("Error al actualizar paciente: " + e.getMessage());
-//        }
-    }
-    
-    public void deletePatient(String patientId) {
-//        try {
-//            if (patientId == null || patientId.isEmpty()) {
-//                throw new ValidationException("ID de paciente inválido");
-//            }
-//            
-//            if (patientsForm.confirmAction("¿Está seguro de eliminar este paciente?")) {
-//                patientService.deletePatient(patientId);
-//                patientsForm.showSuccessMessage("Paciente eliminado exitosamente");
-//                loadPatients(); // Refrescar la lista
-//            }
-//            
-//        } catch (BusinessException e) {
-//            patientsForm.showErrorMessage("Error al eliminar paciente: " + e.getMessage());
 //        }
     }
 }

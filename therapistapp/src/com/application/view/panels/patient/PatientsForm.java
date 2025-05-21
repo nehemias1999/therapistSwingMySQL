@@ -1,35 +1,65 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
-package com.application.view.menu.panels.patient;
+package com.application.view.panels.patient;
 
+import com.application.view.panels.renderers.PatientProfileCellRender;
+import com.application.view.panels.renderers.PatientActionsCellRender;
 import com.application.interfaces.IPanels;
 import com.application.controllers.panels.PatientsFormController;
 import com.application.exceptions.businessException.BusinessException;
-import com.application.exceptions.runtimeExceptions.dataAccessException.DataAccessException;
+import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.PatientDTO;
+import com.application.model.enumerations.ViewType;
 import com.formdev.flatlaf.FlatClientProperties;
-import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
-import raven.modal.ModalDialog;
+import javax.swing.table.TableColumnModel;
 import raven.modal.Toast;
-import raven.modal.component.SimpleModalBorder;
 
 public class PatientsForm extends javax.swing.JPanel implements IPanels {
 
     private PatientsFormController patientFormController;
+    DefaultTableModel tableModel;
     
     public PatientsForm() {
         initComponents();
-        setStyle();
+        setStyle();   
+        
+        jTableMain.getColumnModel().getColumn(0).setCellRenderer(new PatientProfileCellRender(jTableMain));
+        
+        initActionsData();
+        
+    }
+    
+    private void initActionsData() {
+        IPatientActionsEvent event = new IPatientActionsEvent() {
+            @Override
+            public void onView(String patientId) {
+                System.out.println("VER → paciente con ID = " + patientId);
+                viewPatient(patientId);
+            }
+            @Override
+            public void onEdit(String patientId) {
+                System.out.println("EDITAR → paciente con ID = " + patientId);
+                updatePatient(patientId);
+            }
+            @Override
+            public void onDelete(String patientId) {
+                System.out.println("BORRAR → paciente con ID = " + patientId);
+                deletePatient(patientId);
+            }  
+        };
+        
+        jTableMain.getColumnModel().getColumn(1).setCellRenderer(new PatientActionsCellRender());
+        jTableMain.getColumnModel().getColumn(1).setCellEditor(new PatientActionsCellEditor(event));
     }
         
     private void setStyle() {
-
+        TableColumnModel columnModel = jTableMain.getColumnModel();
+        
+        columnModel.getColumn(0).setPreferredWidth(600);
+        
         jTableMain.getTableHeader().putClientProperty(FlatClientProperties.STYLE, ""
                 + "height:30;"
                 + "hoverBackground:null;"
@@ -38,7 +68,7 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
                 + "font:bold;");
 
         jTableMain.putClientProperty(FlatClientProperties.STYLE, ""
-                + "rowHeight:70;"
+                + "rowHeight:100;"
                 + "showHorizontalLines:true;"
                 + "intercellSpacing:0,1;"
                 + "cellFocusColor:$TableHeader.hoverBackground;"
@@ -50,9 +80,9 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
                 + "trackInsets:3,3,3,3;"
                 + "thumbInsets:3,3,3,3;"
                 + "background:$Table.background;");
-
+        
     }
-    
+        
     public void setController(PatientsFormController controller) {
         this.patientFormController = controller;
         loadData();
@@ -60,34 +90,31 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
 
     public void loadData() {
         
-        DefaultTableModel model = (DefaultTableModel) jTableMain.getModel();
+        tableModel = (DefaultTableModel) jTableMain.getModel();
             
         if (jTableMain.isEditing()) {
             jTableMain.getCellEditor().stopCellEditing();
         }
 
-        model.setRowCount(0);
+        tableModel.setRowCount(0);
 
-        List<PatientDTO> patients = patientFormController.getAllPatients();
+        List<PatientDTO> patientsDTO = patientFormController.getAllPatients();
 
-        if (patients == null) {
-            //this.showErrorMessage("Error: No se recibieron datos del servidor");
+        if (patientsDTO == null) {
+            this.showErrorMessage("Error: No se recibieron datos del servidor");
             return;
         }
 
-        if (patients.isEmpty()) {
+        if (patientsDTO.isEmpty()) {
             this.showInformationMessage("No se encontraron pacientes registrados");
             return;
         }
 
-        for (PatientDTO p : patients) {
-            model.addRow(new Object[]{
-                p.getPatientDTODNI(),
-                2,
-                p.getPatientDTOName(), 
-                p.getPatientDTOLastName(), 
-                1
-            });                      
+        for (PatientDTO patientDTO : patientsDTO) {
+            tableModel.addRow(new Object[]{
+                patientDTO, 
+                patientDTO.getPatientDTOId()
+            });
         }
         
     }
@@ -108,50 +135,67 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
 //        }
     }
     
-    private void insertPatient() {
+    public void insertPatient() {
         try {
-            AddPatientForm addPatientForm = new AddPatientForm(this.patientFormController);
-
-            SimpleModalBorder.Option[] options = new SimpleModalBorder.Option[]{
-                new SimpleModalBorder.Option("Cancelar", SimpleModalBorder.CANCEL_OPTION),
-                new SimpleModalBorder.Option("Guardar", SimpleModalBorder.OK_OPTION)
-            };
-
-            if(UIManager.getLookAndFeel() == null) {
-                FlatMacDarkLaf.setup();
+            
+            boolean saved = PatientFormDialog.showDialog(this, patientFormController, ViewType.INSERT, new PatientDTO());
+            if (saved) {
+                Toast.show(this, Toast.Type.SUCCESS, "Paciente agregado exitosamente");
             }
-
-            ModalDialog.showModal(this, new SimpleModalBorder(addPatientForm, "Agregar paciente", options, (mc, i) -> {
-                if (i == SimpleModalBorder.OK_OPTION) {
-                    try {
-                        patientFormController.insertPatient(addPatientForm.getData());
-
-                        // Éxito - cierra y actualiza
-                        Toast.show(this, Toast.Type.SUCCESS, "Paciente agregado exitosamente");
-                        loadData();
-                        mc.close();
-
-                    } catch (Exception e) {
-                        // Manejo unificado de errores
-                        String errorMessage = "Error al guardar paciente: ";
-
-                        if (e instanceof DataAccessException) {
-                            errorMessage += "Problema de base de datos. " + e.getMessage();
-                        } else if (e instanceof BusinessException) {
-                            errorMessage += e.getMessage();
-                        } else {
-                            errorMessage += "Error inesperado. " + e.getMessage();
-                        }
-
-                        addPatientForm.showErrorMessage(errorMessage);
-                        // No se llama a mc.close() ni return necesario
-                        // ya que es el último bloque del try-catch
-                    }
-                }
-            }));
-
-        } catch (Exception e) {
-            this.showErrorMessage("Error al mostrar el formulario: " + e.getMessage());
+            initActionsData();
+            loadData();
+            
+        } catch (Exception ex) {
+            showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
+        }
+    }
+    
+    public void updatePatient(String patientId) {
+        try {
+            
+            PatientDTO patientDTO = patientFormController.getPatientById(patientId);
+            
+            boolean updated = PatientFormDialog.showDialog(this, patientFormController, ViewType.UPDATE, patientDTO);
+            if (updated) {
+                Toast.show(this, Toast.Type.SUCCESS, "Paciente modificado exitosamente");
+            }
+            initActionsData();
+            loadData();
+            
+        } catch (Exception ex) {
+            showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
+        }
+    }
+    
+    public void deletePatient(String patientId) {
+        try {
+            
+            boolean updated = confirmAction("¿Está seguro de eliminar este paciente?");  
+            if (updated) {
+                patientFormController.deletePatient(patientId);
+                Toast.show(this, Toast.Type.SUCCESS, "Paciente eliminado exitosamente");
+            }
+            
+            initActionsData();
+            loadData();
+            
+        } catch (ValidationException ex) {
+            Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BusinessException ex) {
+            Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void viewPatient(String patientId) {
+        try {
+            PatientDTO patientDTO = patientFormController.getPatientById(patientId);
+            PatientProfileDialog.showDialog(this, patientFormController, patientDTO);
+            initActionsData();
+            loadData();
+        } catch (ValidationException ex) {
+            Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BusinessException ex) {
+            Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -171,18 +215,31 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
         jTextFieldSearcher = new javax.swing.JTextField();
         jButtonAddPatient = new javax.swing.JButton();
 
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane1.setFocusable(false);
+
         jTableMain.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+                {null, null},
+                {null, null}
             },
             new String [] {
-                "DNI", "Imagen", "Nombre", "Apellido", "Acciones"
+                "Paciente", "Acciones"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, true
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(jTableMain);
+        if (jTableMain.getColumnModel().getColumnCount() > 0) {
+            jTableMain.getColumnModel().getColumn(0).setResizable(false);
+            jTableMain.getColumnModel().getColumn(1).setResizable(false);
+        }
 
         jLabelMainTitle.setFont(new java.awt.Font("Segoe UI", 1, 36)); // NOI18N
         jLabelMainTitle.setText("Pacientes");
@@ -233,7 +290,7 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jButtonAddPatient, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 644, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 644, Short.MAX_VALUE)
                 .addGap(24, 24, 24))
         );
 
@@ -291,4 +348,14 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
         );
     }
     
+    public boolean confirmAction(String message) {
+        int option = JOptionPane.showConfirmDialog(
+            this,                   
+            message,                   
+            "Confirmar acción",        
+            JOptionPane.YES_NO_OPTION, 
+            JOptionPane.QUESTION_MESSAGE
+        );
+        return option == JOptionPane.YES_OPTION;
+    }
 }

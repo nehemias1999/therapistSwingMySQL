@@ -1,0 +1,71 @@
+-- 1) Crear la base de datos
+CREATE DATABASE IF NOT EXISTS therapist_db
+  DEFAULT CHARACTER SET utf8mb4
+  DEFAULT COLLATE utf8mb4_unicode_ci;
+USE therapist_db;
+
+-- 2) Ciudades
+CREATE TABLE IF NOT EXISTS tbl_city (
+  city_id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
+  city_name VARCHAR(50) NOT NULL,
+  city_zip_code VARCHAR(10) NOT NULL
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- 3) Pacientes
+CREATE TABLE IF NOT EXISTS tbl_patient (
+  patient_id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
+  patient_dni CHAR(8) NOT NULL,
+  patient_name VARCHAR(50) NOT NULL,
+  patient_last_name VARCHAR(50) NOT NULL,
+  patient_birth_date DATE NOT NULL,
+  patient_occupation VARCHAR(50) NOT NULL,
+  patient_phone VARCHAR(20) NOT NULL,
+  patient_email VARCHAR(100) NOT NULL,
+  city_id CHAR(36) NOT NULL,
+  patient_address VARCHAR(100) NOT NULL,
+  patient_address_number INT NOT NULL,
+  patient_address_floor SMALLINT NULL,
+  patient_address_department VARCHAR(10) NULL,
+  UNIQUE KEY uk_patient_dni (patient_dni),
+  UNIQUE KEY uk_patient_email (patient_email),
+  FOREIGN KEY (city_id)
+    REFERENCES tbl_city(city_id)
+      ON UPDATE CASCADE
+      ON DELETE RESTRICT
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- 4) Consultas
+CREATE TABLE IF NOT EXISTS tbl_consultation (
+  consultation_id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
+  consultation_start_datetime DATETIME NOT NULL,
+  consultation_end_datetime DATETIME NULL,
+  consultation_status ENUM('SCHEDULED','COMPLETED','CANCELLED') NOT NULL DEFAULT 'SCHEDULED',
+  consultation_note_path VARCHAR(512) NULL
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- 5) Asociación Consulta ↔ Paciente (N:M), con precio y pago por paciente y ruta de nota
+CREATE TABLE IF NOT EXISTS tbl_consultation_patient (
+  consultation_id CHAR(36) NOT NULL,
+  patient_id CHAR(36) NOT NULL,
+  individual_amount DECIMAL(10,2) NOT NULL,
+  is_paid BOOLEAN NOT NULL DEFAULT FALSE,
+  patient_note_path VARCHAR(512) NULL,
+  PRIMARY KEY (consultation_id, patient_id),
+  FOREIGN KEY (consultation_id)
+    REFERENCES tbl_consultation(consultation_id)
+      ON UPDATE CASCADE
+      ON DELETE CASCADE,
+  FOREIGN KEY (patient_id)
+    REFERENCES tbl_patient(patient_id)
+      ON UPDATE CASCADE
+      ON DELETE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+

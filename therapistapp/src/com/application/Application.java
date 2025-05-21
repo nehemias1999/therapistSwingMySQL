@@ -1,5 +1,6 @@
 package com.application;
 
+import com.application.utils.ApplicationFilesManager;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
@@ -8,7 +9,9 @@ import java.awt.Component;
 import java.awt.Font;
 import javax.swing.UIManager;
 import com.application.view.MainForm;
+import java.io.IOException;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import raven.toast.Notifications;
 
 public class Application extends javax.swing.JFrame {
@@ -17,6 +20,18 @@ public class Application extends javax.swing.JFrame {
     private final MainForm mainForm;
 
     public Application() {
+        try {
+            new ApplicationFilesManager().ensureBaseFolders();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(
+                this,
+                "Error al crear carpetas de datos:\n" + ex.getMessage(),
+                "Error de archivos",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
+        
         initComponents();
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
@@ -61,6 +76,7 @@ public class Application extends javax.swing.JFrame {
         FlatLaf.registerCustomDefaultsSource("raven.theme");
         UIManager.put("defaultFont", new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 13));
         FlatMacDarkLaf.setup();
+
         java.awt.EventQueue.invokeLater(() -> {
             app = new Application();
             app.setVisible(true);
