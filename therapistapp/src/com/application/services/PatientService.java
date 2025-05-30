@@ -59,13 +59,16 @@ public class PatientService {
      */
     public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
         try {
+            
             validatePatientData(patientDTO, false);
+            
             Patient patient = createPatientFromDTO(patientDTO, false);
             patientDAO.insertPatient(patient);  
             fileManager.initPatientFolders(patient.getPatientId());
             if(!patientDTO.getPatientDTOPhotoPath().isEmpty()) {
                 fileManager.movePhotoToPatientDir(patient.getPatientId(), Path.of(patientDTO.getPatientDTOPhotoPath()));
             }
+            
         } catch (ConstraintViolationException e) {
             throw new ValidationException("Ya existe un paciente con ese " +
                     ("DNI".equalsIgnoreCase(e.getField()) ? "DNI" : "e-mail"));
@@ -74,9 +77,18 @@ public class PatientService {
         }
     }
     
+    /**
+     * Modifica un paciente existente
+     * @param patientDTO Datos del paciente a modificar
+     * @throws ValidationException Si los datos no son válidos o el paciente ya existe
+     * @throws BusinessException Si ocurre otro error de negocio
+     * @throws java.io.IOException
+     */
     public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
         try {
+            
             validatePatientData(patientDTO, true);
+            
             Patient patient = createPatientFromDTO(patientDTO, true);
             patientDAO.updatePatient(patient);
             if(fileManager.hasPatientPhoto(patient.getPatientId())) {
@@ -89,6 +101,7 @@ public class PatientService {
             if(!fileManager.hasPatientPhoto(patient.getPatientId()) && !patientDTO.getPatientDTOPhotoPath().isEmpty()) {
                 fileManager.movePhotoToPatientDir(patient.getPatientId(), Path.of(patientDTO.getPatientDTOPhotoPath()));
             }
+            
         } catch (EntityNotFoundException e) {
             throw new ValidationException("No existe paciente con Id '" + patientDTO.getPatientDTOId() + "'");
         } catch (ConstraintViolationException e) {
@@ -99,16 +112,27 @@ public class PatientService {
         }
     }
     
-    public void deletePatient(String id) throws ValidationException, BusinessException {
+    /**
+     * Elimina un paciente existente en el sistema
+     * @param patientId del paciente a eliminar
+     * @throws ValidationException Si los datos no son válidos o el paciente no existe
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
+    public void deletePatient(String patientId) throws ValidationException, BusinessException {
         try {
-            patientDAO.deletePatient(UUID.fromString(id));
+            patientDAO.deletePatient(UUID.fromString(patientId));
         } catch (EntityNotFoundException e) {
-            throw new ValidationException("No existe paciente con Id '" + id + "'");
+            throw new ValidationException("No existe paciente con Id '" + patientId + "'");
         } catch (DataAccessException e) {
             throw new BusinessException("Error de base de datos al eliminar paciente", e);
         }
     }
 
+    /**
+     * Obtiene el paciente en base a un dni
+     * @param patientId del paciente a buscar
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
     public PatientDTO getPatientById(String patientId) throws ValidationException, BusinessException {
         try {
             return convertToDTO(patientDAO.getPatientById(UUID.fromString(patientId)));

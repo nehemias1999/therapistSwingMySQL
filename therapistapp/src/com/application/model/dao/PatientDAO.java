@@ -48,20 +48,20 @@ public class PatientDAO {
         ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private static final String UPDATE_SQL =
-          "UPDATE tbl_patient SET " +
-          "patient_dni = ?, " +
-          "patient_name = ?, " +
-          "patient_last_name = ?, " +
-          "patient_birth_date = ?, " +
-          "patient_occupation = ?, " +
-          "patient_phone = ?, " +
-          "patient_email = ?, " +
-          "city_id = ?, " +
-          "patient_address = ?, " +
-          "patient_address_number = ?, " +
-          "patient_address_floor = ?, " +
-          "patient_address_department = ? " +
-          "WHERE patient_id = ?";
+        "UPDATE tbl_patient SET " +
+        "patient_dni = ?, " +
+        "patient_name = ?, " +
+        "patient_last_name = ?, " +
+        "patient_birth_date = ?, " +
+        "patient_occupation = ?, " +
+        "patient_phone = ?, " +
+        "patient_email = ?, " +
+        "city_id = ?, " +
+        "patient_address = ?, " +
+        "patient_address_number = ?, " +
+        "patient_address_floor = ?, " +
+        "patient_address_department = ? " +
+        "WHERE patient_id = ?";
 
     private static final String DELETE_SQL =
         "UPDATE tbl_patient SET is_active = false WHERE patient_id = ?";

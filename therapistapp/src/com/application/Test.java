@@ -7,12 +7,16 @@ package com.application;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dao.PatientDAO;
+import com.application.model.dto.ConsultationDTO;
 import com.application.model.dto.PatientDTO;
+import com.application.model.entities.Consultation;
 import com.application.model.entities.Patient;
+import com.application.services.ConsultationService;
 import com.application.services.PatientService;
 import com.application.utils.PatientsFilesManager;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -40,9 +44,9 @@ public class Test {
                 0,
                 ""
         );
-        PatientDAO patientDAO = new PatientDAO();
+//        PatientDAO patientDAO = new PatientDAO();
         
-        patientDAO.updatePatient(patient);
+//       patientDAO.updatePatient(patient);
 
 //        FileManager fileManager = new FileManager();
 //        
@@ -68,6 +72,25 @@ public class Test {
 //        PatientService ps = new PatientService();
 //        
 //        ps.insertPatient(patientDTO);
+
+        ConsultationDTO c = new ConsultationDTO(
+          "e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278",
+          "2025-05-25T11:00:00",
+          "2025-05-25T12:00:00",
+          "SCHEDULED"
+         );
+
+        ConsultationService cs = new ConsultationService();
+        
+//        cs.insertConsultation(c);
+  
+//        cs.updateConsultation(c);
+        
+        cs.deleteConsultation("e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278");
+        
+ //       List<ConsultationDTO> consultations = cs.getConsultationsByDate("2025-05-30");
+        
+   //     System.out.println(consultations.toString());
         
     }
     

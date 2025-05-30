@@ -31,6 +31,11 @@ public class PatientsFormController {
         return patientsForm;
     }
     
+    /**
+     * Obtiene todos los pacientes en el sistema
+     * @return lista de PatientDTO de los pacientes encontrados
+     * @throws BusinessException Si hubo un error acediendo a los datos
+     */
     public List<PatientDTO> getAllPatients() {
         try {
             List<PatientDTO> patients = patientController.getAllPatients();
@@ -41,6 +46,11 @@ public class PatientsFormController {
         }
     }
     
+    /**
+     * Obtiene todas las ciudades en el sistema
+     * @return lista de CityDTO de las ciudades encontrados
+     * @throws BusinessException Si hubo un error acediendo a los datos
+     */
     public List<CityDTO> getAllCities() {
         try {
             List<CityDTO> cities = cityController.getAllCities();
@@ -50,7 +60,57 @@ public class PatientsFormController {
             return Collections.emptyList();
         }
     }
+         
+    /**
+     * Inserta un nuevo paciente
+     * @param patientDTO Datos del paciente a insertar
+     * @throws ValidationException Si los datos no son válidos o el paciente ya existe
+     * @throws BusinessException Si ocurre otro error de negocio
+     * @throws java.io.IOException
+     */
+    public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        patientController.insertPatient(patientDTO);
+    }
     
+    /**
+     * Modifica paciente existente
+     * @param patientDTO Datos del paciente a modificar
+     * @throws ValidationException Si los datos no son válidos
+     * @throws BusinessException Si ocurre otro error de negocio
+     * @throws java.io.IOException
+     */
+    public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        patientController.updatePatient(patientDTO);
+    }
+    
+    /**
+     * Elimina paciente existente
+     * @param patientId del paciente a eliminar
+     * @throws ValidationException Si los datos no son válidos o el paciente ya existe
+     * @throws BusinessException Si ocurre otro error de negocio
+     */
+    public void deletePatient(String patientId) throws ValidationException, BusinessException {
+        patientController.deletePatient(patientId);
+    }
+    
+    /**
+     * Obtiene el paciente en base a su Id
+     * @param patientId
+     * @return PatientDTO del paciente a buscar
+     * @throws BusinessException Si hubo un error acediendo a los datos
+     * @throws ValidationException Si la ciudad no fue encontrada
+     */
+    public PatientDTO getPatientById(String patientId) throws BusinessException, ValidationException {
+        return patientController.getPatientById(patientId);
+    } 
+    
+    /**
+     * Obtiene el nombre de la ciudad en base a su Id
+     * @param cityId
+     * @return Nombre de la ciudad a buscar
+     * @throws BusinessException Si hubo un error acediendo a los datos
+     * @throws ValidationException Si la ciudad no fue encontrada
+     */
     public String getCityNameById(String cityId) {
         try {
             return cityController.getCityNameById(cityId);
@@ -62,36 +122,19 @@ public class PatientsFormController {
             return null;
         }
     }
-        
-    public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
-        patientController.insertPatient(patientDTO);
-    }
-    
-    public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
-        patientController.updatePatient(patientDTO);
-    }
-    
-    public void deletePatient(String patientId) throws ValidationException, BusinessException {
-        patientController.deletePatient(patientId);
-    }
     
     /**
-     * Gets a patient by their Id
-     * @param patientId
-     * @return PatientDTO if found
-     * @throws BusinessException If there's an error accessing data
-     * @throws ValidationException If patient is not found
+     * Busca pacientes en base a su nombre
+     * @param searchTerm Search term
+     * @return Lista de pacientes que coincidan
+     * @throws BusinessException  Si ocurre otro error de negocio
      */
-    public PatientDTO getPatientById(String patientId) throws BusinessException, ValidationException {
-        return patientController.getPatientById(patientId);
-    } 
-    
-    public void searchPatients(String query) {
-//        try {
-//            List<PatientDTO> results = patientService.searchPatients(query);
-//            patientsForm.displayPatients(results);
-//        } catch (BusinessException e) {
-//            patientsForm.showErrorMessage("Error en búsqueda: " + e.getMessage());
-//        }
+    public List<PatientDTO> searchPatients(String query) {
+        try {
+            return patientController.searchPatientsByName(query);
+        } catch (BusinessException e) {
+            patientsForm.showErrorMessage("Error en búsqueda: " + e.getMessage());
+            return null;
+        }
     }
 }

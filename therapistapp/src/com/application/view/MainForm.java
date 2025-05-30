@@ -17,14 +17,18 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import com.application.Application;
 import com.application.controllers.entities.CityController;
+import com.application.controllers.entities.ConsultationController;
 import com.application.controllers.entities.PatientController;
+import com.application.controllers.panels.ConsultationsFormController;
 import com.application.controllers.panels.PatientsFormController;
 import com.application.services.CityService;
+import com.application.services.ConsultationService;
 import com.application.services.PatientService;
 import com.application.view.panels.patient.PatientsForm;
 import com.application.view.menu.Menu;
 import com.application.view.menu.MenuAction;
 import com.application.view.menu.panels.TODOForm;
+import com.application.view.panels.consultation.ConsultationsForm;
 
 public class MainForm extends JLayeredPane {
 
@@ -68,6 +72,7 @@ public class MainForm extends JLayeredPane {
     }
 
     private void initMenuEvent() {
+        ConsultationController consultationController = new ConsultationController(new ConsultationService());
         PatientController patientController = new PatientController(new PatientService());
         CityController cityController = new CityController(new CityService());
         
@@ -83,7 +88,7 @@ public class MainForm extends JLayeredPane {
             }
             
             if (index == 2) {
-                Application.showForm(new TODOForm());
+                Application.showForm(new ConsultationsFormController(consultationController, patientController).getView());
             }
             
             if (index == 3) {
