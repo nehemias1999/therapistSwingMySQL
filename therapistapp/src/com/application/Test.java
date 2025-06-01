@@ -8,9 +8,11 @@ import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dao.PatientDAO;
 import com.application.model.dto.ConsultationDTO;
+import com.application.model.dto.ConsultationPatientDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.model.entities.Consultation;
 import com.application.model.entities.Patient;
+import com.application.services.ConsultationPatientService;
 import com.application.services.ConsultationService;
 import com.application.services.PatientService;
 import com.application.utils.PatientsFilesManager;
@@ -29,21 +31,21 @@ public class Test {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException, ValidationException, BusinessException {
-        Patient patient = new Patient(
-                UUID.fromString("d6dea4d2-71be-4549-a6ad-f4b6a72be5ab"),
-                "12345690", 
-                "juan martin", 
-                "martinez", 
-                LocalDate.parse("1986-02-13"),
-                "maestro",
-                "12345678", 
-                "jmartinez@gmail.com", 
-                UUID.fromString("6172c6f4-f7b0-4f8a-96ab-2d8bacb06f08"), 
-                "moreno",
-                25,
-                0,
-                ""
-        );
+//        Patient patient = new Patient(
+//                UUID.fromString("d6dea4d2-71be-4549-a6ad-f4b6a72be5ab"),
+//                "12345690", 
+//                "juan martin", 
+//                "martinez", 
+//                LocalDate.parse("1986-02-13"),
+//                "maestro",
+//                "12345678", 
+//                "jmartinez@gmail.com", 
+//                UUID.fromString("6172c6f4-f7b0-4f8a-96ab-2d8bacb06f08"), 
+//                "moreno",
+//                25,
+//                0,
+//                ""
+//        );
 //        PatientDAO patientDAO = new PatientDAO();
         
 //       patientDAO.updatePatient(patient);
@@ -73,25 +75,44 @@ public class Test {
 //        
 //        ps.insertPatient(patientDTO);
 
-        ConsultationDTO c = new ConsultationDTO(
-          "e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278",
-          "2025-05-25T11:00:00",
-          "2025-05-25T12:00:00",
-          "SCHEDULED"
-         );
-
-        ConsultationService cs = new ConsultationService();
+//        ConsultationDTO c = new ConsultationDTO(
+//          "e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278",
+//          "2025-05-25T11:00:00",
+//          "2025-05-25T12:00:00",
+//          "SCHEDULED"
+//         );
+//
+//        ConsultationService cs = new ConsultationService();
         
 //        cs.insertConsultation(c);
   
 //        cs.updateConsultation(c);
         
-        cs.deleteConsultation("e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278");
+//        cs.deleteConsultation("e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278");
         
  //       List<ConsultationDTO> consultations = cs.getConsultationsByDate("2025-05-30");
         
    //     System.out.println(consultations.toString());
+   
+        ConsultationPatientDTO cp = new ConsultationPatientDTO(
+          "20735758-d837-40d1-bd6e-a520e1c44866",
+          "2063af17-fb8b-4bad-8cf1-14fa784273e2",
+          "1000.55",
+          "False",
+          "C:\\Users\\nsalazar\\Documents\\therapistapp\\patients\\2063af17-fb8b-4bad-8cf1-14fa784273e2\\notes\\group"
+         );
         
+        ConsultationPatientService cps = new ConsultationPatientService();
+        
+//        cps.insertConsultationPatient(cp);
+        
+//        List<ConsultationPatientDTO> consultationPatients = cps.getPatientsByConsultationId("e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278");
+//        
+//        System.out.println(consultationPatients.toString());
+
+//        cps.deleteConsultationPatient("e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278", "ca23bc0c-b62b-4e67-aa75-3446a62a4d7e");
+        
+        cps.setConsultationPatientPaid("e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278", "ca23bc0c-b62b-4e67-aa75-3446a62a4d7e");
     }
     
 }

@@ -28,16 +28,18 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
     private String patientPhotoPath = "";
     
     public PatientFormDialog(Frame owner, PatientsFormController controller, ViewType viewtype, PatientDTO patientDTO) {
-        super(owner, "Agregar paciente", true);
+        super(owner, "Thera Kairos", true);
         this.controller = controller;
         this.viewType = viewtype;
+        
+        initComponents();
+        
         if(viewtype == ViewType.UPDATE) {
+            jLabelMainTitle.setText("Modificar paciente");
             this.patientDTO = patientDTO;
             this.patientPhotoPath = patientDTO.getPatientDTOPhotoPath();
         }
-       
-        initComponents();
-        
+               
         datePicker.setCloseAfterSelected(true);
         datePicker.setEditor(jFormattedTextFieldBirthDate);
         
@@ -245,7 +247,7 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
         datePicker = new raven.datetime.component.date.DatePicker();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        jLabelMainTitle = new javax.swing.JLabel();
         jTextFieldDNI = new javax.swing.JTextField();
         jTextFieldName = new javax.swing.JTextField();
         jTextFieldLastName = new javax.swing.JTextField();
@@ -282,20 +284,20 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
         setMinimumSize(new java.awt.Dimension(512, 568));
         setResizable(false);
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Agregar Paciente");
-        jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jLabelMainTitle.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jLabelMainTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelMainTitle.setText("Agregar Paciente");
+        jLabelMainTitle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jLabelMainTitle, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
+            .addComponent(jLabelMainTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
         );
 
         jTextFieldDNI.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
@@ -581,7 +583,6 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
     private javax.swing.JButton jButtonRemovePhoto;
     private javax.swing.JComboBox<CityDTO> jComboBoxCityId;
     private javax.swing.JFormattedTextField jFormattedTextFieldBirthDate;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabelAddress;
     private javax.swing.JLabel jLabelAddressDepartment;
     private javax.swing.JLabel jLabelAddressFloor;
@@ -591,6 +592,7 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
     private javax.swing.JLabel jLabelDNI;
     private javax.swing.JLabel jLabelEmail;
     private javax.swing.JLabel jLabelLastName;
+    private javax.swing.JLabel jLabelMainTitle;
     private javax.swing.JLabel jLabelName;
     private javax.swing.JLabel jLabelOccupation;
     private javax.swing.JLabel jLabelPhone;

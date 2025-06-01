@@ -24,11 +24,9 @@ import com.application.controllers.panels.PatientsFormController;
 import com.application.services.CityService;
 import com.application.services.ConsultationService;
 import com.application.services.PatientService;
-import com.application.view.panels.patient.PatientsForm;
 import com.application.view.menu.Menu;
 import com.application.view.menu.MenuAction;
 import com.application.view.menu.panels.TODOForm;
-import com.application.view.panels.consultation.ConsultationsForm;
 
 public class MainForm extends JLayeredPane {
 
@@ -78,27 +76,15 @@ public class MainForm extends JLayeredPane {
         
         menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
             // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
-            
+                        
             if (index == 0) {
-                Application.showForm(new TODOForm());
-            }
-            
-            if (index == 1) {
-                Application.showForm(new TODOForm());
-            }
-            
-            if (index == 2) {
                 Application.showForm(new ConsultationsFormController(consultationController, patientController).getView());
             }
             
-            if (index == 3) {
+            if (index == 1) {
                 Application.showForm(new PatientsFormController(patientController, cityController).getView());
             }
-            
-            if (index == 4) {
-                Application.showForm(new TODOForm());
-            }
-            
+                        
         });
     }
 

@@ -40,11 +40,11 @@
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="jScrollPane1" alignment="0" pref="1235" max="32767" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
+                              <Component id="jScrollPane1" pref="1235" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
                                   <Component id="jTextFieldSearcher" min="-2" pref="209" max="-2" attributes="0"/>
                                   <EmptySpace max="32767" attributes="0"/>
-                                  <Component id="jButtonAddPatient" min="-2" pref="140" max="-2" attributes="0"/>
+                                  <Component id="jButtonAddPatient" min="-2" pref="170" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
@@ -130,10 +130,13 @@
         </Component>
         <Component class="javax.swing.JButton" name="jButtonAddPatient">
           <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="54" green="9c" id="Actions.Green" palette="3" red="49" type="palette"/>
+            </Property>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Segoe UI" size="15" style="1"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Agregar"/>
+            <Property name="text" type="java.lang.String" value="Agregar Paciente"/>
             <Property name="toolTipText" type="java.lang.String" value="Agregar paciente"/>
           </Properties>
           <Events>

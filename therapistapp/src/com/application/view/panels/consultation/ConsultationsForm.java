@@ -3,12 +3,16 @@ package com.application.view.panels.consultation;
 import com.application.controllers.panels.ConsultationsFormController;
 import com.application.interfaces.IPanels;
 import com.application.model.dto.ConsultationDTO;
+import com.application.model.dto.PatientDTO;
+import com.application.model.enumerations.ViewType;
+import com.application.view.panels.patient.PatientFormDialog;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
+import raven.modal.Toast;
 
 public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
 
@@ -84,7 +88,35 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
         }
         
     }
+    
+    public void insertConsultation() {
+        try {
+            
+            boolean saved = ConsultationFormDialog.showDialog(this, consultationsFormController, ViewType.INSERT, new ConsultationDTO());
+            if (saved) {
+                Toast.show(this, Toast.Type.SUCCESS, "Consulta agregada exitosamente");
+            }
+//            initActionsData();
+//            loadData();
+            
+        } catch (Exception ex) {
+            showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
+        }
+    }
         
+    public void insertPatient() {
+//        try {
+//            
+//            boolean saved = PatientFormDialog.showDialog(this, patientFormController, ViewType.INSERT, new PatientDTO());
+//            if (saved) {
+//                Toast.show(this, Toast.Type.SUCCESS, "Paciente agregado exitosamente");
+//            }
+//            
+//        } catch (Exception ex) {
+//            showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
+//        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -215,7 +247,7 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonAddConsultationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddConsultationActionPerformed
-      
+      insertConsultation();
     }//GEN-LAST:event_jButtonAddConsultationActionPerformed
 
     private void jButtonAddPatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddPatientActionPerformed

@@ -5,7 +5,6 @@ import com.application.model.dto.PatientDTO;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Image;
-import javax.print.CancelablePrintJob;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -18,7 +17,7 @@ public class PatientProfileDialog extends javax.swing.JDialog {
      * Creates new form PatientProfileDialog
      */
     public PatientProfileDialog(java.awt.Frame parent, PatientsFormController controller, PatientDTO patientDTO) {
-        super(parent, true);
+        super(parent, "Thera Kairos", true);
         initComponents();
         this.controller = controller;
         this.patientDTO = patientDTO;
@@ -107,7 +106,6 @@ public class PatientProfileDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(650, 520));
         setModal(true);
-        setPreferredSize(new java.awt.Dimension(650, 520));
         setResizable(false);
 
         jPanelMain.setMinimumSize(new java.awt.Dimension(650, 520));
@@ -278,7 +276,7 @@ public class PatientProfileDialog extends javax.swing.JDialog {
                     .addComponent(jLabelAddressDepartment))
                 .addGap(18, 18, 18)
                 .addComponent(jPanelActions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -289,7 +287,7 @@ public class PatientProfileDialog extends javax.swing.JDialog {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanelMain, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanelMain, javax.swing.GroupLayout.PREFERRED_SIZE, 493, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();

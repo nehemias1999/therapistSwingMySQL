@@ -21,14 +21,9 @@ import com.application.view.mode.ToolBarAccentColor;
 public class Menu extends JPanel {
 
     private final String menuItems[][] = {
-        {"Nueva Consulta"},
         {"~INICIO~"},
-        {"Dashboard"},
-        {"~APLICACION~"},
-        {"Calendario"},
+        {"Consultas"},
         {"Pacientes"},
-        {"~CONFIGURACIONES~"},
-        {"Configuraciones", "Ciudades", "Pagos", "Alertas"}
     };
 
     public boolean isMenuFull() {

@@ -253,8 +253,9 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
             }
         });
 
+        jButtonAddPatient.setBackground(javax.swing.UIManager.getDefaults().getColor("Actions.Green"));
         jButtonAddPatient.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jButtonAddPatient.setText("Agregar");
+        jButtonAddPatient.setText("Agregar Paciente");
         jButtonAddPatient.setToolTipText("Agregar paciente");
         jButtonAddPatient.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -274,11 +275,11 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelMainLayout.createSequentialGroup()
                         .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1235, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanelMainLayout.createSequentialGroup()
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1235, Short.MAX_VALUE)
+                            .addGroup(jPanelMainLayout.createSequentialGroup()
                                 .addComponent(jTextFieldSearcher, javax.swing.GroupLayout.PREFERRED_SIZE, 209, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jButtonAddPatient, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(jButtonAddPatient, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(24, 24, 24))))
         );
         jPanelMainLayout.setVerticalGroup(
