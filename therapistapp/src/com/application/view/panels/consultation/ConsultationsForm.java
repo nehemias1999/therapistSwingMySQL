@@ -1,14 +1,23 @@
 package com.application.view.panels.consultation;
 
+import com.application.view.panels.consultation.calendar.ModelDate;
+import com.application.interfaces.ICalendarSelectedListener;
 import com.application.controllers.panels.ConsultationsFormController;
+import com.application.exceptions.businessException.BusinessException;
+import com.application.exceptions.businessException.ValidationException;
+import com.application.interfaces.IConsultationPatientActionsEvent;
 import com.application.interfaces.IPanels;
 import com.application.model.dto.ConsultationDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.model.enumerations.ViewType;
-import com.application.view.panels.patient.PatientFormDialog;
+import com.application.view.panels.renderers.ConsultationPatientActionsCellRender;
+import com.application.view.panels.renderers.ConsultationPatientProfileCellRender;
+import com.application.view.panels.renderers.ConsultationPatientTimeCellRender;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
@@ -19,23 +28,58 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
     private ConsultationsFormController consultationsFormController;
     DefaultTableModel tableModel;
     
+    ModelDate actualSelectedDate = null;
+    
     public ConsultationsForm() {
         initComponents();
         setStyle();
         
-        calendar.addCalendarSelectedListener(new CalendarSelectedListener() {
+        this.actualSelectedDate = new ModelDate();
+        
+        calendar.addCalendarSelectedListener(new ICalendarSelectedListener() {
             @Override
             public void selected(MouseEvent evt, ModelDate date) {
+                actualSelectedDate = date;
                 jLabelSelectedDate.setText(String.valueOf(date.getDay()) + "/" + date.getMonth()+ "/" + date.getYear());
-                loadConsultationsByDate(date);
+                loadTableData(date);
             }    
         });
         
+        initActionsData();
+        
+    }
+    
+    private void initActionsData() {
+        IConsultationPatientActionsEvent event = new IConsultationPatientActionsEvent() {
+            @Override
+            public void onView(String consultationId) {
+                System.out.println("VER → consulta con ID = " + consultationId);
+                viewConsultation(consultationId);
+            }
+            @Override
+            public void onEdit(String consultationId) {
+                System.out.println("EDITAR → consulta con ID = " + consultationId);
+                updateConsultation(consultationId);
+            }
+            @Override
+            public void onDelete(String consultationId) {
+                System.out.println("BORRAR → consulta con ID = " + consultationId);
+                deleteConsultation(consultationId);
+            }  
+        };
+        
+        jTableMain.getColumnModel().getColumn(0).setCellRenderer(new ConsultationPatientTimeCellRender(jTableMain));
+        jTableMain.getColumnModel().getColumn(1).setCellRenderer(new ConsultationPatientProfileCellRender(jTableMain));
+        jTableMain.getColumnModel().getColumn(2).setCellRenderer(new ConsultationPatientActionsCellRender());
+        jTableMain.getColumnModel().getColumn(2).setCellEditor(new ConsultationPatientActionsCellEditor(event));
     }
             
     private void setStyle() {
         TableColumnModel columnModel = jTableMain.getColumnModel();
-
+        
+        columnModel.getColumn(0).setPreferredWidth(100);
+        columnModel.getColumn(2).setPreferredWidth(200);
+        
         jTableMain.getTableHeader().putClientProperty(FlatClientProperties.STYLE, ""
                 + "height:30;"
                 + "hoverBackground:null;"
@@ -61,9 +105,10 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
         
     public void setController(ConsultationsFormController controller) {
         this.consultationsFormController = controller;
+        loadTableData(actualSelectedDate);
     }
     
-    public void loadConsultationsByDate(ModelDate date) {
+    public void loadTableData(ModelDate date) {
         
         tableModel = (DefaultTableModel) jTableMain.getModel();
             
@@ -73,22 +118,28 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
 
         tableModel.setRowCount(0);
 
-        List<ConsultationDTO> consultationsDTO = consultationsFormController.getConsultationsByDate(date.toDateFormatString());
+        List<ConsultationDTO> consultationsDTO = consultationsFormController.getConsultationsByDate(date.toFormattedDate());
 
         if (consultationsDTO == null) {
             this.showErrorMessage("Error: No se recibieron datos del servidor");
             return;
         }
-
-        for (ConsultationDTO consultationDTO : consultationsDTO) {
-            tableModel.addRow(new Object[]{
-                consultationDTO.getConsultationDTOStartTime(), 
-                consultationDTO
-            });
-        }
         
+        if(!consultationsDTO.isEmpty()) {
+            for (ConsultationDTO consultationDTO : consultationsDTO) {
+            
+                List<PatientDTO> patientsDTO = consultationsFormController.getPatientsByConsultationId(consultationDTO.getConsultationDTOId());
+                PatientDTO patient = patientsDTO.get(0);
+                
+                tableModel.addRow(new Object[]{
+                    consultationDTO.getConsultationDTOStartTime(),
+                    patient, 
+                    consultationDTO.getConsultationDTOId()
+                });
+            }
+        }
     }
-    
+        
     public void insertConsultation() {
         try {
             
@@ -96,8 +147,8 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
             if (saved) {
                 Toast.show(this, Toast.Type.SUCCESS, "Consulta agregada exitosamente");
             }
-//            initActionsData();
-//            loadData();
+            initActionsData();
+            loadTableData(actualSelectedDate);
             
         } catch (Exception ex) {
             showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
@@ -117,6 +168,57 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
 //        }
     }
     
+    public void viewConsultation(String consultationId) {
+//        try {
+//            
+//            ConsultationDTO consultationDTO = consultationsFormController.getConsultationById(consultationId);
+//            ConsultationProfileDialog.showDialog(this, consultationsFormController, consultationDTO);
+//            initActionsData();
+//            loadTableData(actualSelectedDate);
+//            
+//        } catch (ValidationException ex) {
+//            Logger.getLogger(ConsultationsForm.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (BusinessException ex) {
+//            Logger.getLogger(ConsultationsForm.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+    }
+    
+    public void updateConsultation(String consultationId) {
+//        try {
+//            
+//            ConsultationDTO consultationDTO = consultationsFormController.getConsultationById(consultationId);
+//            
+//            boolean updated = ConsultationFormDialog.showDialog(this, consultationsFormController, ViewType.UPDATE, consultationDTO);
+//            if (updated) {
+//                Toast.show(this, Toast.Type.SUCCESS, "Consulta modificada exitosamente");
+//            }
+//            initActionsData();
+//            loadTableData(actualSelectedDate);
+//            
+//        } catch (Exception ex) {
+//            showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
+//        }
+    }
+    
+    public void deleteConsultation(String consultationId) {
+        try {
+            
+            boolean updated = confirmAction("¿Está seguro de eliminar esta consulta?");  
+            if (updated) {
+                consultationsFormController.deleteConsultation(consultationId);
+                Toast.show(this, Toast.Type.SUCCESS, "Consulta eliminada exitosamente");
+            }
+            
+            initActionsData();
+            loadTableData(actualSelectedDate);
+            
+        } catch (ValidationException ex) {
+            Logger.getLogger(ConsultationsForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BusinessException ex) {
+            Logger.getLogger(ConsultationsForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+        
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -131,7 +233,7 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
         jTableMain = new javax.swing.JTable();
         jLabelMainTitle = new javax.swing.JLabel();
         jButtonAddConsultation = new javax.swing.JButton();
-        calendar = new com.application.view.panels.consultation.Calendar();
+        calendar = new com.application.view.panels.consultation.calendar.Calendar();
         jButtonAddPatient = new javax.swing.JButton();
         jLabelSelectedDate = new javax.swing.JLabel();
 
@@ -148,7 +250,7 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -161,6 +263,7 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
             jTableMain.getColumnModel().getColumn(0).setPreferredWidth(100);
             jTableMain.getColumnModel().getColumn(1).setResizable(false);
             jTableMain.getColumnModel().getColumn(2).setResizable(false);
+            jTableMain.getColumnModel().getColumn(2).setPreferredWidth(200);
         }
 
         jLabelMainTitle.setFont(new java.awt.Font("Segoe UI", 1, 36)); // NOI18N
@@ -255,7 +358,7 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
     }//GEN-LAST:event_jButtonAddPatientActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private com.application.view.panels.consultation.Calendar calendar;
+    private com.application.view.panels.consultation.calendar.Calendar calendar;
     private javax.swing.JButton jButtonAddConsultation;
     private javax.swing.JButton jButtonAddPatient;
     private javax.swing.JLabel jLabelMainTitle;

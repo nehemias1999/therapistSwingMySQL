@@ -1,10 +1,11 @@
-package com.application.view.panels.consultation;
+package com.application.interfaces;
 
+import com.application.view.panels.consultation.calendar.DynamicCell;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 
-public interface DynamicCellRender<E> {
+public interface IDynamicCellRender<E> {
 
     public void paintBackground(Graphics2D g2, DynamicCell<E> dynamicCell, Rectangle rectangle);
 

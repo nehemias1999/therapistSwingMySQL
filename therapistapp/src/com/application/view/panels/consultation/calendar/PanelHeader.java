@@ -1,4 +1,4 @@
-package com.application.view.panels.consultation;
+package com.application.view.panels.consultation.calendar;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.util.UIScale;

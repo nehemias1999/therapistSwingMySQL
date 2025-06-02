@@ -3,6 +3,7 @@ package com.application.controllers.entities;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.ConsultationPatientDTO;
+import com.application.model.dto.PatientDTO;
 
 import java.util.List;
 
@@ -50,7 +51,7 @@ public class ConsultationPatientController {
      * @return lista de DTOs de pacientes de la consulta 
      * @throws BusinessException Si ocurre un error durante el proceso
      */
-    public List<ConsultationPatientDTO> getPatientByConsultationId(String consultationId) throws BusinessException {
+    public List<PatientDTO> getPatientsByConsultationId(String consultationId) throws BusinessException {
         return consultationPatientService.getPatientsByConsultationId(consultationId).stream().toList();
     }
     

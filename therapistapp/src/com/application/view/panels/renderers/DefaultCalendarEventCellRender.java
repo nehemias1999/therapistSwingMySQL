@@ -1,12 +1,14 @@
-package com.application.view.panels.consultation;
+package com.application.view.panels.renderers;
 
 import com.formdev.flatlaf.ui.FlatUIUtils;
 import com.formdev.flatlaf.util.UIScale;
 import java.awt.Graphics2D;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
+import com.application.interfaces.ICalendarEventCellRender;
+import com.application.view.panels.consultation.calendar.ModelDate;
 
-public class DefaultCalendarEventCellRender implements CalendarEventCellRender<ModelDate> {
+public class DefaultCalendarEventCellRender implements ICalendarEventCellRender<ModelDate> {
 
     @Override
     public void paint(Graphics2D g2, Rectangle2D rectangle2D, boolean isSelected, ModelDate value) {

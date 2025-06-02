@@ -1,8 +1,8 @@
-package com.application.view.panels.consultation;
+package com.application.interfaces;
 
 import java.awt.event.MouseEvent;
 
-public interface DynamicCellListener {
+public interface IDynamicCellListener {
 
     public void scrollChanged(boolean scrollNext);
 

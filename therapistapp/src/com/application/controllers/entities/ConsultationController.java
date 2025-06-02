@@ -59,6 +59,16 @@ public class ConsultationController {
     public List<ConsultationDTO> getConsultationsByDate(String consultationDate) throws BusinessException {
         return consultationService.getConsultationsByDate(consultationDate).stream().toList();
     }
+    
+    /**
+     * Obtiene la consulta para un identificador determinado
+     * @param consultationId Identificador de la consulta a buscar
+     * @return DTO de la consulta 
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
+    public ConsultationDTO getConsultationById(String consultationId) throws BusinessException {
+        return consultationService.getConsultationById(consultationId);
+    }
 
     /**
      * Valida los datos de la consulta

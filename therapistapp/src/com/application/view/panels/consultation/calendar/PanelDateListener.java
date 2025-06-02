@@ -1,4 +1,4 @@
-package com.application.view.panels.consultation;
+package com.application.view.panels.consultation.calendar;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;

@@ -104,6 +104,24 @@ public class ConsultationService {
             throw new BusinessException("Error al listar consultas por fecha", e);
         }
     }
+   
+    /**
+     * Obtiene la consulta para un identificador determinado
+     * @param consultationId Identificador de la consulta a buscar
+     * @return DTO de consulta 
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
+    public ConsultationDTO getConsultationById(String consultationId) throws BusinessException {
+        try {
+  
+            return convertToDTO(consultationDAO.getConsultationById(UUID.fromString(consultationId)));
+
+        } catch (DateTimeParseException e) {
+            throw new BusinessException("Formato de fecha inválido, debe ser yyyy-MM-dd", e);
+        } catch (DataAccessException e) {
+            throw new BusinessException("Error al listar consultas por fecha", e);
+        }
+    }
 
     /**
      * Valida los datos básicos de la consulta

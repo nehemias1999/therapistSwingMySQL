@@ -4,6 +4,7 @@ import com.application.exceptions.runtimeExceptions.dataAccessException.Constrai
 import com.application.exceptions.runtimeExceptions.dataAccessException.DataAccessException;
 import com.application.exceptions.runtimeExceptions.dataAccessException.EntityNotFoundException;
 import com.application.model.entities.ConsultationPatient;
+import com.application.model.entities.Patient;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -34,7 +35,9 @@ public class ConsultationPatientDAO {
         "UPDATE tbl_consultation_patient SET is_active = false WHERE consultation_id = ? and patient_id = ?";
 
     private static final String SELECT_PATIENTS_BY_CONSULTATION =
-        "SELECT * FROM tbl_consultation_patient WHERE consultation_id = ?";
+            "SELECT * FROM tbl_patient p " +
+            "JOIN tbl_consultation_patient cp ON p.patient_id = cp.patient_id " +
+            "WHERE cp.consultation_id = ?";
     
     private static final String UPDATE_IS_PAID_TRUE =
         "UPDATE tbl_consultation_patient SET " +
@@ -99,23 +102,25 @@ public class ConsultationPatientDAO {
      * @return Lista de pacientes para la consulta especificada especificada
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public List<ConsultationPatient> getPatientsByConsultationId(UUID consultationId) throws DataAccessException {
-        List<ConsultationPatient> list = new ArrayList<>();
+    public List<Patient> getPatientsByConsultationId(UUID consultationId) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(SELECT_PATIENTS_BY_CONSULTATION)) {
 
             ps.setString(1, consultationId.toString());
-            
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(mapResultSetToConsultationPatient(rs));
+            try (ResultSet rs = ps.executeQuery()) {
+                
+                List<Patient> patients = new ArrayList<>();
+                while (rs.next()) {
+                    patients.add(mapResultSetToPatient(rs));
+                }
+                return patients;
+                
             }
-            return list;
-
         } catch (SQLException e) {
-            throw new DataAccessException("Error al listar pacientes", e);
+            throw new DataAccessException("Error obteniendo pacientes por consulta", e);
         }
     }
+
 
     /**
      * Modifica un tuple de la base de datos indicando que la consulta esta paga (is_paid = true)
@@ -150,6 +155,28 @@ public class ConsultationPatientDAO {
             rs.getDouble("consultation_amount"),
             rs.getBoolean("is_paid"),
             rs.getString("patient_note_path")
+        );
+    }
+
+    /**
+     * Mapea un ResultSet en un Patient
+     * @param ResultSet del paciente
+     */
+    private Patient mapResultSetToPatient(ResultSet rs) throws SQLException {
+        return new Patient(
+            UUID.fromString(rs.getString("patient_id")),
+            rs.getString("patient_dni"),
+            rs.getString("patient_name"),
+            rs.getString("patient_last_name"),
+            rs.getDate("patient_birth_date").toLocalDate(),
+            rs.getString("patient_occupation"),
+            rs.getString("patient_phone"),
+            rs.getString("patient_email"),
+            UUID.fromString(rs.getString("city_id")),
+            rs.getString("patient_address"),
+            rs.getInt("patient_address_number"),
+            rs.getInt("patient_address_floor"),
+            rs.getString("patient_address_department")
         );
     }
     

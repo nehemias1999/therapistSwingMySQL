@@ -1,5 +1,7 @@
-package com.application.view.panels.consultation;
+package com.application.view.panels.consultation.calendar;
 
+import com.application.interfaces.IDynamicCellListener;
+import com.application.interfaces.ICalendarCellListener;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -16,7 +18,7 @@ public class PanelYear extends DynamicCell<Integer> {
     }
 
     private final Point mouse = new Point();
-    private CalendarCellListener calendarCellListener;
+    private ICalendarCellListener calendarCellListener;
 
     public PanelYear() {
         init();
@@ -40,7 +42,7 @@ public class PanelYear extends DynamicCell<Integer> {
                 repaint();
             }
         };
-        DynamicCellListener dynamicCellListener = new DynamicCellListener() {
+        IDynamicCellListener dynamicCellListener = new IDynamicCellListener() {
             @Override
             public void scrollChanged(boolean scrollNext) {
                 calendarCellListener.scrollChanged();
@@ -79,11 +81,11 @@ public class PanelYear extends DynamicCell<Integer> {
         });
     }
 
-    public CalendarCellListener getCalendarCellListener() {
+    public ICalendarCellListener getCalendarCellListener() {
         return calendarCellListener;
     }
 
-    public void setCalendarCellListener(CalendarCellListener calendarCellListener) {
+    public void setCalendarCellListener(ICalendarCellListener calendarCellListener) {
         this.calendarCellListener = calendarCellListener;
     }
 

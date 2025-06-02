@@ -74,16 +74,16 @@ public class PatientController {
     } 
     
     /**
-     * Busca pacientes en base a su nombre
-     * @param searchTerm Search term
+     * Busca pacientes en base a su apellido o su nombre
+     * @param patientData Search term
      * @return Lista de pacientes que coincidan
      * @throws BusinessException  Si ocurre otro error de negocio
      */
-    public List<PatientDTO> searchPatientsByName(String searchTerm) throws BusinessException {
-        String term = searchTerm.toLowerCase().trim();
+    public List<PatientDTO> getPatientsThatMatch(String patientData) throws BusinessException {
+        String term = patientData.toLowerCase().trim();
         return patientService.getAllPatients().stream()
-                .filter(p -> p.getPatientDTOName().toLowerCase().contains(term) || 
-                           p.getPatientDTOLastName().toLowerCase().contains(term))
+                .filter(p -> p.getPatientDTOLastName().toLowerCase().contains(term) || 
+                        p.getPatientDTOName().toLowerCase().contains(term))
                 .toList();
     }
     

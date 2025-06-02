@@ -1,5 +1,7 @@
-package com.application.view.panels.consultation;
+package com.application.view.panels.consultation.calendar;
 
+import com.application.interfaces.IDynamicCellListener;
+import com.application.interfaces.ICalendarCellListener;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -22,7 +24,7 @@ public class PanelMonth extends DynamicCell<ModelMonth> {
 
     private final Point mouse = new Point();
     private int year;
-    private CalendarCellListener calendarCellListener;
+    private ICalendarCellListener calendarCellListener;
 
     public PanelMonth() {
         init();
@@ -46,7 +48,7 @@ public class PanelMonth extends DynamicCell<ModelMonth> {
                 repaint();
             }
         };
-        DynamicCellListener dynamicCellListener = new DynamicCellListener() {
+        IDynamicCellListener dynamicCellListener = new IDynamicCellListener() {
             @Override
             public void scrollChanged(boolean scrollNext) {
                 calendarCellListener.scrollChanged();
@@ -109,11 +111,11 @@ public class PanelMonth extends DynamicCell<ModelMonth> {
     }
     public static final String MONTH[] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
-    public CalendarCellListener getCalendarCellListener() {
+    public ICalendarCellListener getCalendarCellListener() {
         return calendarCellListener;
     }
 
-    public void setCalendarCellListener(CalendarCellListener calendarCellListener) {
+    public void setCalendarCellListener(ICalendarCellListener calendarCellListener) {
         this.calendarCellListener = calendarCellListener;
     }
 }

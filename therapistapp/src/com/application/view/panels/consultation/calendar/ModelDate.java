@@ -1,8 +1,12 @@
-package com.application.view.panels.consultation;
+package com.application.view.panels.consultation.calendar;
 
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ *
+ * @author Raven
+ */
 public class ModelDate {
 
     public int getYear() {
@@ -59,12 +63,12 @@ public class ModelDate {
         return day + "-" + month + "-" + year;
     }
 
-    public String toDateFormatString() {
-        return year + "-" + month + "-" + day;
-    }
-    
     public boolean compareTo(ModelDate date) {
         return date.year == year && date.month == month && date.day == day;
+    }
+    
+    public String toFormattedDate() {
+        return year + "-" + month + "-" + day;
     }
 
     public Date toDate() {

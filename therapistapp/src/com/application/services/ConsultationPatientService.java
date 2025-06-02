@@ -11,13 +11,19 @@ import java.util.stream.Collectors;
 
 import com.application.model.dao.ConsultationPatientDAO;
 import com.application.model.dto.ConsultationPatientDTO;
+import com.application.model.dto.PatientDTO;
 import com.application.model.entities.ConsultationPatient;
+import com.application.model.entities.Patient;
+import com.application.utils.PatientsFilesManager;
+import java.io.IOException;
 
 public class ConsultationPatientService {
     private final ConsultationPatientDAO consultationPatientDAO;
+    private final PatientsFilesManager patientFileManager;
 
     public ConsultationPatientService() {
         this.consultationPatientDAO = new ConsultationPatientDAO();
+        this.patientFileManager = new PatientsFilesManager();
     }
     
     /**
@@ -64,14 +70,14 @@ public class ConsultationPatientService {
      * @return lista de DTOs de pacientes para la consulta especificada
      * @throws BusinessException Si ocurre un error durante el proceso
      */
-   public List<ConsultationPatientDTO> getPatientsByConsultationId(String consultationId) throws BusinessException {
+    public List<PatientDTO> getPatientsByConsultationId(String consultationId) throws BusinessException {
         try {
             return consultationPatientDAO.getPatientsByConsultationId(UUID.fromString(consultationId))
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
         } catch (DataAccessException e) {
-            throw new BusinessException("Error al listar pacientes para la consulta pedida", e);
+            throw new BusinessException("Error al buscar los pacientes de la consulta", e);
         }
     }
 
@@ -133,6 +139,46 @@ public class ConsultationPatientService {
         dto.setConsultationAmount(cp.getConsultationAmount().toString());
         dto.setIsPaid(cp.getIsPaid().toString());
         dto.setPatientNotePath(cp.getPatientNotePath());
+        
+        return dto;
+    }
+    
+    /**
+     * Crea un objeto PatientDTO a partir de un Patient
+     */
+    private PatientDTO convertToDTO(Patient p) {
+        PatientDTO dto = new PatientDTO();
+        dto.setPatientDTOId(p.getPatientId().toString());
+        dto.setPatientDTODNI(p.getPatientDNI());
+        dto.setPatientDTOName(p.getPatientName());
+        dto.setPatientDTOLastName(p.getPatientLastName());
+        dto.setPatientDTOBirthDate(p.getPatientBirthDate().toString());
+        dto.setPatientDTOOccupation(p.getPatientOccupation());
+        dto.setPatientDTOPhone(p.getPatientPhone());
+        dto.setPatientDTOEmail(p.getPatientEmail());
+        dto.setCityId(p.getCityId().toString());
+        dto.setPatientDTOAddress(p.getPatientAddress());
+        dto.setPatientDTOAddressNumber(String.valueOf(p.getPatientAddressNumber()));
+        dto.setPatientDTOAddressFloor(
+            p.getPatientAddressFloor() > 0 ? String.valueOf(p.getPatientAddressFloor()) : ""
+        );
+        dto.setPatientDTOAddressDepartment(
+            p.getPatientAddressDepartment() != null ? p.getPatientAddressDepartment() : ""
+        );
+ 
+        try {
+            if (patientFileManager.hasPatientPhoto(p.getPatientId())) {
+                dto.setPatientDTOPhotoPath(
+                    patientFileManager.getPatientPhoto(p.getPatientId())
+                               .toString()
+                );
+            } else {
+                dto.setPatientDTOPhotoPath("");
+            }
+        } catch (IOException ioe) {
+            // En caso de fallo de E/S, devolvemos vacío (o podríamos loggear)
+            dto.setPatientDTOPhotoPath("");
+        }
         
         return dto;
     }

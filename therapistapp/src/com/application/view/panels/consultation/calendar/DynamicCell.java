@@ -1,5 +1,7 @@
-package com.application.view.panels.consultation;
+package com.application.view.panels.consultation.calendar;
 
+import com.application.interfaces.IDynamicCellListener;
+import com.application.interfaces.IDynamicCellRender;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.GradientPaint;
@@ -74,12 +76,12 @@ public class DynamicCell<E> extends JPanel {
         repaint();
     }
 
-    public void addEventDynamicCellListenter(DynamicCellListener event) {
+    public void addEventDynamicCellListenter(IDynamicCellListener event) {
         events.add(event);
     }
 
-    private final List<DynamicCellListener> events = new ArrayList<>();
-    private DynamicCellRender<E> dynamicCellRender;
+    private final List<IDynamicCellListener> events = new ArrayList<>();
+    private IDynamicCellRender<E> dynamicCellRender;
     private final List<E> models = new ArrayList<>();
     private int selectedIndex;
     private int pressIndex = -1;
@@ -215,13 +217,13 @@ public class DynamicCell<E> extends JPanel {
     }
 
     private void runEventScroll(boolean scrollNext) {
-        for (DynamicCellListener event : events) {
+        for (IDynamicCellListener event : events) {
             event.scrollChanged(scrollNext);
         }
     }
 
     private void runEventMouseSelected(MouseEvent mouse) {
-        for (DynamicCellListener event : events) {
+        for (IDynamicCellListener event : events) {
             event.mouseSelected(mouse);
         }
     }
@@ -328,11 +330,11 @@ public class DynamicCell<E> extends JPanel {
         g2.dispose();
     }
 
-    public DynamicCellRender<E> getDynamicCellRender() {
+    public IDynamicCellRender<E> getDynamicCellRender() {
         return dynamicCellRender;
     }
 
-    public void setDynamicCellRender(DynamicCellRender<E> dynamicCellRender) {
+    public void setDynamicCellRender(IDynamicCellRender<E> dynamicCellRender) {
         this.dynamicCellRender = dynamicCellRender;
     }
 }

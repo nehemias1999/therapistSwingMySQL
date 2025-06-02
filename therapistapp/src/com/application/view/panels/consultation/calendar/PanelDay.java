@@ -1,5 +1,7 @@
-package com.application.view.panels.consultation;
+package com.application.view.panels.consultation.calendar;
 
+import com.application.interfaces.ICalendarCellListener;
+import com.application.interfaces.IDynamicCellListener;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.ui.FlatUIUtils;
 import java.awt.FontMetrics;
@@ -32,7 +34,7 @@ public class PanelDay extends DynamicCell<ModelDate> {
     private final Point mouse = new Point();
     private ModelMonth month;
     public static final String DATE[] = {"Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"};
-    private CalendarCellListener calendarCellListener;
+    private ICalendarCellListener calendarCellListener;
     private PanelDateListener panelDateListener;
 
     public PanelDay() {
@@ -56,7 +58,7 @@ public class PanelDay extends DynamicCell<ModelDate> {
                 repaint();
             }
         };
-        DynamicCellListener dynamicCellListener = new DynamicCellListener() {
+        IDynamicCellListener dynamicCellListener = new IDynamicCellListener() {
             @Override
             public void scrollChanged(boolean scrollNext) {
                 calendarCellListener.scrollChanged();
@@ -170,11 +172,11 @@ public class PanelDay extends DynamicCell<ModelDate> {
         return new ModelDate(calendar.getTime());
     }
 
-    public CalendarCellListener getCalendarCellListener() {
+    public ICalendarCellListener getCalendarCellListener() {
         return calendarCellListener;
     }
 
-    public void setCalendarCellListener(CalendarCellListener calendarCellListener) {
+    public void setCalendarCellListener(ICalendarCellListener calendarCellListener) {
         this.calendarCellListener = calendarCellListener;
     }
 

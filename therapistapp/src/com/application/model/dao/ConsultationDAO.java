@@ -36,7 +36,10 @@ public class ConsultationDAO {
         "UPDATE tbl_consultation SET is_active = false WHERE consultation_id = ?";
 
     private static final String SELECT_CONSULTATION_BY_DATE =
-        "SELECT * FROM tbl_consultation WHERE DATE(consultation_start_datetime) = ? ORDER BY consultation_start_datetime";
+        "SELECT * FROM tbl_consultation WHERE DATE(consultation_start_datetime) = ? and is_active = true ORDER BY consultation_start_datetime";
+    
+    private static final String SELECT_CONSULTATION_BY_ID =
+        "SELECT * FROM tbl_consultation WHERE consultation_id = ? and is_active = true";
     
     private static final String CHECK_START_DATETIME_SQL =
         "SELECT COUNT(*) FROM tbl_consultation WHERE consultation_start_datetime = ?";
@@ -146,6 +149,31 @@ public class ConsultationDAO {
         }
     }
 
+    /**
+     * Obtiene la consulta para un identificador determinado 
+     * @param consultationId Identificador de la consulta
+     * @return consulta asociada al identificador
+     * @throws DataAccessException Si ocurre un error al acceder a la base de datos
+     */
+    public Consultation getConsultationById(UUID consultationId) throws DataAccessException {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_CONSULTATION_BY_ID)) {
+            
+            ps.setString(1, consultationId.toString());
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToConsultation(rs);
+                } else {
+                    throw new EntityNotFoundException("Consultation", consultationId.toString());
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Error al obtener la consulta", e);
+        }
+    }
+    
     /**
      * Verifica si existe una consulta con la fecha/hora de inicio indicada
      * @param startDateTime Fecha y hora de inicio a verificar

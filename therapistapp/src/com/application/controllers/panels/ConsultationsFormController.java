@@ -1,10 +1,13 @@
 package com.application.controllers.panels;
 
 import com.application.controllers.entities.ConsultationController;
+import com.application.controllers.entities.ConsultationPatientController;
 import com.application.controllers.entities.PatientController;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.ConsultationDTO;
+import com.application.model.dto.ConsultationPatientDTO;
+import com.application.model.dto.PatientDTO;
 import com.application.view.panels.consultation.ConsultationsForm;
 import java.io.IOException;
 import java.util.List;
@@ -12,12 +15,14 @@ import java.util.List;
 public class ConsultationsFormController {
     
     private final ConsultationController consultationController;
-    private final PatientController patientController;
+    private final ConsultationPatientController consultationPatientController;
     private final ConsultationsForm consultationsForm;
     
-    public ConsultationsFormController(ConsultationController consultationController, PatientController patientController) {
+    public ConsultationsFormController(
+            ConsultationController consultationController, 
+            ConsultationPatientController consultationPatientController) {
         this.consultationController = consultationController;
-        this.patientController = patientController;
+        this.consultationPatientController = consultationPatientController;
         
         this.consultationsForm = new ConsultationsForm();
         this.consultationsForm.setController(this);
@@ -60,6 +65,21 @@ public class ConsultationsFormController {
     }
     
     /**
+     * Obtiene una consulta para un Identificador determinado
+     * @param consultationId Identificador de la consulta a buscar
+     * @return DTO de la consulta
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
+    public ConsultationDTO getConsultationById(String consultationId) {
+        try {
+            return consultationController.getConsultationById(consultationId);
+        } catch (BusinessException e) {
+            consultationsForm.showErrorMessage(e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
      * Obtiene las consulta para un dia determinado
      * @param consultationDate fecha de las consultas a buscar
      * @return lista de DTOs de consulta para la fecha especificada
@@ -68,6 +88,21 @@ public class ConsultationsFormController {
     public List<ConsultationDTO> getConsultationsByDate(String consultationDate) {
         try {
             return consultationController.getConsultationsByDate(consultationDate);
+        } catch (BusinessException e) {
+            consultationsForm.showErrorMessage(e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Obtiene los nombres de los pacientes asociados a una consulta determinada
+     * @param consultationId Identificador de la consulta
+     * @return lista de DTO's de los pacientes asociados a la consulta
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
+    public List<PatientDTO> getPatientsByConsultationId(String consultationId) {
+        try {
+            return consultationPatientController.getPatientsByConsultationId(consultationId);
         } catch (BusinessException e) {
             consultationsForm.showErrorMessage(e.getMessage());
             return null;

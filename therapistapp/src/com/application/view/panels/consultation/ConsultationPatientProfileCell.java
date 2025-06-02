@@ -1,11 +1,11 @@
-package com.application.view.panels.patient;
+package com.application.view.panels.consultation;
 
 import com.application.model.dto.PatientDTO;
 import java.awt.Font;
 
-public class PatientProfileCell extends javax.swing.JPanel {
+public class ConsultationPatientProfileCell extends javax.swing.JPanel {
 
-    public PatientProfileCell(PatientDTO patientDTO, Font font) {
+    public ConsultationPatientProfileCell(PatientDTO patientDTO, Font font) {
         initComponents();
         jLabelCompleteNameAndAge.setText(
                 patientDTO.getPatientDTOFormattedCompleteName() + " (" + patientDTO.getPatientDTOActualAge() + ")");

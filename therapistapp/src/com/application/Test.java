@@ -4,6 +4,7 @@
  */
 package com.application;
 
+import com.application.controllers.entities.ConsultationPatientController;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dao.PatientDAO;
@@ -104,6 +105,8 @@ public class Test {
         
         ConsultationPatientService cps = new ConsultationPatientService();
         
+        ConsultationPatientController cpc = new ConsultationPatientController(cps);
+        
 //        cps.insertConsultationPatient(cp);
         
 //        List<ConsultationPatientDTO> consultationPatients = cps.getPatientsByConsultationId("e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278");
@@ -112,7 +115,13 @@ public class Test {
 
 //        cps.deleteConsultationPatient("e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278", "ca23bc0c-b62b-4e67-aa75-3446a62a4d7e");
         
-        cps.setConsultationPatientPaid("e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278", "ca23bc0c-b62b-4e67-aa75-3446a62a4d7e");
+//        cps.setConsultationPatientPaid("e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278", "ca23bc0c-b62b-4e67-aa75-3446a62a4d7e");
+
+        List<PatientDTO> patients = cpc.getPatientsByConsultationId("20735758-d837-40d1-bd6e-a520e1c44866");
+        
+        System.out.println(patients.toString());
+        
+
     }
     
 }

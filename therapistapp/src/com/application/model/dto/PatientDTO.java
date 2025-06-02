@@ -194,4 +194,8 @@ public class PatientDTO {
         );
         return String.valueOf(age.getYears());
     }
+    
+    public String getPatientDTOFormattedCompleteName() {
+        return patientDTOLastName + ", " + patientDTOName;
+    }
 }

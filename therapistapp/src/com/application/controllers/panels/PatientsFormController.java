@@ -124,14 +124,14 @@ public class PatientsFormController {
     }
     
     /**
-     * Busca pacientes en base a su nombre
-     * @param searchTerm Search term
+     * Busca pacientes en base a su apellido
+     * @param patientLastName Search term
      * @return Lista de pacientes que coincidan
      * @throws BusinessException  Si ocurre otro error de negocio
      */
-    public List<PatientDTO> searchPatients(String query) {
+    public List<PatientDTO> getPatientsThatMatch(String patientData) {
         try {
-            return patientController.searchPatientsByName(query);
+            return patientController.getPatientsThatMatch(patientData);
         } catch (BusinessException e) {
             patientsForm.showErrorMessage("Error en búsqueda: " + e.getMessage());
             return null;

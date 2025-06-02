@@ -19,15 +19,13 @@ import raven.modal.Toast;
 
 public class PatientsForm extends javax.swing.JPanel implements IPanels {
 
-    private PatientsFormController patientFormController;
+    private PatientsFormController patientsFormController;
     DefaultTableModel tableModel;
     
     public PatientsForm() {
         initComponents();
-        setStyle();   
-        
-        jTableMain.getColumnModel().getColumn(0).setCellRenderer(new PatientProfileCellRender(jTableMain));
-        
+        setStyle();
+ 
         initActionsData();
         
     }
@@ -36,21 +34,19 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
         IPatientActionsEvent event = new IPatientActionsEvent() {
             @Override
             public void onView(String patientId) {
-                System.out.println("VER → paciente con ID = " + patientId);
                 viewPatient(patientId);
             }
             @Override
             public void onEdit(String patientId) {
-                System.out.println("EDITAR → paciente con ID = " + patientId);
                 updatePatient(patientId);
             }
             @Override
             public void onDelete(String patientId) {
-                System.out.println("BORRAR → paciente con ID = " + patientId);
                 deletePatient(patientId);
             }  
         };
         
+        jTableMain.getColumnModel().getColumn(0).setCellRenderer(new PatientProfileCellRender(jTableMain));
         jTableMain.getColumnModel().getColumn(1).setCellRenderer(new PatientActionsCellRender());
         jTableMain.getColumnModel().getColumn(1).setCellEditor(new PatientActionsCellEditor(event));
     }
@@ -84,32 +80,27 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
     }
         
     public void setController(PatientsFormController controller) {
-        this.patientFormController = controller;
-        loadData();
+        this.patientsFormController = controller;
+        loadTableData();
     }
 
-    public void loadData() {
+    public void loadTableData() {
         
         tableModel = (DefaultTableModel) jTableMain.getModel();
             
         if (jTableMain.isEditing()) {
             jTableMain.getCellEditor().stopCellEditing();
         }
-
+        
         tableModel.setRowCount(0);
 
-        List<PatientDTO> patientsDTO = patientFormController.getAllPatients();
+        List<PatientDTO> patientsDTO = patientsFormController.getAllPatients();
 
         if (patientsDTO == null) {
             this.showErrorMessage("Error: No se recibieron datos del servidor");
             return;
         }
-
-        if (patientsDTO.isEmpty()) {
-            this.showInformationMessage("No se encontraron pacientes registrados");
-            return;
-        }
-
+        
         for (PatientDTO patientDTO : patientsDTO) {
             tableModel.addRow(new Object[]{
                 patientDTO, 
@@ -119,48 +110,73 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
         
     }
 
-    private void searchData(String textToSearch) {
-//        try {
-//            DefaultTableModel model = (DefaultTableModel) table.getModel();
-//            if (table.isEditing()) {
-//                table.getCellEditor().stopCellEditing();
-//            }
-//            model.setRowCount(0);
-//            List<ModelEmployee> list = service.search(search);
-//            for (ModelEmployee d : list) {
-//                model.addRow(d.toTableRow(table.getRowCount() + 1));
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+    private void searchData(String patientLastName) {
+        
+        tableModel = (DefaultTableModel) jTableMain.getModel();
+
+        if (jTableMain.isEditing()) {
+            jTableMain.getCellEditor().stopCellEditing();
+        }
+        
+        tableModel.setRowCount(0);
+
+        List<PatientDTO> patientsDTO = patientsFormController.getPatientsThatMatch(patientLastName);
+
+        if (patientsDTO == null) {
+            this.showErrorMessage("Error: No se recibieron datos del servidor");
+            return;
+        }
+        
+        for (PatientDTO patientDTO : patientsDTO) {
+            tableModel.addRow(new Object[]{
+                patientDTO, 
+                patientDTO.getPatientDTOId()
+            });
+        }
+        
     }
     
     public void insertPatient() {
         try {
             
-            boolean saved = PatientFormDialog.showDialog(this, patientFormController, ViewType.INSERT, new PatientDTO());
+            boolean saved = PatientFormDialog.showDialog(this, patientsFormController, ViewType.INSERT, new PatientDTO());
             if (saved) {
                 Toast.show(this, Toast.Type.SUCCESS, "Paciente agregado exitosamente");
             }
             initActionsData();
-            loadData();
+            loadTableData();
             
         } catch (Exception ex) {
             showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
         }
     }
     
+    public void viewPatient(String patientId) {
+        try {
+            
+            PatientDTO patientDTO = patientsFormController.getPatientById(patientId);
+            PatientProfileDialog.showDialog(this, patientsFormController, patientDTO);
+            initActionsData();
+            loadTableData();
+            
+        } catch (ValidationException ex) {
+            Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BusinessException ex) {
+            Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public void updatePatient(String patientId) {
         try {
             
-            PatientDTO patientDTO = patientFormController.getPatientById(patientId);
+            PatientDTO patientDTO = patientsFormController.getPatientById(patientId);
             
-            boolean updated = PatientFormDialog.showDialog(this, patientFormController, ViewType.UPDATE, patientDTO);
+            boolean updated = PatientFormDialog.showDialog(this, patientsFormController, ViewType.UPDATE, patientDTO);
             if (updated) {
                 Toast.show(this, Toast.Type.SUCCESS, "Paciente modificado exitosamente");
             }
             initActionsData();
-            loadData();
+            loadTableData();
             
         } catch (Exception ex) {
             showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
@@ -172,12 +188,12 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
             
             boolean updated = confirmAction("¿Está seguro de eliminar este paciente?");  
             if (updated) {
-                patientFormController.deletePatient(patientId);
+                patientsFormController.deletePatient(patientId);
                 Toast.show(this, Toast.Type.SUCCESS, "Paciente eliminado exitosamente");
             }
             
             initActionsData();
-            loadData();
+            loadTableData();
             
         } catch (ValidationException ex) {
             Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
@@ -185,20 +201,7 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
             Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    public void viewPatient(String patientId) {
-        try {
-            PatientDTO patientDTO = patientFormController.getPatientById(patientId);
-            PatientProfileDialog.showDialog(this, patientFormController, patientDTO);
-            initActionsData();
-            loadData();
-        } catch (ValidationException ex) {
-            Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BusinessException ex) {
-            Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
+        
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -246,7 +249,12 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
 
         jTextFieldSearcher.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
         jTextFieldSearcher.setText("buscar...");
-        jTextFieldSearcher.setToolTipText("buscar pacientes");
+        jTextFieldSearcher.setToolTipText("buscar paciente");
+        jTextFieldSearcher.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTextFieldSearcherMouseClicked(evt);
+            }
+        });
         jTextFieldSearcher.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 jTextFieldSearcherKeyReleased(evt);
@@ -315,6 +323,10 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
     private void jButtonAddPatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddPatientActionPerformed
         this.insertPatient();
     }//GEN-LAST:event_jButtonAddPatientActionPerformed
+
+    private void jTextFieldSearcherMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTextFieldSearcherMouseClicked
+        jTextFieldSearcher.setText("");
+    }//GEN-LAST:event_jTextFieldSearcherMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonAddPatient;

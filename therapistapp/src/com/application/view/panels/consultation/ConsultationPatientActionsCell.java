@@ -1,18 +1,17 @@
-package com.application.view.panels.patient;
+package com.application.view.panels.consultation;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import com.application.interfaces.IConsultationPatientActionsEvent;
 
-public class PatientActionsCell extends javax.swing.JPanel {
+public class ConsultationPatientActionsCell extends javax.swing.JPanel {
 
-    public PatientActionsCell() {
+    public ConsultationPatientActionsCell() {
         initComponents();
     }
 
-    public void initEvent(IPatientActionsEvent event, String patientId) {
-        jButtonVisualize.addActionListener(ae -> event.onView(patientId));
-        jButtonUpdate .addActionListener(ae -> event.onEdit(patientId));
-        jButtonDelete .addActionListener(ae -> event.onDelete(patientId)); 
+    public void initEvent(IConsultationPatientActionsEvent event, String consultationId) {
+        jButtonVisualize.addActionListener(ae -> event.onView(consultationId));
+        jButtonUpdate.addActionListener(ae -> event.onEdit(consultationId));
+        jButtonDelete.addActionListener(ae -> event.onDelete(consultationId)); 
     }
 
     /**
