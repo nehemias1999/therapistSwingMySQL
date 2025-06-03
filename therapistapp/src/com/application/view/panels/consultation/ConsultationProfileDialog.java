@@ -1,65 +1,104 @@
 package com.application.view.panels.consultation;
 
-import com.application.controllers.panels.PatientsFormController;
+import com.application.controllers.panels.ConsultationsFormController;
+import com.application.exceptions.businessException.BusinessException;
+import com.application.exceptions.businessException.ValidationException;
+import com.application.interfaces.IPanels;
+import com.application.model.dto.CityDTO;
+import com.application.model.dto.ConsultationDTO;
 import com.application.model.dto.PatientDTO;
+import com.application.model.enumerations.ConsultationStatus;
+import com.application.model.enumerations.ViewType;
 import java.awt.Component;
 import java.awt.Frame;
-import java.awt.Image;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import java.io.IOException;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
-public class ConsultationProfileDialog extends javax.swing.JDialog {
-    private final PatientsFormController controller;
-    private PatientDTO patientDTO;
+public class ConsultationProfileDialog extends javax.swing.JDialog implements IPanels {
+    private final ConsultationsFormController controller;
+    private ViewType viewType;
+    private ConsultationDTO consultationDTO;
+    
+    private boolean operationSuccess = false;
 
-    /**
-     * Creates new form PatientProfileDialog
-     */
-    public ConsultationProfileDialog(java.awt.Frame parent, PatientsFormController controller, PatientDTO patientDTO) {
-        super(parent, "Thera Kairos", true);
-        initComponents();
+    public ConsultationProfileDialog(Frame owner, ConsultationsFormController controller, ViewType viewtype, ConsultationDTO consultationDTO) {
+        super(owner, "Agregar consulta", true);
         this.controller = controller;
-        this.patientDTO = patientDTO;
+        this.viewType = viewtype;
+        if(viewtype == ViewType.UPDATE) {
+            this.consultationDTO = consultationDTO;
+        }
+       
+        initComponents();
         
-        loadPatientData();
+        datePickerStartDate.setCloseAfterSelected(true);
+        datePickerStartDate.setEditor(jFormattedTextFieldStartDate);
+        datePickerEndDate.setCloseAfterSelected(true);
+        datePickerEndDate.setEditor(jFormattedTextFieldEndDate);
+
+        loadComboBoxPatient();
         
         setLocationRelativeTo(null);        
     }
-    
-    private void loadPatientData() {
-        loadPatientPhoto(patientDTO.getPatientDTOIcon());
-        jLabelCompleteName.setText(patientDTO.getPatientDTOLastName()+ ", " + patientDTO.getPatientDTOName());
-        jLabelDNI.setText("DNI: " + patientDTO.getPatientDTODNI());
-        jLabelBirthDate.setText("Fecha de nacimiento: " + patientDTO.getPatientDTOBirthDate() + " (" + patientDTO.getPatientDTOActualAge() + ")");
-        jLabelOccupation.setText("Ocupacion: " + patientDTO.getPatienDTOOccupation());
-        jLabelPhone.setText("Celular: " + patientDTO.getPatientDTOPhone());
-        jLabelEmail.setText("Email: " + patientDTO.getPatientDTOEmail());
-        jLabelCity.setText("Ciudad: " + getCityNameById(patientDTO.getCityId()));
-        jLabelAddress.setText("Direccion: " + patientDTO.getPatientDTOAddress());
-        jLabelAddressNumber.setText("Numero: " + patientDTO.getPatientDTOAddressNumber());
-        jLabelAddressFloor.setText("Piso: " + patientDTO.getPatientDTOAddressFloor());
-        jLabelAddressDepartment.setText("Dept: " + patientDTO.getPatientDTOAddressDepartment());
-    }
 
-    private void loadPatientPhoto(Icon icon) {
-        if (icon instanceof ImageIcon) {
-            ImageIcon imageIcon = (ImageIcon) icon;
-            Image scaledImage = imageIcon.getImage().getScaledInstance(
-                jPanelPhoto.getWidth(), jPanelPhoto.getHeight(), Image.SCALE_SMOOTH);
-            jLabelPhoto.setText("");
-            jLabelPhoto.setIcon(new ImageIcon(scaledImage));
-        } else {
-            jLabelPhoto.setText("Sin imagen");
-            System.err.println("Icono no válido: no es una instancia de ImageIcon.");
-        }
+    private void loadComboBoxPatient() {
+        
+//        for (PatientDTO patient : controller.getAllPatients()) {
+//
+//            jComboBoxMultipleSelectionPatients.addItem(patient);
+//
+//        }
+//        
+//        jComboBoxMultipleSelectionPatients.clearSelectedItems();
+
     }
     
-    private String getCityNameById(String cityId) {
-       return controller.getCityNameById(cityId);
+    private void saveAction() throws IOException {
+//        try {
+//            
+//            ConsultationDTO consultationDTO = getConsultationDTO();
+//            
+//            if(viewType == ViewType.INSERT) {
+//                controller.insertConsultation(consultationDTO);
+//            }
+//            if(viewType == ViewType.UPDATE) {
+//                controller.updateConsultation(consultationDTO);
+//            }
+//           
+//            operationSuccess = true;
+//            dispose();
+//
+//        } catch (ValidationException ex) {
+//            showErrorMessage(ex.getMessage());
+//        } catch (BusinessException ex) {
+//            showErrorMessage(ex.getMessage());
+//        }
     }
-
-    private void BackAction() {
+    
+//    private ConsultationDTO getConsultationDTO() {
+//        
+//        String consultationId = "";
+//        if(viewType == ViewType.UPDATE) {
+//            consultationId = consultationDTO.getConsultationDTOId();
+//        }
+//        
+//        String consultationStartDate = datePickerStartDate.isDateSelected() ? Date.valueOf(datePickerStartDate.getSelectedDate()).toString() : null;
+//        String consultationEndDate = datePickerEndDate.isDateSelected() ? Date.valueOf(datePickerEndDate.getSelectedDate()).toString() : null;
+//        String consultationStatus = ConsultationStatus.SCHEDULED.toString();
+//                       
+//        return new ConsultationDTO(
+//               consultationId,
+//                consultationStartDate, 
+//                consultationEndDate, 
+//                consultationStatus
+//        );
+//    }
+    
+    private void cancelAction() {
+        operationSuccess = false;
         dispose();
     }
     
@@ -67,12 +106,35 @@ public class ConsultationProfileDialog extends javax.swing.JDialog {
      * Llama al diálogo y bloquea hasta que se cierre.  
      * @param parent
      * @param controller
-     * @param patientDTO 
+     * @param viewType
+     * @param consultationDTO
+     * @return true si el guardado fue exitoso, false si canceló o hubo error.  
      */
-    public static void showDialog(Component parent, PatientsFormController controller, PatientDTO patientDTO) {
+    public static boolean showDialog(Component parent, ConsultationsFormController controller, ViewType viewType, ConsultationDTO consultationDTO) {
         Frame owner = JOptionPane.getFrameForComponent(parent);
-        ConsultationProfileDialog dialog = new ConsultationProfileDialog(owner, controller, patientDTO);
-        dialog.setVisible(true);
+        ConsultationProfileDialog dialog = new ConsultationProfileDialog(owner, controller, viewType, consultationDTO);
+        dialog.setVisible(true);  
+        return dialog.operationSuccess;
+    }
+    
+    @Override
+    public void showInformationMessage(String message) {
+        JOptionPane.showMessageDialog(
+                this, 
+                message, 
+                "Informacion",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    @Override
+    public void showErrorMessage(String message) {
+        JOptionPane.showMessageDialog(
+                this, 
+                message, 
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+        );
     }
     
     /**
@@ -84,63 +146,68 @@ public class ConsultationProfileDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanelMain = new javax.swing.JPanel();
+        datePickerStartDate = new raven.datetime.component.date.DatePicker();
+        datePickerEndDate = new raven.datetime.component.date.DatePicker();
+        jPanelMainForm = new javax.swing.JPanel();
         jPanelMainTitle = new javax.swing.JPanel();
         jLabelMainTitle = new javax.swing.JLabel();
         jPanelActions = new javax.swing.JPanel();
-        jButtonBack = new javax.swing.JButton();
-        jPanelPhoto = new javax.swing.JPanel();
-        jLabelPhoto = new javax.swing.JLabel();
-        jLabelCompleteName = new javax.swing.JLabel();
-        jLabelDNI = new javax.swing.JLabel();
-        jLabelOccupation = new javax.swing.JLabel();
-        jLabelPhone = new javax.swing.JLabel();
-        jLabelBirthDate = new javax.swing.JLabel();
-        jLabelEmail = new javax.swing.JLabel();
-        jLabelCity = new javax.swing.JLabel();
-        jLabelAddress = new javax.swing.JLabel();
-        jLabelAddressNumber = new javax.swing.JLabel();
-        jLabelAddressFloor = new javax.swing.JLabel();
-        jLabelAddressDepartment = new javax.swing.JLabel();
+        jButtonCancel = new javax.swing.JButton();
+        jButtonAdd = new javax.swing.JButton();
+        jLabelPatients = new javax.swing.JLabel();
+        jScrollPanePatiens = new javax.swing.JScrollPane();
+        jTablePatients = new javax.swing.JTable();
+        jPanel1 = new javax.swing.JPanel();
+        jFormattedTextFieldEndDate = new javax.swing.JFormattedTextField();
+        jFormattedTextFieldStartDate = new javax.swing.JFormattedTextField();
+        jTextFieldAmount = new javax.swing.JTextField();
+        jLabelStarDate = new javax.swing.JLabel();
+        jLabelEndDate = new javax.swing.JLabel();
+        jLabelAmount = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(650, 520));
-        setModal(true);
+        setMinimumSize(new java.awt.Dimension(512, 568));
         setResizable(false);
-
-        jPanelMain.setMinimumSize(new java.awt.Dimension(650, 520));
-        jPanelMain.setName(""); // NOI18N
-        jPanelMain.setPreferredSize(new java.awt.Dimension(650, 520));
-
-        jPanelMainTitle.setMinimumSize(new java.awt.Dimension(650, 80));
-        jPanelMainTitle.setName(""); // NOI18N
-        jPanelMainTitle.setPreferredSize(new java.awt.Dimension(650, 80));
 
         jLabelMainTitle.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabelMainTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabelMainTitle.setText("Perfil del Paciente");
-        jLabelMainTitle.setToolTipText("");
+        jLabelMainTitle.setText("Agregar Consulta");
         jLabelMainTitle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
         javax.swing.GroupLayout jPanelMainTitleLayout = new javax.swing.GroupLayout(jPanelMainTitle);
         jPanelMainTitle.setLayout(jPanelMainTitleLayout);
         jPanelMainTitleLayout.setHorizontalGroup(
             jPanelMainTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabelMainTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanelMainTitleLayout.createSequentialGroup()
+                .addComponent(jLabelMainTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 773, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanelMainTitleLayout.setVerticalGroup(
             jPanelMainTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jLabelMainTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
         );
 
-        jPanelActions.setMinimumSize(new java.awt.Dimension(0, 100));
-        jPanelActions.setPreferredSize(new java.awt.Dimension(140, 100));
+        jPanelActions.setMinimumSize(new java.awt.Dimension(195, 100));
+        jPanelActions.setName(""); // NOI18N
+        jPanelActions.setPreferredSize(new java.awt.Dimension(270, 100));
 
-        jButtonBack.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jButtonBack.setText("Volver");
-        jButtonBack.addActionListener(new java.awt.event.ActionListener() {
+        jButtonCancel.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jButtonCancel.setText("Cancelar");
+        jButtonCancel.setAlignmentX(0.5F);
+        jButtonCancel.setPreferredSize(new java.awt.Dimension(90, 30));
+        jButtonCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonBackActionPerformed(evt);
+                jButtonCancelActionPerformed(evt);
+            }
+        });
+
+        jButtonAdd.setBackground(javax.swing.UIManager.getDefaults().getColor("Actions.Green"));
+        jButtonAdd.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
+        jButtonAdd.setText("Agregar");
+        jButtonAdd.setPreferredSize(new java.awt.Dimension(90, 30));
+        jButtonAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonAddActionPerformed(evt);
             }
         });
 
@@ -148,132 +215,128 @@ public class ConsultationProfileDialog extends javax.swing.JDialog {
         jPanelActions.setLayout(jPanelActionsLayout);
         jPanelActionsLayout.setHorizontalGroup(
             jPanelActionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelActionsLayout.createSequentialGroup()
-                .addContainerGap(516, Short.MAX_VALUE)
-                .addComponent(jButtonBack)
+            .addGroup(jPanelActionsLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButtonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButtonAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(59, 59, 59))
         );
         jPanelActionsLayout.setVerticalGroup(
             jPanelActionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelActionsLayout.createSequentialGroup()
                 .addGap(36, 36, 36)
-                .addComponent(jButtonBack)
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addGroup(jPanelActionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButtonAdd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 33, Short.MAX_VALUE))
         );
 
-        jPanelPhoto.setBackground(new java.awt.Color(255, 255, 255));
-        jPanelPhoto.setMinimumSize(new java.awt.Dimension(100, 100));
+        jLabelPatients.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
+        jLabelPatients.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelPatients.setText("Paciente/s:");
+        jLabelPatients.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
-        jLabelPhoto.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabelPhoto.setText("Photo");
-        jLabelPhoto.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jLabelPhoto.setMaximumSize(new java.awt.Dimension(100, 100));
-        jLabelPhoto.setMinimumSize(new java.awt.Dimension(100, 100));
-        jLabelPhoto.setPreferredSize(new java.awt.Dimension(100, 100));
+        jTablePatients.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "Paciente", "Acciones"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, true
+            };
 
-        javax.swing.GroupLayout jPanelPhotoLayout = new javax.swing.GroupLayout(jPanelPhoto);
-        jPanelPhoto.setLayout(jPanelPhotoLayout);
-        jPanelPhotoLayout.setHorizontalGroup(
-            jPanelPhotoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabelPhoto, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPanePatiens.setViewportView(jTablePatients);
+        if (jTablePatients.getColumnModel().getColumnCount() > 0) {
+            jTablePatients.getColumnModel().getColumn(0).setResizable(false);
+            jTablePatients.getColumnModel().getColumn(1).setResizable(false);
+        }
+
+        jFormattedTextFieldEndDate.setMinimumSize(new java.awt.Dimension(64, 30));
+
+        jFormattedTextFieldStartDate.setPreferredSize(new java.awt.Dimension(128, 30));
+
+        jTextFieldAmount.setPreferredSize(new java.awt.Dimension(73, 30));
+
+        jLabelStarDate.setText("Fecha de comienzo:");
+
+        jLabelEndDate.setText("Fecha de fin:");
+
+        jLabelAmount.setText("Precio de la consulta:");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(64, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabelAmount)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextFieldAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabelEndDate)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jFormattedTextFieldEndDate, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabelStarDate)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jFormattedTextFieldStartDate, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(182, 182, 182))
         );
-        jPanelPhotoLayout.setVerticalGroup(
-            jPanelPhotoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabelPhoto, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabelStarDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jFormattedTextFieldStartDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jFormattedTextFieldEndDate, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelEndDate, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jTextFieldAmount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabelAmount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
 
-        jLabelCompleteName.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabelCompleteName.setText("Nombre Completo");
-
-        jLabelDNI.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jLabelDNI.setText("Documento");
-
-        jLabelOccupation.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jLabelOccupation.setText("Ocupacion");
-
-        jLabelPhone.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jLabelPhone.setText("Celular");
-
-        jLabelBirthDate.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jLabelBirthDate.setText("Fecha de Nacimiento y Edad Actual");
-
-        jLabelEmail.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jLabelEmail.setText("Email");
-
-        jLabelCity.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jLabelCity.setText("Ciudad");
-
-        jLabelAddress.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jLabelAddress.setText("Direccion");
-
-        jLabelAddressNumber.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jLabelAddressNumber.setText("Numero");
-
-        jLabelAddressFloor.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jLabelAddressFloor.setText("Piso");
-
-        jLabelAddressDepartment.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jLabelAddressDepartment.setText("Departamento");
-
-        javax.swing.GroupLayout jPanelMainLayout = new javax.swing.GroupLayout(jPanelMain);
-        jPanelMain.setLayout(jPanelMainLayout);
-        jPanelMainLayout.setHorizontalGroup(
-            jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanelMainTitle, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(jPanelMainLayout.createSequentialGroup()
-                .addGap(59, 59, 59)
-                .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabelPhone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanelMainLayout.createSequentialGroup()
-                        .addComponent(jPanelPhoto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(jPanelMainLayout.createSequentialGroup()
-                                .addComponent(jLabelDNI, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabelBirthDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(jLabelCompleteName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabelOccupation, javax.swing.GroupLayout.PREFERRED_SIZE, 414, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(jLabelEmail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabelCity, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabelAddress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanelMainLayout.createSequentialGroup()
-                        .addComponent(jLabelAddressNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabelAddressFloor, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabelAddressDepartment, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jPanelActions, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 650, javax.swing.GroupLayout.PREFERRED_SIZE)
+        javax.swing.GroupLayout jPanelMainFormLayout = new javax.swing.GroupLayout(jPanelMainForm);
+        jPanelMainForm.setLayout(jPanelMainFormLayout);
+        jPanelMainFormLayout.setHorizontalGroup(
+            jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanelMainTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanelMainFormLayout.createSequentialGroup()
+                .addContainerGap(56, Short.MAX_VALUE)
+                .addGroup(jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabelPatients)
+                    .addComponent(jScrollPanePatiens)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(56, Short.MAX_VALUE))
+            .addComponent(jPanelActions, javax.swing.GroupLayout.DEFAULT_SIZE, 776, Short.MAX_VALUE)
         );
-        jPanelMainLayout.setVerticalGroup(
-            jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelMainLayout.createSequentialGroup()
+        jPanelMainFormLayout.setVerticalGroup(
+            jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelMainFormLayout.createSequentialGroup()
                 .addComponent(jPanelMainTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanelMainLayout.createSequentialGroup()
-                        .addComponent(jLabelCompleteName)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabelDNI, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabelBirthDate, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabelOccupation))
-                    .addComponent(jPanelPhoto, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(jLabelPhone)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabelEmail)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabelCity)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabelAddress)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabelAddressNumber)
-                    .addComponent(jLabelAddressFloor)
-                    .addComponent(jLabelAddressDepartment))
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabelPatients, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPanePatiens, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jPanelActions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -283,38 +346,46 @@ public class ConsultationProfileDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanelMainForm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanelMain, javax.swing.GroupLayout.PREFERRED_SIZE, 493, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanelMainForm, javax.swing.GroupLayout.PREFERRED_SIZE, 634, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButtonBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBackActionPerformed
-        BackAction();
-    }//GEN-LAST:event_jButtonBackActionPerformed
+    private void jButtonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddActionPerformed
+        try {
+            saveAction();
+        } catch (IOException ex) {
+            Logger.getLogger(ConsultationProfileDialog.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_jButtonAddActionPerformed
+
+    private void jButtonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCancelActionPerformed
+        cancelAction();
+    }//GEN-LAST:event_jButtonCancelActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButtonBack;
-    private javax.swing.JLabel jLabelAddress;
-    private javax.swing.JLabel jLabelAddressDepartment;
-    private javax.swing.JLabel jLabelAddressFloor;
-    private javax.swing.JLabel jLabelAddressNumber;
-    private javax.swing.JLabel jLabelBirthDate;
-    private javax.swing.JLabel jLabelCity;
-    private javax.swing.JLabel jLabelCompleteName;
-    private javax.swing.JLabel jLabelDNI;
-    private javax.swing.JLabel jLabelEmail;
+    private raven.datetime.component.date.DatePicker datePickerEndDate;
+    private raven.datetime.component.date.DatePicker datePickerStartDate;
+    private javax.swing.JButton jButtonAdd;
+    private javax.swing.JButton jButtonCancel;
+    private javax.swing.JFormattedTextField jFormattedTextFieldEndDate;
+    private javax.swing.JFormattedTextField jFormattedTextFieldStartDate;
+    private javax.swing.JLabel jLabelAmount;
+    private javax.swing.JLabel jLabelEndDate;
     private javax.swing.JLabel jLabelMainTitle;
-    private javax.swing.JLabel jLabelOccupation;
-    private javax.swing.JLabel jLabelPhone;
-    private javax.swing.JLabel jLabelPhoto;
+    private javax.swing.JLabel jLabelPatients;
+    private javax.swing.JLabel jLabelStarDate;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanelActions;
-    private javax.swing.JPanel jPanelMain;
+    private javax.swing.JPanel jPanelMainForm;
     private javax.swing.JPanel jPanelMainTitle;
-    private javax.swing.JPanel jPanelPhoto;
+    private javax.swing.JScrollPane jScrollPanePatiens;
+    private javax.swing.JTable jTablePatients;
+    private javax.swing.JTextField jTextFieldAmount;
     // End of variables declaration//GEN-END:variables
 }

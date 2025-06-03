@@ -6,6 +6,7 @@ import com.application.exceptions.businessException.ValidationException;
 import com.application.interfaces.IPanels;
 import com.application.model.dto.CityDTO;
 import com.application.model.dto.ConsultationDTO;
+import com.application.model.dto.PatientDTO;
 import com.application.model.enumerations.ConsultationStatus;
 import com.application.model.enumerations.ViewType;
 import java.awt.Component;
@@ -33,14 +34,28 @@ public class ConsultationFormDialog extends javax.swing.JDialog implements IPane
        
         initComponents();
         
-//        datePickerStartDate.setCloseAfterSelected(true);
-//        datePickerStartDate.setEditor(jFormattedTextStartDate);
-//        datePickerEndDate.setCloseAfterSelected(true);
-//        datePickerEndDate.setEditor(jFormattedTextEndDate);
+        datePickerStartDate.setCloseAfterSelected(true);
+        datePickerStartDate.setEditor(jFormattedTextStartDate);
+        datePickerEndDate.setCloseAfterSelected(true);
+        datePickerEndDate.setEditor(jFormattedTextEndDate);
+
+        loadComboBoxPatient();
         
         setLocationRelativeTo(null);        
     }
 
+    private void loadComboBoxPatient() {
+        
+        for (PatientDTO patient : controller.getAllPatients()) {
+
+            jComboBoxPatients.addItem(patient);
+
+        }
+        
+        jComboBoxPatients.clearSelectedItems();
+
+    }
+    
     private void saveAction() throws IOException {
 //        try {
 //            
@@ -131,21 +146,22 @@ public class ConsultationFormDialog extends javax.swing.JDialog implements IPane
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        datePicker = new raven.datetime.component.date.DatePicker();
+        datePickerStartDate = new raven.datetime.component.date.DatePicker();
+        datePickerEndDate = new raven.datetime.component.date.DatePicker();
         jPanelMainForm = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
+        jPanelMainTitle = new javax.swing.JPanel();
         jLabelMainTitle = new javax.swing.JLabel();
-        jComboBoxPatients = new javax.swing.JComboBox<>();
-        jLabelDNI = new javax.swing.JLabel();
-        jLabelName = new javax.swing.JLabel();
-        jLabelBirthDate = new javax.swing.JLabel();
+        jLabelStarDate = new javax.swing.JLabel();
+        jLabelEndDate = new javax.swing.JLabel();
+        jLabelAmount = new javax.swing.JLabel();
         jPanelActions = new javax.swing.JPanel();
         jButtonCancel = new javax.swing.JButton();
         jButtonAdd = new javax.swing.JButton();
         jTextFieldAmount = new javax.swing.JTextField();
-        jLabelBirthDate1 = new javax.swing.JLabel();
         jFormattedTextStartDate = new javax.swing.JFormattedTextField();
         jFormattedTextEndDate = new javax.swing.JFormattedTextField();
+        jComboBoxPatients = new com.application.view.panels.consultation.ComboBoxMultiSelection<>();
+        jLabelPatients = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(512, 568));
@@ -156,24 +172,28 @@ public class ConsultationFormDialog extends javax.swing.JDialog implements IPane
         jLabelMainTitle.setText("Agregar Consulta");
         jLabelMainTitle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout jPanelMainTitleLayout = new javax.swing.GroupLayout(jPanelMainTitle);
+        jPanelMainTitle.setLayout(jPanelMainTitleLayout);
+        jPanelMainTitleLayout.setHorizontalGroup(
+            jPanelMainTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jLabelMainTitle, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        jPanelMainTitleLayout.setVerticalGroup(
+            jPanelMainTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jLabelMainTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
         );
 
-        jComboBoxPatients.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
+        jLabelStarDate.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelStarDate.setText("Fecha de comienzo*:");
+        jLabelStarDate.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
-        jLabelDNI.setText("Fecha de comienzo*:");
+        jLabelEndDate.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelEndDate.setText("Fecha de fin*:");
+        jLabelEndDate.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
-        jLabelName.setText("Fecha de fin*:");
-
-        jLabelBirthDate.setText("Precio de la consulta por paciente*:");
+        jLabelAmount.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelAmount.setText("Precio de la consulta por paciente*:");
+        jLabelAmount.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
         jPanelActions.setMinimumSize(new java.awt.Dimension(195, 100));
         jPanelActions.setName(""); // NOI18N
@@ -222,67 +242,76 @@ public class ConsultationFormDialog extends javax.swing.JDialog implements IPane
 
         jTextFieldAmount.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
 
-        jLabelBirthDate1.setText("Paciente/s*:");
-
         jFormattedTextStartDate.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
 
         jFormattedTextEndDate.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
+
+        jComboBoxPatients.setMaximumSize(new java.awt.Dimension(64, 30));
+        jComboBoxPatients.setMinimumSize(new java.awt.Dimension(64, 30));
+        jComboBoxPatients.setPreferredSize(new java.awt.Dimension(64, 30));
+
+        jLabelPatients.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelPatients.setText("Paciente/s:");
+        jLabelPatients.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
         javax.swing.GroupLayout jPanelMainFormLayout = new javax.swing.GroupLayout(jPanelMainForm);
         jPanelMainForm.setLayout(jPanelMainFormLayout);
         jPanelMainFormLayout.setHorizontalGroup(
             jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanelActions, javax.swing.GroupLayout.PREFERRED_SIZE, 650, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanelMainTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelMainFormLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jPanelActions, javax.swing.GroupLayout.PREFERRED_SIZE, 650, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelMainFormLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabelName, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabelDNI, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabelBirthDate, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabelBirthDate1, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jLabelEndDate, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabelStarDate, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabelAmount, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabelPatients, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jComboBoxPatients, 0, 244, Short.MAX_VALUE)
-                    .addComponent(jTextFieldAmount, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jFormattedTextStartDate)
-                    .addComponent(jFormattedTextEndDate))
+                    .addComponent(jTextFieldAmount, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
+                    .addComponent(jFormattedTextEndDate, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jFormattedTextStartDate, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jComboBoxPatients, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(150, 150, 150))
         );
         jPanelMainFormLayout.setVerticalGroup(
             jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelMainFormLayout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addComponent(jPanelMainTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabelDNI)
-                    .addComponent(jFormattedTextStartDate, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabelName)
-                    .addComponent(jFormattedTextEndDate, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jComboBoxPatients, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabelBirthDate1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextFieldAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabelBirthDate))
-                .addGap(18, 18, 18)
-                .addComponent(jPanelActions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                    .addGroup(jPanelMainFormLayout.createSequentialGroup()
+                        .addComponent(jFormattedTextStartDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jFormattedTextEndDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jTextFieldAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jComboBoxPatients, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanelMainFormLayout.createSequentialGroup()
+                        .addComponent(jLabelStarDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabelEndDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabelAmount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabelPatients, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGap(18, 18, Short.MAX_VALUE)
+                .addComponent(jPanelActions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanelMainForm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanelMainForm, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanelMainForm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanelMainForm, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -301,20 +330,21 @@ public class ConsultationFormDialog extends javax.swing.JDialog implements IPane
     }//GEN-LAST:event_jButtonCancelActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private raven.datetime.component.date.DatePicker datePicker;
+    private raven.datetime.component.date.DatePicker datePickerEndDate;
+    private raven.datetime.component.date.DatePicker datePickerStartDate;
     private javax.swing.JButton jButtonAdd;
     private javax.swing.JButton jButtonCancel;
-    private javax.swing.JComboBox<CityDTO> jComboBoxPatients;
+    private com.application.view.panels.consultation.ComboBoxMultiSelection<PatientDTO> jComboBoxPatients;
     private javax.swing.JFormattedTextField jFormattedTextEndDate;
     private javax.swing.JFormattedTextField jFormattedTextStartDate;
-    private javax.swing.JLabel jLabelBirthDate;
-    private javax.swing.JLabel jLabelBirthDate1;
-    private javax.swing.JLabel jLabelDNI;
+    private javax.swing.JLabel jLabelAmount;
+    private javax.swing.JLabel jLabelEndDate;
     private javax.swing.JLabel jLabelMainTitle;
-    private javax.swing.JLabel jLabelName;
-    private javax.swing.JPanel jPanel2;
+    private javax.swing.JLabel jLabelPatients;
+    private javax.swing.JLabel jLabelStarDate;
     private javax.swing.JPanel jPanelActions;
     private javax.swing.JPanel jPanelMainForm;
+    private javax.swing.JPanel jPanelMainTitle;
     private javax.swing.JTextField jTextFieldAmount;
     // End of variables declaration//GEN-END:variables
 }

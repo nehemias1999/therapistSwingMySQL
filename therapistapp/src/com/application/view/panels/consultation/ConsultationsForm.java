@@ -54,7 +54,7 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
             @Override
             public void onView(String consultationId) {
                 System.out.println("VER → consulta con ID = " + consultationId);
-                viewConsultation(consultationId);
+                //viewConsultation(consultationId);
             }
             @Override
             public void onEdit(String consultationId) {
@@ -167,37 +167,22 @@ public class ConsultationsForm extends javax.swing.JPanel implements IPanels {
 //            showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
 //        }
     }
-    
-    public void viewConsultation(String consultationId) {
-//        try {
-//            
-//            ConsultationDTO consultationDTO = consultationsFormController.getConsultationById(consultationId);
-//            ConsultationProfileDialog.showDialog(this, consultationsFormController, consultationDTO);
-//            initActionsData();
-//            loadTableData(actualSelectedDate);
-//            
-//        } catch (ValidationException ex) {
-//            Logger.getLogger(ConsultationsForm.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (BusinessException ex) {
-//            Logger.getLogger(ConsultationsForm.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-    }
-    
+        
     public void updateConsultation(String consultationId) {
-//        try {
-//            
-//            ConsultationDTO consultationDTO = consultationsFormController.getConsultationById(consultationId);
-//            
-//            boolean updated = ConsultationFormDialog.showDialog(this, consultationsFormController, ViewType.UPDATE, consultationDTO);
-//            if (updated) {
-//                Toast.show(this, Toast.Type.SUCCESS, "Consulta modificada exitosamente");
-//            }
-//            initActionsData();
-//            loadTableData(actualSelectedDate);
-//            
-//        } catch (Exception ex) {
-//            showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
-//        }
+        try {
+            
+            ConsultationDTO consultationDTO = consultationsFormController.getConsultationById(consultationId);
+            
+            boolean updated = ConsultationProfileDialog.showDialog(this, consultationsFormController, ViewType.UPDATE, consultationDTO);
+            if (updated) {
+                Toast.show(this, Toast.Type.SUCCESS, "Consulta modificada exitosamente");
+            }
+            initActionsData();
+            loadTableData(actualSelectedDate);
+            
+        } catch (Exception ex) {
+            showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
+        }
     }
     
     public void deleteConsultation(String consultationId) {

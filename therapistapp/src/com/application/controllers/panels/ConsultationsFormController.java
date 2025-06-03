@@ -16,13 +16,16 @@ public class ConsultationsFormController {
     
     private final ConsultationController consultationController;
     private final ConsultationPatientController consultationPatientController;
+    private final PatientController patientController;
     private final ConsultationsForm consultationsForm;
     
     public ConsultationsFormController(
             ConsultationController consultationController, 
-            ConsultationPatientController consultationPatientController) {
+            ConsultationPatientController consultationPatientController,
+            PatientController patientController) {
         this.consultationController = consultationController;
         this.consultationPatientController = consultationPatientController;
+        this.patientController = patientController;
         
         this.consultationsForm = new ConsultationsForm();
         this.consultationsForm.setController(this);
@@ -88,6 +91,20 @@ public class ConsultationsFormController {
     public List<ConsultationDTO> getConsultationsByDate(String consultationDate) {
         try {
             return consultationController.getConsultationsByDate(consultationDate);
+        } catch (BusinessException e) {
+            consultationsForm.showErrorMessage(e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Obtiene todos los pacientes 
+     * @return lista de DTO's de los pacientes
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
+    public List<PatientDTO> getAllPatients() {
+        try {
+            return patientController.getAllPatients();
         } catch (BusinessException e) {
             consultationsForm.showErrorMessage(e.getMessage());
             return null;

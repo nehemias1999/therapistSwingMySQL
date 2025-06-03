@@ -80,7 +80,7 @@ public class MainForm extends JLayeredPane {
             // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
                         
             if (index == 0) {
-                Application.showForm(new ConsultationsFormController(consultationController, consultationPatientController).getView());
+                Application.showForm(new ConsultationsFormController(consultationController, consultationPatientController, patientController).getView());
             }
             
             if (index == 1) {

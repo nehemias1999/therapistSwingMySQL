@@ -80,31 +80,26 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
     }
     
     private void loadComboBoxCityIdData() {
-        try {
+        jComboBoxCityId.removeAllItems();
             
-            jComboBoxCityId.removeAllItems();
-            
-            jComboBoxCityId.addItem(new CityDTO("", "Seleccione...", ""));
-            
-            CityDTO selectedCity = null;
-                        
-            for (CityDTO city : controller.getAllCities()) {
-                
-                if((viewType == viewType.UPDATE) && (city.getCityId().equals(patientDTO.getCityId()))) {
-                    selectedCity = city;
-                }
-                
-                jComboBoxCityId.addItem(city);
-            
+        jComboBoxCityId.addItem(new CityDTO("", "Seleccione...", ""));
+
+        CityDTO selectedCity = null;
+
+        for (CityDTO city : controller.getAllCities()) {
+
+            if((viewType == viewType.UPDATE) && (city.getCityId().equals(patientDTO.getCityId()))) {
+                selectedCity = city;
             }
-            if(viewType == ViewType.INSERT) {
-                jComboBoxCityId.setSelectedIndex(0);
-            }
-            if(viewType == ViewType.UPDATE) {
-                jComboBoxCityId.setSelectedItem(selectedCity);
-            }
-            
-        } catch (Exception e) {
+
+            jComboBoxCityId.addItem(city);
+
+        }
+        if(viewType == ViewType.INSERT) {
+            jComboBoxCityId.setSelectedIndex(0);
+        }
+        if(viewType == ViewType.UPDATE) {
+            jComboBoxCityId.setSelectedItem(selectedCity);
         }
     }
     

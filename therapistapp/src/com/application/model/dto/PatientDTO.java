@@ -198,4 +198,9 @@ public class PatientDTO {
     public String getPatientDTOFormattedCompleteName() {
         return patientDTOLastName + ", " + patientDTOName;
     }
+    
+    @Override
+    public String toString() {
+        return patientDTOLastName + ", " + patientDTOName; 
+    }
 }
