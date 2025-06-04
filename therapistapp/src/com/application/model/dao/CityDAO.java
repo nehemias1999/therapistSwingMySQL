@@ -43,7 +43,7 @@ public class CityDAO {
      * @return Lista de ciudades
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public List<City> getAllCities() throws DataAccessException {
+    public List<City> getAllCities() {
         List<City> cities = new ArrayList<>();
 
         try (Connection conn = getConnection();
@@ -68,7 +68,7 @@ public class CityDAO {
      * @throws ConstraintViolationException Si se viola una restricción única
      * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public void insertCity(City city) throws ConstraintViolationException, DataAccessException {
+    public void insertCity(City city) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(INSERT_CITY)) {
 
@@ -93,7 +93,7 @@ public class CityDAO {
      * @throws ConstraintViolationException Si se viola una restricción única
      * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public void updateCity(City city) throws EntityNotFoundException, ConstraintViolationException, DataAccessException {
+    public void updateCity(City city) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(UPDATE_CITY)) {
 
@@ -121,7 +121,7 @@ public class CityDAO {
      * @throws EntityNotFoundException Si no se encontro la ciudad solicitada
      * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public void deleteCity(UUID cityId) throws EntityNotFoundException, DataAccessException {
+    public void deleteCity(UUID cityId) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(DELETE_CITY)) {
 
@@ -143,7 +143,7 @@ public class CityDAO {
      * @throws EntityNotFoundException Si no se encuentra la ciudad
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public City getCityById(UUID cityId) throws EntityNotFoundException, DataAccessException {
+    public City getCityById(UUID cityId) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(SELECT_CITY_BY_ID)) {
             
@@ -169,7 +169,7 @@ public class CityDAO {
      * @throws EntityNotFoundException Si no se encuentra la ciudad
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public String getCityNameById(UUID cityId) throws EntityNotFoundException, DataAccessException {
+    public String getCityNameById(UUID cityId) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(SELECT_CITY_NAME_BY_ID)) {
 
@@ -194,7 +194,7 @@ public class CityDAO {
      * @return true si existe, false si no
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public boolean isCityNameExists(String cityName) throws DataAccessException {
+    public boolean isCityNameExists(String cityName) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(CHECK_NAME_EXISTS)) {
 
@@ -222,7 +222,7 @@ public class CityDAO {
     /**
      * Obtiene una conexión a la base de datos
      */
-    private Connection getConnection() throws DataAccessException {
+    private Connection getConnection() {
         try {
             return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {

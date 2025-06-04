@@ -3,7 +3,6 @@ package com.application.model.dto;
 public class ConsultationPatientDTO {
     private String consultationId;
     private String patientId;
-    private String consultationAmount;
     private String isPaid;
     private String patientNotePath;
 
@@ -13,12 +12,10 @@ public class ConsultationPatientDTO {
     public ConsultationPatientDTO(
             String consultationId, 
             String patientId, 
-            String consultationAmount, 
             String isPaid, 
             String patientNotePath) {
         this.consultationId = consultationId;
         this.patientId = patientId;
-        this.consultationAmount = consultationAmount;
         this.isPaid = isPaid;
         this.patientNotePath = patientNotePath;
     }
@@ -37,14 +34,6 @@ public class ConsultationPatientDTO {
 
     public void setPatientId(String patientId) {
         this.patientId = patientId;
-    }
-
-    public String getConsultationAmount() {
-        return consultationAmount;
-    }
-
-    public void setConsultationAmount(String consultationAmount) {
-        this.consultationAmount = consultationAmount;
     }
 
     public String getIsPaid() {

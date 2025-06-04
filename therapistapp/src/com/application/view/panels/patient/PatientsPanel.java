@@ -4,48 +4,47 @@ import com.application.view.panels.renderers.PatientProfileCellRender;
 import com.application.view.panels.renderers.PatientActionsCellRender;
 import com.application.interfaces.IPanels;
 import com.application.controllers.panels.PatientsFormController;
-import com.application.exceptions.businessException.BusinessException;
-import com.application.exceptions.businessException.ValidationException;
+import com.application.interfaces.IPatientDialogListener;
+import com.application.model.dto.CityDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.model.enumerations.ViewType;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import raven.modal.Toast;
+import static raven.modal.Toast.Type.SUCCESS;
 
-public class PatientsForm extends javax.swing.JPanel implements IPanels {
+public class PatientsPanel extends javax.swing.JPanel implements IPanels, IPatientDialogListener {
 
     private PatientsFormController patientsFormController;
     DefaultTableModel tableModel;
     
-    public PatientsForm() {
+    public PatientsPanel() {
         initComponents();
         setStyle();
- 
         initActionsData();
-        
     }
     
     private void initActionsData() {
         IPatientActionsEvent event = new IPatientActionsEvent() {
             @Override
             public void onView(String patientId) {
-                viewPatient(patientId);
+                callDialogToViewPatient(patientId);
             }
+
             @Override
             public void onEdit(String patientId) {
-                updatePatient(patientId);
+                callDialogToUpdatePatient(patientId);
             }
+
             @Override
             public void onDelete(String patientId) {
-                deletePatient(patientId);
-            }  
+                callDialogToDeletePatient(patientId);
+            }
         };
-        
+
         jTableMain.getColumnModel().getColumn(0).setCellRenderer(new PatientProfileCellRender(jTableMain));
         jTableMain.getColumnModel().getColumn(1).setCellRenderer(new PatientActionsCellRender());
         jTableMain.getColumnModel().getColumn(1).setCellEditor(new PatientActionsCellEditor(event));
@@ -53,9 +52,8 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
         
     private void setStyle() {
         TableColumnModel columnModel = jTableMain.getColumnModel();
-        
         columnModel.getColumn(0).setPreferredWidth(600);
-        
+
         jTableMain.getTableHeader().putClientProperty(FlatClientProperties.STYLE, ""
                 + "height:30;"
                 + "hoverBackground:null;"
@@ -76,7 +74,6 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
                 + "trackInsets:3,3,3,3;"
                 + "thumbInsets:3,3,3,3;"
                 + "background:$Table.background;");
-        
     }
         
     public void setController(PatientsFormController controller) {
@@ -85,121 +82,132 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
     }
 
     public void loadTableData() {
-        
         tableModel = (DefaultTableModel) jTableMain.getModel();
-            
-        if (jTableMain.isEditing()) {
-            jTableMain.getCellEditor().stopCellEditing();
-        }
-        
+        if (jTableMain.isEditing()) jTableMain.getCellEditor().stopCellEditing();
         tableModel.setRowCount(0);
 
-        List<PatientDTO> patientsDTO = patientsFormController.getAllPatients();
-
-        if (patientsDTO == null) {
-            this.showErrorMessage("Error: No se recibieron datos del servidor");
-            return;
+        try {
+            List<PatientDTO> patientsDTO = patientsFormController.getAllPatients();
+            for (PatientDTO patientDTO : patientsDTO) {
+                tableModel.addRow(new Object[]{patientDTO, patientDTO.getPatientDTOId()});
+            }
+        } catch (Exception ex) {
+            showErrorMessage("Error al cargar los pacientes: " + ex.getMessage());
         }
-        
-        for (PatientDTO patientDTO : patientsDTO) {
-            tableModel.addRow(new Object[]{
-                patientDTO, 
-                patientDTO.getPatientDTOId()
-            });
-        }
-        
     }
 
     private void searchData(String patientLastName) {
-        
         tableModel = (DefaultTableModel) jTableMain.getModel();
-
-        if (jTableMain.isEditing()) {
-            jTableMain.getCellEditor().stopCellEditing();
-        }
-        
+        if (jTableMain.isEditing()) jTableMain.getCellEditor().stopCellEditing();
         tableModel.setRowCount(0);
 
-        List<PatientDTO> patientsDTO = patientsFormController.getPatientsThatMatch(patientLastName);
-
-        if (patientsDTO == null) {
-            this.showErrorMessage("Error: No se recibieron datos del servidor");
-            return;
-        }
-        
-        for (PatientDTO patientDTO : patientsDTO) {
-            tableModel.addRow(new Object[]{
-                patientDTO, 
-                patientDTO.getPatientDTOId()
-            });
-        }
-        
-    }
-    
-    public void insertPatient() {
         try {
-            
-            boolean saved = PatientFormDialog.showDialog(this, patientsFormController, ViewType.INSERT, new PatientDTO());
-            if (saved) {
-                Toast.show(this, Toast.Type.SUCCESS, "Paciente agregado exitosamente");
+            List<PatientDTO> patientsDTO = patientsFormController.getPatientsThatMatch(patientLastName);
+            for (PatientDTO patientDTO : patientsDTO) {
+                tableModel.addRow(new Object[]{patientDTO, patientDTO.getPatientDTOId()});
             }
-            initActionsData();
-            loadTableData();
-            
         } catch (Exception ex) {
-            showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
+            showErrorMessage("Error al buscar pacientes: " + ex.getMessage());
         }
     }
     
-    public void viewPatient(String patientId) {
+    public void callDialogToInsertPatient() {
         try {
-            
-            PatientDTO patientDTO = patientsFormController.getPatientById(patientId);
-            PatientProfileDialog.showDialog(this, patientsFormController, patientDTO);
-            initActionsData();
-            loadTableData();
-            
-        } catch (ValidationException ex) {
-            Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BusinessException ex) {
-            Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-    public void updatePatient(String patientId) {
-        try {
-            
-            PatientDTO patientDTO = patientsFormController.getPatientById(patientId);
-            
-            boolean updated = PatientFormDialog.showDialog(this, patientsFormController, ViewType.UPDATE, patientDTO);
-            if (updated) {
-                Toast.show(this, Toast.Type.SUCCESS, "Paciente modificado exitosamente");
+            Boolean inserted = PatientDialog.showDialog(this, ViewType.INSERT, "");
+            if(inserted) {
+                initActionsData();
+                loadTableData();
+                Toast.show(this, SUCCESS, "Paciente agregado exitosamente");
             }
-            initActionsData();
-            loadTableData();
-            
         } catch (Exception ex) {
-            showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
+            showErrorMessage("Error al agregar paciente: " + ex.getMessage());
+        } 
+    }
+        
+    public void callDialogToUpdatePatient(String patientId) {
+        try {
+            PatientDTO patientDTO = patientsFormController.getPatientById(patientId);
+            Boolean updated = PatientDialog.showDialog(this, ViewType.UPDATE, patientId);
+            if(updated) {
+                initActionsData();
+                loadTableData();
+                Toast.show(this, SUCCESS, "Paciente modificado exitosamente");
+            }
+        } catch (Exception ex) {
+            showErrorMessage("Error al modificar paciente: " + ex.getMessage());
         }
     }
     
-    public void deletePatient(String patientId) {
+    public void callDialogToDeletePatient(String patientId) {
         try {
-            
-            boolean updated = confirmAction("¿Está seguro de eliminar este paciente?");  
-            if (updated) {
+            Boolean deleted = confirmAction("¿Está seguro de eliminar este paciente?");
+            if (deleted) {
                 patientsFormController.deletePatient(patientId);
+                initActionsData();
+                loadTableData();
                 Toast.show(this, Toast.Type.SUCCESS, "Paciente eliminado exitosamente");
             }
-            
-            initActionsData();
-            loadTableData();
-            
-        } catch (ValidationException ex) {
-            Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BusinessException ex) {
-            Logger.getLogger(PatientsForm.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        } catch (Exception ex) {
+            showErrorMessage("Error al eliminar paciente: " + ex.getMessage());
+        } 
+    }
+    
+    public void callDialogToViewPatient(String patientId) {
+        try {
+            PatientDTO patientDTO = patientsFormController.getPatientById(patientId);
+            PatientDialog.showDialog(this, ViewType.VIEW, patientId);
+        } catch (Exception ex) {
+            showErrorMessage("Error al visualizar paciente: " + ex.getMessage());
+        } 
+    }
+    
+    @Override
+    public PatientDTO getPatientById(String patientId) {
+        return patientsFormController.getPatientById(patientId);
+    }
+    
+    @Override
+    public List<CityDTO> getAllCities() {
+        return patientsFormController.getAllCities();
+    }
+    
+    @Override
+    public void insertPatient(PatientDTO patientDTO) {
+        patientsFormController.insertPatient(patientDTO);
+    }
+    
+    @Override
+    public void updatePatient(PatientDTO patientDTO) {
+        patientsFormController.updatePatient(patientDTO);
+    }
+    
+    @Override
+    public void showInformationMessage(String message) {
+        JOptionPane.showMessageDialog(
+                this, 
+                message, 
+                "Información", 
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    @Override
+    public void showErrorMessage(String message) {
+        JOptionPane.showMessageDialog(
+                this, 
+                message, 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE
+        );
+    }
+
+    public boolean confirmAction(String message) {
+        return JOptionPane.showConfirmDialog(
+                this, 
+                message, 
+                "Confirmar acción", 
+                JOptionPane.YES_NO_OPTION
+        ) == JOptionPane.YES_OPTION;
     }
         
     /**
@@ -321,7 +329,7 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
     }//GEN-LAST:event_jTextFieldSearcherKeyReleased
 
     private void jButtonAddPatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddPatientActionPerformed
-        this.insertPatient();
+        this.callDialogToInsertPatient();
     }//GEN-LAST:event_jButtonAddPatientActionPerformed
 
     private void jTextFieldSearcherMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTextFieldSearcherMouseClicked
@@ -336,35 +344,4 @@ public class PatientsForm extends javax.swing.JPanel implements IPanels {
     private javax.swing.JTable jTableMain;
     private javax.swing.JTextField jTextFieldSearcher;
     // End of variables declaration//GEN-END:variables
-
-    @Override
-    public void showInformationMessage(String message) {
-        JOptionPane.showMessageDialog(
-                this, 
-                message, 
-                "Informacion",
-                JOptionPane.INFORMATION_MESSAGE
-        );
-    }
-
-    @Override
-    public void showErrorMessage(String message) {
-        JOptionPane.showMessageDialog(
-                this, 
-                message, 
-                "Error",
-                JOptionPane.ERROR_MESSAGE
-        );
-    }
-    
-    public boolean confirmAction(String message) {
-        int option = JOptionPane.showConfirmDialog(
-            this,                   
-            message,                   
-            "Confirmar acción",        
-            JOptionPane.YES_NO_OPTION, 
-            JOptionPane.QUESTION_MESSAGE
-        );
-        return option == JOptionPane.YES_OPTION;
-    }
 }

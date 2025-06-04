@@ -1,166 +1,198 @@
 package com.application.view.panels.patient;
 
-import com.application.controllers.panels.PatientsFormController;
-import com.application.exceptions.businessException.BusinessException;
-import com.application.exceptions.businessException.ValidationException;
-import com.application.interfaces.IPanels;
+import com.application.interfaces.IPatientDialogListener;
 import com.application.model.dto.CityDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.model.enumerations.ViewType;
 import java.awt.Component;
 import java.awt.Frame;
 import java.io.File;
-import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
-    private final PatientsFormController controller;
-    private ViewType viewType;
-    private PatientDTO patientDTO;
-    
-    private boolean operationSuccess = false;
+public class PatientDialog extends javax.swing.JDialog {
+    private final IPatientDialogListener listener;
+    private final ViewType viewType;
+    private final String patientId;
+    private PatientDTO patientDTO;   
     private String patientPhotoPath = "";
+        
+    private boolean operationSuccess = false;
     
-    public PatientFormDialog(Frame owner, PatientsFormController controller, ViewType viewtype, PatientDTO patientDTO) {
+    /**  
+     * Constructor
+     * @param owner
+     * @param listenter
+     * @param viewtype
+     * @param patientId
+     */
+    public PatientDialog(Frame owner, IPatientDialogListener listenter, ViewType viewtype, String patientId) {
         super(owner, "Thera Kairos", true);
-        this.controller = controller;
-        this.viewType = viewtype;
-        
         initComponents();
+        this.listener = listenter;
+        this.viewType = viewtype;
+        this.patientId = patientId;
         
-        if(viewtype == ViewType.UPDATE) {
-            jLabelMainTitle.setText("Modificar paciente");
-            this.patientDTO = patientDTO;
-            this.patientPhotoPath = patientDTO.getPatientDTOPhotoPath();
-        }
-               
         datePicker.setCloseAfterSelected(true);
         datePicker.setEditor(jFormattedTextFieldBirthDate);
         
-        initFormData();
+        if (viewType == ViewType.INSERT) {
+            loadPatientDataForInsertView();
+        }
+
+        if (viewType == ViewType.UPDATE) {
+            loadPatientDataForUpdateView();
+        }
         
-        setLocationRelativeTo(null);        
+        if (viewType == ViewType.VIEW) {
+            loadPatientDataForView();
+        }
+
+        setLocationRelativeTo(null);
+        
     }
     
-    private void initFormData() {
-        if(viewType == ViewType.INSERT) {
-            loadComboBoxCityIdData();
+    /**  
+     * Carga la infomacion del PatientDTO en el formulario
+     */  
+    private void loadPatientDataForInsertView() {
+        
+        jLabelMainTitle.setText("Agregar paciente");
+        
+        loadComboBoxCitiesData();
+        
+        jLabelPhotoName.setText("Sin imagen seleccionada");
+        jButtonRemovePhoto.setEnabled(false);
+        
+        jButtonAdd.setText("Agregar");
+        
+    }
+    
+    /**  
+     * Carga la infomacion del PatientDTO en el formulario
+     */  
+    private void loadPatientDataForUpdateView() {
+        
+        jLabelMainTitle.setText("Modificar paciente");
+        
+        loadPatientData();
+        
+        jButtonAdd.setText("Modificar");
+        
+    }
+    
+    /**  
+     * Carga la infomacion del PatientDTO en el formulario
+     */  
+    private void loadPatientDataForView() {
+        
+        jLabelMainTitle.setText("Ver paciente");
+        
+        loadPatientData();
+        
+        jButtonCancel.setVisible(false);
+        jButtonAdd.setText("Volver");
+        
+    }
+         
+    /**  
+     * Carga el objeto jComboBoxCities
+     */
+    private void loadPatientData() {
+        
+        patientDTO = listener.getPatientById(patientId);
+        
+        jTextFieldDNI.setText(patientDTO.getPatientDTODNI());
+        jTextFieldName.setText(patientDTO.getPatientDTOName());
+        jTextFieldLastName.setText(patientDTO.getPatientDTOLastName());
+        datePicker.setSelectedDate(LocalDate.parse(patientDTO.getPatientDTOBirthDate()));
+        jTextFieldOccupation.setText(patientDTO.getPatienDTOOccupation());
+        jTextFieldPhone.setText(patientDTO.getPatientDTOPhone());
+        jTextFieldEmail.setText(patientDTO.getPatientDTOEmail());
+        loadComboBoxCitiesData();
+        jTextFieldAddress.setText(patientDTO.getPatientDTOAddress());
+        jTextFieldAddressNumber.setText(patientDTO.getPatientDTOAddressNumber());
+        jTextFieldAddressFloor.setText(patientDTO.getPatientDTOAddressFloor());
+        jTextFieldAddressDepartment.setText(patientDTO.getPatientDTOAddressDepartment());
+
+        if (patientDTO.getPatientDTOPhotoPath() != null && !patientDTO.getPatientDTOPhotoPath().isEmpty()) {
+            patientPhotoPath = patientDTO.getPatientDTOPhotoPath();
+            jLabelPhotoName.setText(new File(patientDTO.getPatientDTOPhotoPath()).getName());
+            jButtonRemovePhoto.setEnabled(true);
+        } else {
+            jLabelPhotoName.setText("Sin imagen seleccionada");
             jButtonRemovePhoto.setEnabled(false);
         }
-        if(viewType == ViewType.UPDATE) {
-            
-            jTextFieldDNI.setText(patientDTO.getPatientDTODNI());
-            jTextFieldName.setText(patientDTO.getPatientDTOName());
-            jTextFieldLastName.setText(patientDTO.getPatientDTOLastName());
-            datePicker.setSelectedDate(LocalDate.parse(patientDTO.getPatientDTOBirthDate()));
-            jTextFieldOccupation.setText(patientDTO.getPatienDTOOccupation());
-            jTextFieldPhone.setText(patientDTO.getPatientDTOPhone());
-            jTextFieldEmail.setText(patientDTO.getPatientDTOEmail());
-            loadComboBoxCityIdData();
-            jTextFieldAddress.setText(patientDTO.getPatientDTOAddress());
-            jTextFieldAddressNumber.setText(patientDTO.getPatientDTOAddressNumber());
-            jTextFieldAddressFloor.setText(patientDTO.getPatientDTOAddressFloor());
-            jTextFieldAddressDepartment.setText(patientDTO.getPatientDTOAddressDepartment());
-            if(!patientDTO.getPatientDTOPhotoPath().isEmpty()) {
-                jButtonRemovePhoto.setEnabled(true);
-                jLabelPhotoName.setText(new File(patientPhotoPath).getName());
-            } else {
-                jButtonRemovePhoto.setEnabled(false);
-                jLabelPhotoName.setText("Sin imagen seleccionada");
+        
+    }
+        
+    /**  
+     * Carga el objeto jComboBoxCities
+     */
+    private void loadComboBoxCitiesData() {
+        jComboBoxCities.removeAllItems();
+        jComboBoxCities.addItem(new CityDTO("", "Seleccione...", ""));
+
+        for (CityDTO city : listener.getAllCities()) {
+            jComboBoxCities.addItem(city);
+            if ((viewType == ViewType.UPDATE || viewType ==  ViewType.VIEW) && city.getCityId().equals(patientDTO.getCityId())) {
+                jComboBoxCities.setSelectedItem(city);
             }
-                       
-            jButtonAdd.setText("Cambiar");
         }
     }
     
-    private void loadComboBoxCityIdData() {
-        jComboBoxCityId.removeAllItems();
-            
-        jComboBoxCityId.addItem(new CityDTO("", "Seleccione...", ""));
-
-        CityDTO selectedCity = null;
-
-        for (CityDTO city : controller.getAllCities()) {
-
-            if((viewType == viewType.UPDATE) && (city.getCityId().equals(patientDTO.getCityId()))) {
-                selectedCity = city;
-            }
-
-            jComboBoxCityId.addItem(city);
-
-        }
-        if(viewType == ViewType.INSERT) {
-            jComboBoxCityId.setSelectedIndex(0);
-        }
-        if(viewType == ViewType.UPDATE) {
-            jComboBoxCityId.setSelectedItem(selectedCity);
-        }
-    }
-    
+    /**  
+     * Crea un PatientDTO de los datos cargados en el formulario  
+     * @return PatientDTO 
+     */
     private PatientDTO getPatientDTO() {
-        
-        String patientId = "";
-        if(viewType == ViewType.UPDATE) {
-            patientId = patientDTO.getPatientDTOId();
-        }
-               
-        String patientDNI = jTextFieldDNI .getText().trim();
-        String patientName = jTextFieldName.getText().trim();
-        String patientLastName = jTextFieldLastName.getText().trim();
+        String patientId = (viewType == ViewType.UPDATE && patientDTO != null) ? patientDTO.getPatientDTOId() : "";
         String patientBirthDate = datePicker.isDateSelected() ? Date.valueOf(datePicker.getSelectedDate()).toString() : null;
-        String patientOccupation = jTextFieldOccupation.getText().trim();
-        String patientPhone = jTextFieldPhone.getText().trim();
-        String patientEmail = jTextFieldEmail.getText().trim();
-        CityDTO cityDTO = (CityDTO) jComboBoxCityId.getSelectedItem();
-        String patientCityId = cityDTO.getCityId();
-        String patientAddress = jTextFieldAddress.getText().trim();
-        String patientAddressNumber = jTextFieldAddressNumber.getText().trim();
-        String patientAddressFloor = jTextFieldAddressFloor.getText().trim();
-        String patientAddressDepartment = jTextFieldAddressDepartment.getText().trim();
-        
+        CityDTO selectedCity = (CityDTO) jComboBoxCities.getSelectedItem();
+
         return new PatientDTO(
-                patientId,
-                patientDNI, 
-                patientName, 
-                patientLastName, 
-                patientBirthDate,
-                patientOccupation,
-                patientPhone, 
-                patientEmail, 
-                patientCityId, 
-                patientAddress,
-                patientAddressNumber,
-                patientAddressFloor,
-                patientAddressDepartment,
-                patientPhotoPath
+            patientId,
+            jTextFieldDNI.getText().trim(),
+            jTextFieldName.getText().trim(),
+            jTextFieldLastName.getText().trim(),
+            patientBirthDate,
+            jTextFieldOccupation.getText().trim(),
+            jTextFieldPhone.getText().trim(),
+            jTextFieldEmail.getText().trim(),
+            selectedCity != null ? selectedCity.getCityId() : null,
+            jTextFieldAddress.getText().trim(),
+            jTextFieldAddressNumber.getText().trim(),
+            jTextFieldAddressFloor.getText().trim(),
+            jTextFieldAddressDepartment.getText().trim(),
+            patientPhotoPath
         );
     }
     
+    /**  
+     * Agrega una foto asociada al paciente  
+     */
     private void addPhoto() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Seleccionar foto del paciente");
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-       
         chooser.setAcceptAllFileFilterUsed(false);
-        chooser.addChoosableFileFilter(new FileNameExtensionFilter(
-            "Imágenes (jpg, png, gif)", "jpg", "jpeg", "png", "gif"
-        ));
+        chooser.addChoosableFileFilter(new FileNameExtensionFilter("Imágenes (jpg, png, gif)", "jpg", "jpeg", "png", "gif"));
 
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = chooser.getSelectedFile();
-            patientPhotoPath = file.getAbsolutePath().trim();       
+            patientPhotoPath = file.getAbsolutePath().trim();
             jLabelPhotoName.setText(file.getName());
             jButtonAddPhoto.setEnabled(false);
             jButtonRemovePhoto.setEnabled(true);
         }
     }
     
+    /**  
+     * Elimina la foto cargada  
+     */
     private void deletePhoto() {
         patientPhotoPath = "";
         jLabelPhotoName.setText("Sin imagen seleccionada");
@@ -168,28 +200,31 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
         jButtonRemovePhoto.setEnabled(false);
     }
     
-    private void saveAction() throws IOException {
-        try {
-            
-            PatientDTO patientDTO = getPatientDTO();
-            
-            if(viewType == ViewType.INSERT) {
-                controller.insertPatient(patientDTO);
-            }
-            if(viewType == ViewType.UPDATE) {
-                controller.updatePatient(patientDTO);
-            }
-           
+    /**  
+     * Carga el objeto jComboBoxCities
+     */
+    private void saveAction() {
+        
+        if (viewType == ViewType.INSERT) {
+            listener.insertPatient(getPatientDTO());
             operationSuccess = true;
-            dispose();
-
-        } catch (ValidationException ex) {
-            showErrorMessage(ex.getMessage());
-        } catch (BusinessException ex) {
-            showErrorMessage(ex.getMessage());
+        } 
+        
+        if (viewType == ViewType.UPDATE) {
+            listener.updatePatient(getPatientDTO());
+            operationSuccess = true;
         }
+        
+        if (viewType == ViewType.VIEW) {
+            operationSuccess = true;
+        }
+                
+        dispose();
     }
     
+    /**  
+     * Ejecuta la accion de jButtonCancel
+     */
     private void cancelAction() {
         operationSuccess = false;
         dispose();
@@ -197,39 +232,18 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
     
     /**  
      * Llama al diálogo y bloquea hasta que se cierre.  
-     * @param parent
-     * @param controller
+     * @param listener
      * @param viewType
-     * @param patientDTO
+     * @param patientId
      * @return true si el guardado fue exitoso, false si canceló o hubo error.  
      */
-    public static boolean showDialog(Component parent, PatientsFormController controller, ViewType viewType, PatientDTO patientDTO) {
-        Frame owner = JOptionPane.getFrameForComponent(parent);
-        PatientFormDialog dialog = new PatientFormDialog(owner, controller, viewType, patientDTO);
-        dialog.setVisible(true);  
+    public static Boolean showDialog(IPatientDialogListener listener, ViewType viewType, String patientId) {
+        Frame ownerFrame = JOptionPane.getFrameForComponent((Component) listener);
+        PatientDialog dialog = new PatientDialog(ownerFrame, listener, viewType, patientId);
+        dialog.setVisible(true);
         return dialog.operationSuccess;
     }
-    
-    @Override
-    public void showInformationMessage(String message) {
-        JOptionPane.showMessageDialog(
-                this, 
-                message, 
-                "Informacion",
-                JOptionPane.INFORMATION_MESSAGE
-        );
-    }
-
-    @Override
-    public void showErrorMessage(String message) {
-        JOptionPane.showMessageDialog(
-                this, 
-                message, 
-                "Error",
-                JOptionPane.ERROR_MESSAGE
-        );
-    }
-    
+        
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -250,7 +264,7 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
         jTextFieldOccupation = new javax.swing.JTextField();
         jTextFieldPhone = new javax.swing.JTextField();
         jTextFieldEmail = new javax.swing.JTextField();
-        jComboBoxCityId = new javax.swing.JComboBox<>();
+        jComboBoxCities = new javax.swing.JComboBox<>();
         jTextFieldAddress = new javax.swing.JTextField();
         jTextFieldAddressNumber = new javax.swing.JTextField();
         jLabelAddressFloor = new javax.swing.JLabel();
@@ -309,7 +323,7 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
 
         jTextFieldEmail.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
 
-        jComboBoxCityId.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
+        jComboBoxCities.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
 
         jTextFieldAddress.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
 
@@ -474,7 +488,7 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
                     .addComponent(jFormattedTextFieldBirthDate)
                     .addComponent(jTextFieldOccupation)
                     .addComponent(jTextFieldEmail)
-                    .addComponent(jComboBoxCityId, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jComboBoxCities, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanelPhoto, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(150, 150, 150))
             .addComponent(jPanelActions, javax.swing.GroupLayout.DEFAULT_SIZE, 650, Short.MAX_VALUE)
@@ -513,7 +527,7 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
                     .addComponent(jLabelEmail))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jComboBoxCityId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jComboBoxCities, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabelCityId))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -563,11 +577,7 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
     }//GEN-LAST:event_jButtonCancelActionPerformed
 
     private void jButtonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddActionPerformed
-        try {
-            saveAction();
-        } catch (IOException ex) {
-            Logger.getLogger(PatientFormDialog.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        saveAction();
     }//GEN-LAST:event_jButtonAddActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -576,7 +586,7 @@ public class PatientFormDialog extends javax.swing.JDialog implements IPanels {
     private javax.swing.JButton jButtonAddPhoto;
     private javax.swing.JButton jButtonCancel;
     private javax.swing.JButton jButtonRemovePhoto;
-    private javax.swing.JComboBox<CityDTO> jComboBoxCityId;
+    private javax.swing.JComboBox<CityDTO> jComboBoxCities;
     private javax.swing.JFormattedTextField jFormattedTextFieldBirthDate;
     private javax.swing.JLabel jLabelAddress;
     private javax.swing.JLabel jLabelAddressDepartment;

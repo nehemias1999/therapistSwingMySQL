@@ -5,9 +5,7 @@ import com.application.exceptions.businessException.ValidationException;
 import com.application.exceptions.runtimeExceptions.dataAccessException.DataAccessException;
 import com.application.exceptions.runtimeExceptions.dataAccessException.EntityNotFoundException;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import com.application.model.dao.ConsultationPatientDAO;
 import com.application.model.dto.ConsultationPatientDTO;
@@ -16,6 +14,8 @@ import com.application.model.entities.ConsultationPatient;
 import com.application.model.entities.Patient;
 import com.application.utils.PatientsFilesManager;
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ConsultationPatientService {
     private final ConsultationPatientDAO consultationPatientDAO;
@@ -63,24 +63,22 @@ public class ConsultationPatientService {
             throw new BusinessException("Error de base de datos al eliminar la consulta", e);
         }
     }
-    
+      
     /**
      * Obtiene los pacientes de una consulta determinada
-     * @param consultationId identificador de la consulta
-     * @return lista de DTOs de pacientes para la consulta especificada
-     * @throws BusinessException Si ocurre un error durante el proceso
+     * @return Lista de PatientDTO
+     * @throws BusinessException Si ocurre un error al acceder a los datos
      */
     public List<PatientDTO> getPatientsByConsultationId(String consultationId) throws BusinessException {
         try {
-            return consultationPatientDAO.getPatientsByConsultationId(UUID.fromString(consultationId))
-                .stream()
+            return consultationPatientDAO.getPatientsByConsultationId(UUID.fromString(consultationId)).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
         } catch (DataAccessException e) {
-            throw new BusinessException("Error al buscar los pacientes de la consulta", e);
+            throw new BusinessException("Error al listar pacientes", e);
         }
-    }
-
+    }    
+    
     /**
      * Modifica el estado del pago a 'pagado' de un paciente para una consulta determinada
      * @param consultationId Identificador de la consulta
@@ -103,10 +101,6 @@ public class ConsultationPatientService {
      */
     private void validateConsultationPatientData(ConsultationPatientDTO consultationPatientDTO) throws ValidationException {
 
-        if (consultationPatientDTO.getConsultationAmount() == null || consultationPatientDTO.getConsultationAmount().trim().isEmpty()) {
-            throw new ValidationException("El monto de la consulta es requerido");
-        }
-
         if (consultationPatientDTO.getIsPaid()== null || consultationPatientDTO.getIsPaid().trim().isEmpty()) {
             throw new ValidationException("El estado del pago de la consulta es requerido");
         }
@@ -123,7 +117,6 @@ public class ConsultationPatientService {
         return new ConsultationPatient(
             UUID.fromString(consultationPatientDTO.getConsultationId()),
             UUID.fromString(consultationPatientDTO.getPatientId()),
-            Double.valueOf(consultationPatientDTO.getConsultationAmount()),
             Boolean.getBoolean(consultationPatientDTO.getIsPaid()),
             consultationPatientDTO.getPatientNotePath()            
         );
@@ -136,7 +129,6 @@ public class ConsultationPatientService {
         ConsultationPatientDTO dto = new ConsultationPatientDTO();
         dto.setConsultationId(cp.getConsultationId().toString());
         dto.setPatientId(cp.getPatientId().toString());
-        dto.setConsultationAmount(cp.getConsultationAmount().toString());
         dto.setIsPaid(cp.getIsPaid().toString());
         dto.setPatientNotePath(cp.getPatientNotePath());
         

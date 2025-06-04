@@ -20,14 +20,12 @@ public class ConsultationPatientDAO {
         "INSERT INTO tbl_consultation_patient ( " +
         "consultation_id, " +
         "patient_id, " +
-        "consultation_amount, " +
         "is_paid, " +
         "patient_note_path " +
         ") VALUES (?, ?, ?, ?, ?)";
     
     private static final String UPDATE_SQL =
         "UPDATE tbl_consultation_patient SET " +
-        "consultation_amount = ?, " +
         "is_paid = ?, " +
         "WHERE consultation_id = ? and patient_id = ?";
     
@@ -38,7 +36,7 @@ public class ConsultationPatientDAO {
             "SELECT * FROM tbl_patient p " +
             "JOIN tbl_consultation_patient cp ON p.patient_id = cp.patient_id " +
             "WHERE cp.consultation_id = ?";
-    
+        
     private static final String UPDATE_IS_PAID_TRUE =
         "UPDATE tbl_consultation_patient SET " +
         "is_paid = true " +
@@ -52,15 +50,14 @@ public class ConsultationPatientDAO {
      * @throws ConstraintViolationException Si se viola una restricción única
      * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public void insertConsultationPatient(ConsultationPatient consultationPatient) throws ConstraintViolationException, DataAccessException {
+    public void insertConsultationPatient(ConsultationPatient consultationPatient) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
 
             ps.setString(1, consultationPatient.getConsultationId().toString());
             ps.setString(2, consultationPatient.getPatientId().toString());
-            ps.setDouble(3, consultationPatient.getConsultationAmount());
-            ps.setBoolean(4, consultationPatient.getIsPaid());
-            ps.setString(5, consultationPatient.getPatientNotePath());
+            ps.setBoolean(3, consultationPatient.getIsPaid());
+            ps.setString(4, consultationPatient.getPatientNotePath());
 
             ps.executeUpdate();
 
@@ -79,7 +76,7 @@ public class ConsultationPatientDAO {
      * @throws EntityNotFoundException Si no se encuentra la consulta
      * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public void deleteConsultationPatient(UUID consultationId, UUID patientId) throws EntityNotFoundException, DataAccessException {
+    public void deleteConsultationPatient(UUID consultationId, UUID patientId) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(DELETE_SQL)) {
 
@@ -121,14 +118,13 @@ public class ConsultationPatientDAO {
         }
     }
 
-
     /**
      * Modifica un tuple de la base de datos indicando que la consulta esta paga (is_paid = true)
      * @param consultationId de la consulta a modificar
      * @param patientId del paciente a modificar
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public void setConsultationPatientPaid(UUID consultationId, UUID patientId) throws DataAccessException {
+    public void setConsultationPatientPaid(UUID consultationId, UUID patientId) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(UPDATE_IS_PAID_TRUE)) {
 
@@ -152,7 +148,6 @@ public class ConsultationPatientDAO {
         return new ConsultationPatient(
             UUID.fromString(rs.getString("consultation_id")),
             UUID.fromString(rs.getString("patient_id")),
-            rs.getDouble("consultation_amount"),
             rs.getBoolean("is_paid"),
             rs.getString("patient_note_path")
         );
@@ -183,7 +178,7 @@ public class ConsultationPatientDAO {
     /**
      * Obtiene una conexión a la base de datos
      */
-    private Connection getConnection() throws DataAccessException {
+    private Connection getConnection() {
         try {
             return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {

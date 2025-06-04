@@ -1,62 +1,102 @@
 package com.application.view.panels.consultation;
 
-import com.application.controllers.panels.ConsultationsFormController;
-import com.application.exceptions.businessException.BusinessException;
-import com.application.exceptions.businessException.ValidationException;
+import com.application.interfaces.IConsultationDialogListener;
 import com.application.interfaces.IPanels;
-import com.application.model.dto.CityDTO;
 import com.application.model.dto.ConsultationDTO;
 import com.application.model.dto.PatientDTO;
-import com.application.model.enumerations.ConsultationStatus;
 import com.application.model.enumerations.ViewType;
 import java.awt.Component;
 import java.awt.Frame;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 public class ConsultationProfileDialog extends javax.swing.JDialog implements IPanels {
-    private final ConsultationsFormController controller;
+    private final IConsultationDialogListener listener;
     private ViewType viewType;
+    private String consultationId;
     private ConsultationDTO consultationDTO;
     
     private boolean operationSuccess = false;
 
-    public ConsultationProfileDialog(Frame owner, ConsultationsFormController controller, ViewType viewtype, ConsultationDTO consultationDTO) {
-        super(owner, "Agregar consulta", true);
-        this.controller = controller;
-        this.viewType = viewtype;
-        if(viewtype == ViewType.UPDATE) {
-            this.consultationDTO = consultationDTO;
+    public ConsultationProfileDialog(Frame owner, IConsultationDialogListener listener, ViewType viewType, String consultationId) {
+        super(owner, "Thera Kairos", true);
+        initComponents();
+        this.listener = listener;
+        this.viewType = viewType;
+        this.consultationId = consultationId;
+        
+        if(viewType == ViewType.UPDATE) {
+            jLabelMainTitle.setText("Modificar Consulta");
+        }
+        
+        if(viewType == ViewType.VIEW) {
+            jLabelMainTitle.setText("Ver Consulta");
         }
        
-        initComponents();
+        datePickerStartConsultation.setCloseAfterSelected(true);
+        datePickerStartConsultation.setEditor(jFormattedTextFieldConsultationDate);
         
-        datePickerStartDate.setCloseAfterSelected(true);
-        datePickerStartDate.setEditor(jFormattedTextFieldStartDate);
-        datePickerEndDate.setCloseAfterSelected(true);
-        datePickerEndDate.setEditor(jFormattedTextFieldEndDate);
+        loadConsultationData();
 
-        loadComboBoxPatient();
+        setLocationRelativeTo(null);
         
-        setLocationRelativeTo(null);        
-    }
-
-    private void loadComboBoxPatient() {
-        
-//        for (PatientDTO patient : controller.getAllPatients()) {
-//
-//            jComboBoxMultipleSelectionPatients.addItem(patient);
-//
-//        }
-//        
-//        jComboBoxMultipleSelectionPatients.clearSelectedItems();
-
     }
     
-    private void saveAction() throws IOException {
+    private void loadConsultationData() {
+        
+        consultationDTO = listener.getConsultationById(consultationId);
+        
+        datePickerStartConsultation.setSelectedDate(LocalDate.parse(consultationDTO.getConsultationDTODate()));
+        jTextFieldStartTime.setText(consultationDTO.getConsultationDTOStartTime());
+        jTextFieldEndTime.setText(consultationDTO.getConsultationDTOEndTime());
+                
+        loadConsultationAmount();
+
+        loadConsultationPatients();
+        
+    }
+    
+    private void loadConsultationAmount() {
+    
+        String consultationAmount = listener.getConsultationAmountByConsultationId(consultationId);
+        
+        jTextFieldAmount.setText(consultationAmount);
+        
+    }
+    
+    private void loadConsultationPatients() {
+               
+        DefaultTableModel tableModel = (DefaultTableModel) jTablePatients.getModel();
+        
+        if (jTablePatients.isEditing()) {
+            jTablePatients.getCellEditor().stopCellEditing();
+        }
+        
+        tableModel.setRowCount(0);
+
+        List<PatientDTO> patientsDTO = listener.getPatientsByConsultationId(consultationId);
+
+        if (patientsDTO == null) {
+            this.showErrorMessage("Error: No se recibieron datos del servidor");
+            return;
+        }
+        
+        for (PatientDTO patientDTO : patientsDTO) {
+            tableModel.addRow(new Object[]{
+                patientDTO, 
+                patientDTO.getPatientDTOId()
+            });
+        }
+        
+    }
+    
+    private void updateAction() throws IOException {
 //        try {
 //            
 //            ConsultationDTO consultationDTO = getConsultationDTO();
@@ -104,15 +144,14 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
     
     /**  
      * Llama al diálogo y bloquea hasta que se cierre.  
-     * @param parent
-     * @param controller
+     * @param listener
      * @param viewType
-     * @param consultationDTO
+     * @param consultationId
      * @return true si el guardado fue exitoso, false si canceló o hubo error.  
      */
-    public static boolean showDialog(Component parent, ConsultationsFormController controller, ViewType viewType, ConsultationDTO consultationDTO) {
-        Frame owner = JOptionPane.getFrameForComponent(parent);
-        ConsultationProfileDialog dialog = new ConsultationProfileDialog(owner, controller, viewType, consultationDTO);
+    public static boolean showDialog(IConsultationDialogListener listener, ViewType viewType, String consultationId) {
+        Frame ownerFrame = JOptionPane.getFrameForComponent((Component) listener);
+        ConsultationProfileDialog dialog = new ConsultationProfileDialog(ownerFrame, listener, viewType, consultationId);
         dialog.setVisible(true);  
         return dialog.operationSuccess;
     }
@@ -146,8 +185,7 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        datePickerStartDate = new raven.datetime.component.date.DatePicker();
-        datePickerEndDate = new raven.datetime.component.date.DatePicker();
+        datePickerStartConsultation = new raven.datetime.component.date.DatePicker();
         jPanelMainForm = new javax.swing.JPanel();
         jPanelMainTitle = new javax.swing.JPanel();
         jLabelMainTitle = new javax.swing.JLabel();
@@ -158,11 +196,13 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
         jScrollPanePatiens = new javax.swing.JScrollPane();
         jTablePatients = new javax.swing.JTable();
         jPanel1 = new javax.swing.JPanel();
-        jFormattedTextFieldEndDate = new javax.swing.JFormattedTextField();
-        jFormattedTextFieldStartDate = new javax.swing.JFormattedTextField();
+        jFormattedTextFieldConsultationDate = new javax.swing.JFormattedTextField();
         jTextFieldAmount = new javax.swing.JTextField();
-        jLabelStarDate = new javax.swing.JLabel();
-        jLabelEndDate = new javax.swing.JLabel();
+        jTextFieldStartTime = new javax.swing.JTextField();
+        jTextFieldEndTime = new javax.swing.JTextField();
+        jLabelConsultationDate = new javax.swing.JLabel();
+        jLabelEndTime = new javax.swing.JLabel();
+        jLabelStartTime = new javax.swing.JLabel();
         jLabelAmount = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -179,12 +219,14 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
         jPanelMainTitleLayout.setHorizontalGroup(
             jPanelMainTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelMainTitleLayout.createSequentialGroup()
-                .addComponent(jLabelMainTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 773, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabelMainTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 639, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanelMainTitleLayout.setVerticalGroup(
             jPanelMainTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabelMainTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
+            .addGroup(jPanelMainTitleLayout.createSequentialGroup()
+                .addComponent(jLabelMainTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 9, Short.MAX_VALUE))
         );
 
         jPanelActions.setMinimumSize(new java.awt.Dimension(195, 100));
@@ -220,16 +262,16 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
                 .addComponent(jButtonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jButtonAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(59, 59, 59))
+                .addGap(40, 40, 40))
         );
         jPanelActionsLayout.setVerticalGroup(
             jPanelActionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelActionsLayout.createSequentialGroup()
-                .addGap(36, 36, 36)
+                .addGap(10, 10, 10)
                 .addGroup(jPanelActionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButtonAdd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButtonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 33, Short.MAX_VALUE))
+                    .addComponent(jButtonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonAdd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabelPatients.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
@@ -262,55 +304,69 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
             jTablePatients.getColumnModel().getColumn(1).setResizable(false);
         }
 
-        jFormattedTextFieldEndDate.setMinimumSize(new java.awt.Dimension(64, 30));
+        jFormattedTextFieldConsultationDate.setPreferredSize(new java.awt.Dimension(300, 30));
 
-        jFormattedTextFieldStartDate.setPreferredSize(new java.awt.Dimension(128, 30));
+        jTextFieldAmount.setPreferredSize(new java.awt.Dimension(300, 30));
 
-        jTextFieldAmount.setPreferredSize(new java.awt.Dimension(73, 30));
+        jTextFieldStartTime.setToolTipText("Horario de inicio");
+        jTextFieldStartTime.setPreferredSize(new java.awt.Dimension(300, 30));
 
-        jLabelStarDate.setText("Fecha de comienzo:");
+        jTextFieldEndTime.setToolTipText("Horario de finalizacion");
+        jTextFieldEndTime.setPreferredSize(new java.awt.Dimension(300, 30));
 
-        jLabelEndDate.setText("Fecha de fin:");
+        jLabelConsultationDate.setText("Fecha de consulta:");
 
-        jLabelAmount.setText("Precio de la consulta:");
+        jLabelEndTime.setText("Horario de fin:");
+
+        jLabelStartTime.setText("Horario de inicio:");
+
+        jLabelAmount.setText("Costo:");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(64, Short.MAX_VALUE)
+                .addContainerGap(26, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabelConsultationDate)
+                            .addComponent(jLabelStartTime))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jTextFieldStartTime, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jFormattedTextFieldConsultationDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabelAmount)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextFieldAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jTextFieldAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabelEndDate)
+                        .addComponent(jLabelEndTime)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jFormattedTextFieldEndDate, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabelStarDate)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jFormattedTextFieldStartDate, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(182, 182, 182))
+                        .addComponent(jTextFieldEndTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(130, 130, 130))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabelStarDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jFormattedTextFieldStartDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabelConsultationDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jFormattedTextFieldConsultationDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jFormattedTextFieldEndDate, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabelEndDate, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jTextFieldStartTime, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabelStartTime, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabelEndTime, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jTextFieldEndTime, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jTextFieldAmount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabelAmount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanelMainFormLayout = new javax.swing.GroupLayout(jPanelMainForm);
@@ -319,27 +375,26 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
             jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanelMainTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanelMainFormLayout.createSequentialGroup()
-                .addContainerGap(56, Short.MAX_VALUE)
+                .addContainerGap(40, Short.MAX_VALUE)
                 .addGroup(jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jLabelPatients)
                     .addComponent(jScrollPanePatiens)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(56, Short.MAX_VALUE))
-            .addComponent(jPanelActions, javax.swing.GroupLayout.DEFAULT_SIZE, 776, Short.MAX_VALUE)
+                .addContainerGap(40, Short.MAX_VALUE))
+            .addComponent(jPanelActions, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
         );
         jPanelMainFormLayout.setVerticalGroup(
             jPanelMainFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelMainFormLayout.createSequentialGroup()
                 .addComponent(jPanelMainTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabelPatients, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPanePatiens, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jPanelActions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanelActions, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -350,7 +405,7 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanelMainForm, javax.swing.GroupLayout.PREFERRED_SIZE, 634, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanelMainForm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
@@ -358,7 +413,7 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
 
     private void jButtonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddActionPerformed
         try {
-            saveAction();
+            updateAction();
         } catch (IOException ex) {
             Logger.getLogger(ConsultationProfileDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -369,17 +424,16 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
     }//GEN-LAST:event_jButtonCancelActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private raven.datetime.component.date.DatePicker datePickerEndDate;
-    private raven.datetime.component.date.DatePicker datePickerStartDate;
+    private raven.datetime.component.date.DatePicker datePickerStartConsultation;
     private javax.swing.JButton jButtonAdd;
     private javax.swing.JButton jButtonCancel;
-    private javax.swing.JFormattedTextField jFormattedTextFieldEndDate;
-    private javax.swing.JFormattedTextField jFormattedTextFieldStartDate;
+    private javax.swing.JFormattedTextField jFormattedTextFieldConsultationDate;
     private javax.swing.JLabel jLabelAmount;
-    private javax.swing.JLabel jLabelEndDate;
+    private javax.swing.JLabel jLabelConsultationDate;
+    private javax.swing.JLabel jLabelEndTime;
     private javax.swing.JLabel jLabelMainTitle;
     private javax.swing.JLabel jLabelPatients;
-    private javax.swing.JLabel jLabelStarDate;
+    private javax.swing.JLabel jLabelStartTime;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanelActions;
     private javax.swing.JPanel jPanelMainForm;
@@ -387,5 +441,7 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
     private javax.swing.JScrollPane jScrollPanePatiens;
     private javax.swing.JTable jTablePatients;
     private javax.swing.JTextField jTextFieldAmount;
+    private javax.swing.JTextField jTextFieldEndTime;
+    private javax.swing.JTextField jTextFieldStartTime;
     // End of variables declaration//GEN-END:variables
 }

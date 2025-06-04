@@ -22,6 +22,7 @@ public class ConsultationDAO {
         "consultation_id, " +
         "consultation_start_datetime, " +
         "consultation_end_datetime, " +
+        "consultation_amount, " +
         "consultation_status " +
         ") VALUES (?, ?, ?, ?)";
     
@@ -29,17 +30,21 @@ public class ConsultationDAO {
         "UPDATE tbl_consultation SET " +
         "consultation_start_datetime = ?, " +
         "consultation_end_datetime = ?, " +
+        "consultation_amount = ?," +
         "consultation_status = ? " +
         "WHERE consultation_id = ?";
     
     private static final String DELETE_SQL =
         "UPDATE tbl_consultation SET is_active = false WHERE consultation_id = ?";
 
+    private static final String SELECT_CONSULTATION_BY_ID =
+        "SELECT * FROM tbl_consultation WHERE consultation_id = ? and is_active = true";
+        
     private static final String SELECT_CONSULTATION_BY_DATE =
         "SELECT * FROM tbl_consultation WHERE DATE(consultation_start_datetime) = ? and is_active = true ORDER BY consultation_start_datetime";
     
-    private static final String SELECT_CONSULTATION_BY_ID =
-        "SELECT * FROM tbl_consultation WHERE consultation_id = ? and is_active = true";
+    private static final String SELECT_CONSULTATON_AMOUNT_BY_CONSULTATION_ID =
+        "SELECT consultation_amount FROM tbl_consultation WHERE consultation_id = ? and is_active = true";
     
     private static final String CHECK_START_DATETIME_SQL =
         "SELECT COUNT(*) FROM tbl_consultation WHERE consultation_start_datetime = ?";
@@ -52,7 +57,7 @@ public class ConsultationDAO {
      * @throws ConstraintViolationException Si se viola una restricción única
      * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public void insertConsultation(Consultation consultation) throws ConstraintViolationException, DataAccessException {
+    public void insertConsultation(Consultation consultation) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
 
@@ -78,7 +83,7 @@ public class ConsultationDAO {
      * @throws ConstraintViolationException Si se viola la clave única de tiempo
      * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public void updateConsultation(Consultation consultation) throws EntityNotFoundException, ConstraintViolationException, DataAccessException {
+    public void updateConsultation(Consultation consultation) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(UPDATE_SQL)) {
 
@@ -106,7 +111,7 @@ public class ConsultationDAO {
      * @throws EntityNotFoundException Si no se encuentra la consulta
      * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public void deleteConsultation(UUID consultationId) throws EntityNotFoundException, DataAccessException {
+    public void deleteConsultation(UUID consultationId) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(DELETE_SQL)) {
 
@@ -122,12 +127,37 @@ public class ConsultationDAO {
     }
     
     /**
+     * Obtiene la consulta para un identificador determinado 
+     * @param consultationId Identificador de la consulta
+     * @return consulta asociada al identificador
+     * @throws DataAccessException Si ocurre un error al acceder a la base de datos
+     */
+    public Consultation getConsultationById(UUID consultationId) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_CONSULTATION_BY_ID)) {
+            
+            ps.setString(1, consultationId.toString());
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToConsultation(rs);
+                } else {
+                    throw new EntityNotFoundException("Consultation", consultationId.toString());
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Error al obtener la consulta", e);
+        }
+    }
+    
+    /**
      * Obtiene todas las consultas para una fecha específica
      * @param consultationDate Fecha de las consultas a buscar
      * @return Lista de consultas para la fecha especificada
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public List<Consultation> getConsultationsByDate(Date consultationDate) throws DataAccessException {
+    public List<Consultation> getConsultationsByDate(Date consultationDate) {
         List<Consultation> consultations = new ArrayList<>();
 
         try (Connection conn = getConnection();
@@ -148,29 +178,27 @@ public class ConsultationDAO {
             throw new DataAccessException("Error al obtener consultas por fecha", e);
         }
     }
-
+    
     /**
-     * Obtiene la consulta para un identificador determinado 
+     * Obtiene el monto de una consulta determinada
      * @param consultationId Identificador de la consulta
-     * @return consulta asociada al identificador
+     * @return Monto de la consulta
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public Consultation getConsultationById(UUID consultationId) throws DataAccessException {
+    public Double getConsultationAmountByConsultationId(UUID consultationId) {
         try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(SELECT_CONSULTATION_BY_ID)) {
-            
+             PreparedStatement ps = conn.prepareStatement(SELECT_CONSULTATON_AMOUNT_BY_CONSULTATION_ID)) {
+
             ps.setString(1, consultationId.toString());
-            
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToConsultation(rs);
+                    return rs.getDouble("consultation_amount");
                 } else {
                     throw new EntityNotFoundException("Consultation", consultationId.toString());
                 }
             }
-
         } catch (SQLException e) {
-            throw new DataAccessException("Error al obtener la consulta", e);
+            throw new DataAccessException("Error al obtener el monto de la consulta", e);
         }
     }
     
@@ -180,7 +208,7 @@ public class ConsultationDAO {
      * @return true si ya existe, false en caso contrario
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public boolean isConsultationStartDatetimeExists(LocalDateTime startDateTime) throws DataAccessException {
+    public boolean isConsultationStartDatetimeExists(LocalDateTime startDateTime) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(CHECK_START_DATETIME_SQL)) {
 
@@ -205,6 +233,7 @@ public class ConsultationDAO {
             UUID.fromString(rs.getString("consultation_id")),
             rs.getTimestamp("consultation_start_datetime").toLocalDateTime(),
             rs.getTimestamp("consultation_end_datetime").toLocalDateTime(),
+            rs.getDouble("consultation_amount"),
             ConsultationStatus.valueOf(rs.getString("consultation_status"))
         );
     }
@@ -212,7 +241,7 @@ public class ConsultationDAO {
     /**
      * Obtiene una conexión a la base de datos
      */
-    private Connection getConnection() throws DataAccessException {
+    private Connection getConnection() {
         try {
             return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {

@@ -137,39 +137,40 @@ public class PatientsFilesManager {
     }
     
     /**
-     * Mueve la foto seleccionada a la carpeta "photo" del paciente,
+     * Devuelve el path absoluto de la foto del paciente en formato String.
+     * @param patientId ID del paciente
+     * @return ruta absoluta como String, o null si no existe
+     * @throws IOException si hay error de E/S
+     */
+    public String getPatientPhotoPath(UUID patientId) throws IOException {
+        Path photo = getPatientPhoto(patientId);
+        return photo != null ? photo.toAbsolutePath().toString() : "";
+    }
+    
+    /**
+     * Copia la foto seleccionada a la carpeta "photo" del paciente,
      * eliminando previamente cualquier imagen existente.
      * @param patientId ID del paciente
      * @param sourcePhotoPath ruta del archivo fuente
-     * @return la ruta al archivo movido
-     * @throws java.io.IOException
+     * @return la ruta al archivo copiado
+     * @throws IOException si ocurre un error de E/S
      */
-    public Path movePhotoToPatientDir(UUID patientId, Path sourcePhotoPath) throws IOException {
+    public Path copyPhotoToPatientDir(UUID patientId, Path sourcePhotoPath) throws IOException {
         Path destDir = baseDir.resolve(patientId.toString()).resolve("photo");
         Files.createDirectories(destDir);
 
-        // 1) Recorremos cualquier fichero existente en destDir
+        // Eliminar fotos existentes
         try (DirectoryStream<Path> ds = Files.newDirectoryStream(destDir)) {
             for (Path existing : ds) {
-                if (!Files.isRegularFile(existing)) 
-                    continue;
-
-                // 2) Comparamos contenido para ver si es idéntico
-                //    (Disponible en Java 12+: Files.mismatch devuelve -1 si idénticos)
-                long mismatch = Files.mismatch(existing, sourcePhotoPath);
-                if (mismatch == -1L) {
-                    // Es la misma imagen: devolvemos la ruta existente y salimos
-                    return existing;
-                } else {
-                    // No es idéntica: eliminamos la vieja y seguimos para mover la nueva
+                if (Files.isRegularFile(existing)) {
                     Files.delete(existing);
                 }
             }
         }
 
-        // 3) No había ninguna o era distinta: movemos la nueva
+        // Copiar la nueva imagen (dejando el archivo original intacto)
         Path target = destDir.resolve(sourcePhotoPath.getFileName());
-        return Files.move(sourcePhotoPath, target, StandardCopyOption.REPLACE_EXISTING);
+        return Files.copy(sourcePhotoPath, target, StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**

@@ -4,6 +4,7 @@
  */
 package com.application;
 
+import com.application.controllers.entities.ConsultationController;
 import com.application.controllers.entities.ConsultationPatientController;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
@@ -30,6 +31,7 @@ public class Test {
 
     /**
      * @param args the command line arguments
+     * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException, ValidationException, BusinessException {
 //        Patient patient = new Patient(
@@ -84,6 +86,10 @@ public class Test {
 //         );
 //
 //        ConsultationService cs = new ConsultationService();
+//        
+//        ConsultationController cc = new ConsultationController(cs);
+//        
+//        System.out.println(cc.getConsultationAmountByConsultationId("20735758-d837-40d1-bd6e-a520e1c44866"));
         
 //        cs.insertConsultation(c);
   
@@ -95,17 +101,17 @@ public class Test {
         
    //     System.out.println(consultations.toString());
    
-        ConsultationPatientDTO cp = new ConsultationPatientDTO(
-          "20735758-d837-40d1-bd6e-a520e1c44866",
-          "2063af17-fb8b-4bad-8cf1-14fa784273e2",
-          "1000.55",
-          "False",
-          "C:\\Users\\nsalazar\\Documents\\therapistapp\\patients\\2063af17-fb8b-4bad-8cf1-14fa784273e2\\notes\\group"
-         );
-        
-        ConsultationPatientService cps = new ConsultationPatientService();
-        
-        ConsultationPatientController cpc = new ConsultationPatientController(cps);
+//        ConsultationPatientDTO cp = new ConsultationPatientDTO(
+//          "20735758-d837-40d1-bd6e-a520e1c44866",
+//          "2063af17-fb8b-4bad-8cf1-14fa784273e2",
+//          "1000.55",
+//          "False",
+//          "C:\\Users\\nsalazar\\Documents\\therapistapp\\patients\\2063af17-fb8b-4bad-8cf1-14fa784273e2\\notes\\group"
+//         );
+//        
+//        ConsultationPatientService cps = new ConsultationPatientService();
+//        
+//        ConsultationPatientController cpc = new ConsultationPatientController(cps);
         
 //        cps.insertConsultationPatient(cp);
         
@@ -117,9 +123,9 @@ public class Test {
         
 //        cps.setConsultationPatientPaid("e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278", "ca23bc0c-b62b-4e67-aa75-3446a62a4d7e");
 
-        List<PatientDTO> patients = cpc.getPatientsByConsultationId("20735758-d837-40d1-bd6e-a520e1c44866");
-        
-        System.out.println(patients.toString());
+//        List<PatientDTO> patients = cpc.getPatientsByConsultationId("20735758-d837-40d1-bd6e-a520e1c44866");
+//        
+//        System.out.println(patients.toString());
         
 
     }

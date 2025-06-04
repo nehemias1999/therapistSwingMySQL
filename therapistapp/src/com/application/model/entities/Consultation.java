@@ -9,16 +9,19 @@ public class Consultation {
     private UUID consultationId;
     private LocalDateTime consultationStartDateTime;
     private LocalDateTime consultationEndDateTime;
+    private Double consultationAmount;
     private ConsultationStatus consultationStatus;
 
     public Consultation(
             UUID consultationId, 
             LocalDateTime consultationStartDateTime, 
             LocalDateTime consultationEndDateTime, 
+            Double consultationAmount, 
             ConsultationStatus consultationStatus) {
         this.consultationId = consultationId;
         this.consultationStartDateTime = consultationStartDateTime;
         this.consultationEndDateTime = consultationEndDateTime;
+        this.consultationAmount = consultationAmount;
         this.consultationStatus = consultationStatus;
     }
 
@@ -46,11 +49,19 @@ public class Consultation {
         this.consultationEndDateTime = consultationEndDateTime;
     }
 
+    public Double getConsultationAmount() {
+        return consultationAmount;
+    }
+
+    public void setConsultationAmount(Double consultationAmount) {
+        this.consultationAmount = consultationAmount;
+    }
+
     public ConsultationStatus getConsultationStatus() {
         return consultationStatus;
     }
 
     public void setConsultationStatus(ConsultationStatus consultationStatus) {
         this.consultationStatus = consultationStatus;
-    }
+    } 
 }

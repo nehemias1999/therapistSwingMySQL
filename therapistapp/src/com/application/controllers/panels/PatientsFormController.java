@@ -6,7 +6,7 @@ import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.CityDTO;
 import com.application.model.dto.PatientDTO;
-import com.application.view.panels.patient.PatientsForm;
+import com.application.view.panels.patient.PatientsPanel;
 import java.io.IOException;
 import java.util.List;
 import java.util.Collections;
@@ -15,46 +15,44 @@ public class PatientsFormController {
     
     private final PatientController patientController;
     private final CityController cityController;
-    private final PatientsForm patientsForm;
+    private final PatientsPanel patientsForm;
     
     public PatientsFormController(PatientController patientController, CityController cityController) {
         this.patientController = patientController;
         this.cityController = cityController;
         
-        this.patientsForm = new PatientsForm();
+        this.patientsForm = new PatientsPanel();
         this.patientsForm.setController(this);
     }
     
-    public PatientsForm getView() {
+    public PatientsPanel getView() {
         return patientsForm;
     }
     
     /**
      * Obtiene todos los pacientes en el sistema
-     * @return lista de PatientDTO de los pacientes encontrados
-     * @throws BusinessException Si hubo un error acediendo a los datos
+     * @return List PatientDTO
      */
     public List<PatientDTO> getAllPatients() {
         try {
             List<PatientDTO> patients = patientController.getAllPatients();
             return patients != null ? patients : Collections.emptyList();
         } catch (BusinessException e) {
-            patientsForm.showErrorMessage(e.getMessage());
+            patientsForm.showErrorMessage("Error al obtener pacientes: " + e.getMessage());
             return Collections.emptyList();
         }
     }
     
     /**
      * Obtiene todas las ciudades en el sistema
-     * @return lista de CityDTO de las ciudades encontrados
-     * @throws BusinessException Si hubo un error acediendo a los datos
+     * @return List CityDTO
      */
     public List<CityDTO> getAllCities() {
         try {
             List<CityDTO> cities = cityController.getAllCities();
             return cities != null ? cities : Collections.emptyList();
         } catch (BusinessException e) {
-            patientsForm.showErrorMessage(e.getMessage());
+            patientsForm.showErrorMessage("Error al obtener ciudades: " + e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -62,60 +60,66 @@ public class PatientsFormController {
     /**
      * Inserta un nuevo paciente
      * @param patientDTO Datos del paciente a insertar
-     * @throws ValidationException Si los datos no son válidos o el paciente ya existe
-     * @throws BusinessException Si ocurre otro error de negocio
-     * @throws java.io.IOException
      */
-    public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
-        patientController.insertPatient(patientDTO);
+    public void insertPatient(PatientDTO patientDTO) {
+        try {
+            patientController.insertPatient(patientDTO);
+        } catch (ValidationException | BusinessException e) {
+            patientsForm.showErrorMessage(e.getMessage());
+        } catch (IOException e) {
+            patientsForm.showErrorMessage("Error al guardar la foto del paciente: " + e.getMessage());
+        }
     }
     
     /**
      * Modifica paciente existente
      * @param patientDTO Datos del paciente a modificar
-     * @throws ValidationException Si los datos no son válidos
-     * @throws BusinessException Si ocurre otro error de negocio
-     * @throws java.io.IOException
      */
-    public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
-        patientController.updatePatient(patientDTO);
+    public void updatePatient(PatientDTO patientDTO) {
+        try {
+            patientController.updatePatient(patientDTO);
+        } catch (ValidationException | BusinessException e) {
+            patientsForm.showErrorMessage(e.getMessage());
+        } catch (IOException e) {
+            patientsForm.showErrorMessage("Error al actualizar la foto del paciente: " + e.getMessage());
+        }
     }
     
     /**
      * Elimina paciente existente
      * @param patientId del paciente a eliminar
-     * @throws ValidationException Si los datos no son válidos o el paciente ya existe
-     * @throws BusinessException Si ocurre otro error de negocio
      */
-    public void deletePatient(String patientId) throws ValidationException, BusinessException {
-        patientController.deletePatient(patientId);
+    public void deletePatient(String patientId) {
+        try {
+            patientController.deletePatient(patientId);
+        } catch (ValidationException | BusinessException e) {
+            patientsForm.showErrorMessage(e.getMessage());
+        }
     }
     
     /**
      * Obtiene el paciente en base a su Id
      * @param patientId
-     * @return PatientDTO del paciente a buscar
-     * @throws BusinessException Si hubo un error acediendo a los datos
-     * @throws ValidationException Si la ciudad no fue encontrada
+     * @return PatientDTO
      */
-    public PatientDTO getPatientById(String patientId) throws BusinessException, ValidationException {
-        return patientController.getPatientById(patientId);
+    public PatientDTO getPatientById(String patientId) {
+        try {
+            return patientController.getPatientById(patientId);
+        } catch (ValidationException | BusinessException e) {
+            patientsForm.showErrorMessage(e.getMessage());
+            return null;
+        }
     } 
     
     /**
      * Obtiene el nombre de la ciudad en base a su Id
      * @param cityId
-     * @return Nombre de la ciudad a buscar
-     * @throws BusinessException Si hubo un error acediendo a los datos
-     * @throws ValidationException Si la ciudad no fue encontrada
+     * @return String City name
      */
     public String getCityNameById(String cityId) {
         try {
             return cityController.getCityNameById(cityId);
-        } catch (BusinessException e) {
-            patientsForm.showErrorMessage(e.getMessage());
-            return null;
-        } catch (ValidationException e) {
+        } catch (ValidationException | BusinessException e) {
             patientsForm.showErrorMessage(e.getMessage());
             return null;
         }
@@ -123,16 +127,16 @@ public class PatientsFormController {
     
     /**
      * Busca pacientes en base a su apellido
-     * @param patientLastName Search term
-     * @return Lista de pacientes que coincidan
-     * @throws BusinessException  Si ocurre otro error de negocio
+     * @param patientData Search term
+     * @return List PatientDTO 
      */
     public List<PatientDTO> getPatientsThatMatch(String patientData) {
         try {
-            return patientController.getPatientsThatMatch(patientData);
+            List<PatientDTO> result = patientController.getPatientsThatMatch(patientData);
+            return result != null ? result : Collections.emptyList();
         } catch (BusinessException e) {
             patientsForm.showErrorMessage("Error en búsqueda: " + e.getMessage());
-            return null;
+            return Collections.emptyList();
         }
     }
 }

@@ -81,7 +81,7 @@ public class PatientDAO {
      * @return Lista de pacientes
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public List<Patient> getAllPatients() throws DataAccessException {
+    public List<Patient> getAllPatients() {
         List<Patient> list = new ArrayList<>();
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(SELECT_ALL);
@@ -91,7 +91,6 @@ public class PatientDAO {
                 list.add(mapResultSetToPatient(rs));
             }
             return list;
-
         } catch (SQLException e) {
             throw new DataAccessException("Error al listar pacientes", e);
         }
@@ -103,7 +102,7 @@ public class PatientDAO {
      * @throws ConstraintViolationException Si se viola una restricción única
      * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public void insertPatient(Patient patient) throws ConstraintViolationException, DataAccessException {
+    public void insertPatient(Patient patient) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
 
@@ -130,18 +129,11 @@ public class PatientDAO {
             } else {
                 ps.setNull(13, Types.VARCHAR);
             }
-
+            
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            if (e.getErrorCode() == MYSQL_DUPLICATE_ERROR) {
-                String msg = e.getMessage().toLowerCase();
-                if (msg.contains(UNIQUE_DNI_CONSTRAINT)) {
-                    throw new ConstraintViolationException("Patient", "DNI");
-                } else if (msg.contains(UNIQUE_EMAIL_CONSTRAINT)) {
-                    throw new ConstraintViolationException("Patient", "email");
-                }
-            }
+            handleConstraintViolation(e, "Patient");
             throw new DataAccessException("Error al insertar paciente", e);
         }
     }
@@ -152,20 +144,20 @@ public class PatientDAO {
      * @throws ConstraintViolationException Si se viola una restricción única
      * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public void updatePatient(Patient patient) throws EntityNotFoundException, ConstraintViolationException, DataAccessException {
+    public void updatePatient(Patient patient) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(UPDATE_SQL)) {
 
-            ps.setString(1,  patient.getPatientDNI());
-            ps.setString(2,  patient.getPatientName());
-            ps.setString(3,  patient.getPatientLastName());
-            ps.setDate(4,    Date.valueOf(patient.getPatientBirthDate()));
-            ps.setString(5,  patient.getPatientOccupation());
-            ps.setString(6,  patient.getPatientPhone());
-            ps.setString(7,  patient.getPatientEmail());
-            ps.setString(8,  patient.getCityId().toString());
-            ps.setString(9,  patient.getPatientAddress());
-            ps.setInt(10,     patient.getPatientAddressNumber());
+            ps.setString(1, patient.getPatientDNI());
+            ps.setString(2, patient.getPatientName());
+            ps.setString(3, patient.getPatientLastName());
+            ps.setDate(4, Date.valueOf(patient.getPatientBirthDate()));
+            ps.setString(5, patient.getPatientOccupation());
+            ps.setString(6, patient.getPatientPhone());
+            ps.setString(7, patient.getPatientEmail());
+            ps.setString(8, patient.getCityId().toString());
+            ps.setString(9, patient.getPatientAddress());
+            ps.setInt(10, patient.getPatientAddressNumber());
 
             if (patient.getPatientAddressFloor() >= 0) {
                 ps.setInt(11, patient.getPatientAddressFloor());
@@ -178,7 +170,6 @@ public class PatientDAO {
             } else {
                 ps.setNull(12, Types.VARCHAR);
             }
-
             ps.setString(13, patient.getPatientId().toString());
 
             int rows = ps.executeUpdate();
@@ -187,14 +178,7 @@ public class PatientDAO {
             }
 
         } catch (SQLException e) {
-            if (e.getErrorCode() == MYSQL_DUPLICATE_ERROR) {
-                String msg = e.getMessage().toLowerCase();
-                if (msg.contains(UNIQUE_DNI_CONSTRAINT)) {
-                    throw new ConstraintViolationException("Patient", "DNI");
-                } else if (msg.contains(UNIQUE_EMAIL_CONSTRAINT)) {
-                    throw new ConstraintViolationException("Patient", "email");
-                }
-            }
+            handleConstraintViolation(e, "Patient");
             throw new DataAccessException("Error al actualizar paciente", e);
         }
     }
@@ -205,7 +189,7 @@ public class PatientDAO {
      * @throws EntityNotFoundException Si no se encuentra el paciente
      * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public void deletePatient(UUID patientId) throws EntityNotFoundException, DataAccessException {
+    public void deletePatient(UUID patientId) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(DELETE_SQL)) {
 
@@ -220,14 +204,14 @@ public class PatientDAO {
         }
     }
     
-      /**
+    /**
      * Busca un paciente por su Id
      * @param patientId del paciente a buscar
      * @return El paciente encontrado
      * @throws EntityNotFoundException Si no se encuentra el paciente
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public Patient getPatientById(UUID patientId) throws EntityNotFoundException, DataAccessException {
+    public Patient getPatientById(UUID patientId) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(SELECT_BY_ID)) {
 
@@ -251,16 +235,16 @@ public class PatientDAO {
      * @throws EntityNotFoundException Si no se encuentra el paciente
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public Patient getPatientByDNI(String dni) throws EntityNotFoundException, DataAccessException {
+    public Patient getPatientByDNI(String patientDNI) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(SELECT_BY_DNI)) {
 
-            ps.setString(1, dni);
+            ps.setString(1, patientDNI);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToPatient(rs);
                 } else {
-                    throw new EntityNotFoundException("Patient", dni);
+                    throw new EntityNotFoundException("Patient", patientDNI);
                 }
             }
         } catch (SQLException e) {
@@ -274,7 +258,7 @@ public class PatientDAO {
      * @return true si existe, false si no
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public boolean isPatientDNIExists(String patientDNI) throws DataAccessException {
+    public boolean isPatientDNIExists(String patientDNI) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(EXISTS_DNI_SQL)) {
 
@@ -293,7 +277,7 @@ public class PatientDAO {
      * @return true si existe, false si no
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public boolean isPatientEmailExists(String patientEmail) throws DataAccessException {
+    public boolean isPatientEmailExists(String patientEmail) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(EXISTS_EMAIL_SQL)) {
 
@@ -303,6 +287,17 @@ public class PatientDAO {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error al verificar email existente", e);
+        }
+    }
+        
+    private void handleConstraintViolation(SQLException e, String entity) {
+        if (e.getErrorCode() == MYSQL_DUPLICATE_ERROR) {
+            String msg = e.getMessage().toLowerCase();
+            if (msg.contains(UNIQUE_DNI_CONSTRAINT)) {
+                throw new ConstraintViolationException(entity, "DNI");
+            } else if (msg.contains(UNIQUE_EMAIL_CONSTRAINT)) {
+                throw new ConstraintViolationException(entity, "email");
+            }
         }
     }
     
@@ -331,7 +326,7 @@ public class PatientDAO {
     /**
      * Obtiene una conexión a la base de datos
      */
-    private Connection getConnection() throws DataAccessException {
+    private Connection getConnection() {
         try {
             return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {

@@ -17,14 +17,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
-public class ConsultationFormDialog extends javax.swing.JDialog implements IPanels {
+public class ConsultationDialog extends javax.swing.JDialog implements IPanels {
     private final ConsultationsFormController controller;
     private ViewType viewType;
     private ConsultationDTO consultationDTO;
     
     private boolean operationSuccess = false;
 
-    public ConsultationFormDialog(Frame owner, ConsultationsFormController controller, ViewType viewtype, ConsultationDTO consultationDTO) {
+    public ConsultationDialog(Frame owner, ConsultationsFormController controller, ViewType viewtype, ConsultationDTO consultationDTO) {
         super(owner, "Agregar consulta", true);
         this.controller = controller;
         this.viewType = viewtype;
@@ -112,7 +112,7 @@ public class ConsultationFormDialog extends javax.swing.JDialog implements IPane
      */
     public static boolean showDialog(Component parent, ConsultationsFormController controller, ViewType viewType, ConsultationDTO consultationDTO) {
         Frame owner = JOptionPane.getFrameForComponent(parent);
-        ConsultationFormDialog dialog = new ConsultationFormDialog(owner, controller, viewType, consultationDTO);
+        ConsultationDialog dialog = new ConsultationDialog(owner, controller, viewType, consultationDTO);
         dialog.setVisible(true);  
         return dialog.operationSuccess;
     }
@@ -321,7 +321,7 @@ public class ConsultationFormDialog extends javax.swing.JDialog implements IPane
         try {
             saveAction();
         } catch (IOException ex) {
-            Logger.getLogger(ConsultationFormDialog.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ConsultationDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButtonAddActionPerformed
 

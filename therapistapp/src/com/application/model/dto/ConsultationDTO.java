@@ -3,6 +3,7 @@ package com.application.model.dto;
 public class ConsultationDTO {
     private String consultationDTOId;
     private String consultationDTOStartDateTime;
+    private String consultationDTOAmount;
     private String consultationDTOEndDateTime;
     private String consultationDTOStatus;
 
@@ -12,10 +13,12 @@ public class ConsultationDTO {
     public ConsultationDTO(
             String consultationDTOId, 
             String consultationDTOStartDateTime, 
+            String consultationDTOAmount, 
             String consultationDTOEndDateTime, 
             String consultationDTOStatus) {
         this.consultationDTOId = consultationDTOId;
         this.consultationDTOStartDateTime = consultationDTOStartDateTime;
+        this.consultationDTOAmount = consultationDTOAmount;
         this.consultationDTOEndDateTime = consultationDTOEndDateTime;
         this.consultationDTOStatus = consultationDTOStatus;
     }
@@ -36,6 +39,14 @@ public class ConsultationDTO {
         this.consultationDTOStartDateTime = consultationDTOStartDateTime;
     }
 
+    public String getConsultationDTOAmount() {
+        return consultationDTOAmount;
+    }
+
+    public void setConsultationDTOAmount(String consultationDTOAmount) {
+        this.consultationDTOAmount = consultationDTOAmount;
+    }
+
     public String getConsultationDTOEndDateTime() {
         return consultationDTOEndDateTime;
     }
@@ -51,10 +62,13 @@ public class ConsultationDTO {
     public void setConsultationDTOStatus(String consultationDTOStatus) {
         this.consultationDTOStatus = consultationDTOStatus;
     }
+
+    public String getConsultationDTODate() {
+        return consultationDTOStartDateTime.substring(0,10);      
+    }
     
     public String getConsultationDTOStartTime() {
-        return consultationDTOEndDateTime.substring(11,16);
-        
+        return consultationDTOStartDateTime.substring(11,16);      
     }
     
     public String getConsultationDTOEndTime() {

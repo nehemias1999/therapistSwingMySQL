@@ -5,19 +5,16 @@ import java.util.UUID;
 public class ConsultationPatient {
     private UUID consultationId;
     private UUID patientId;
-    private Double consultationAmount;
     private Boolean isPaid;
     private String patientNotePath;
 
     public ConsultationPatient(
             UUID consultationId, 
             UUID patientId, 
-            Double consultationAmount, 
             Boolean isPaid, 
             String patientNotePath) {
         this.consultationId = consultationId;
         this.patientId = patientId;
-        this.consultationAmount = consultationAmount;
         this.isPaid = isPaid;
         this.patientNotePath = patientNotePath;
     }
@@ -36,14 +33,6 @@ public class ConsultationPatient {
 
     public void setPatientId(UUID patientId) {
         this.patientId = patientId;
-    }
-
-    public Double getConsultationAmount() {
-        return consultationAmount;
-    }
-
-    public void setConsultationAmount(Double consultationAmount) {
-        this.consultationAmount = consultationAmount;
     }
 
     public Boolean getIsPaid() {

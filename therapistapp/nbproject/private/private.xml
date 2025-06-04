@@ -3,11 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/view/panels/consultation/ConsultationsForm.java</file>
             <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/controllers/panels/ConsultationsFormController.java</file>
             <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/view/panels/consultation/ConsultationProfileDialog.java</file>
-            <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/view/panels/patient/PatientsForm.java</file>
-            <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/view/panels/consultation/ConsultationFormDialog.java</file>
+            <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/controllers/entities/ConsultationController.java</file>
+            <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/view/panels/consultation/ConsultationsPanel.java</file>
+            <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/model/dao/PatientDAO.java</file>
+            <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/services/ConsultationService.java</file>
+            <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/model/dao/ConsultationDAO.java</file>
         </group>
     </open-files>
 </project-private>

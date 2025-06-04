@@ -43,8 +43,8 @@ public class PatientService {
     public List<PatientDTO> getAllPatients() throws BusinessException {
         try {
             return patientDAO.getAllPatients().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
         } catch (DataAccessException e) {
             throw new BusinessException("Error al listar pacientes", e);
         }
@@ -55,25 +55,19 @@ public class PatientService {
      * @param patientDTO Datos del paciente a insertar
      * @throws ValidationException Si los datos no son válidos o el paciente ya existe
      * @throws BusinessException Si ocurre otro error de negocio
-     * @throws java.io.IOException
+     * @throws IOException
      */
     public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        validatePatientData(patientDTO);
         try {
-            
-            validatePatientData(patientDTO, false);
-            
             Patient patient = createPatientFromDTO(patientDTO, false);
-            patientDAO.insertPatient(patient);  
+            patientDAO.insertPatient(patient);
             fileManager.initPatientFolders(patient.getPatientId());
-            if(!patientDTO.getPatientDTOPhotoPath().isEmpty()) {
-                fileManager.movePhotoToPatientDir(patient.getPatientId(), Path.of(patientDTO.getPatientDTOPhotoPath()));
-            }
-            
+            movePatientPhotoIfExists(patientDTO, patient.getPatientId());
         } catch (ConstraintViolationException e) {
-            throw new ValidationException("Ya existe un paciente con ese " +
-                    ("DNI".equalsIgnoreCase(e.getField()) ? "DNI" : "e-mail"));
+            throw new ValidationException("Ya existe un paciente con ese " + e.getField());
         } catch (DataAccessException e) {
-            throw new BusinessException("Error de base de datos al insertar paciente", e);
+            throw new BusinessException("Error al insertar paciente", e);
         }
     }
     
@@ -82,33 +76,20 @@ public class PatientService {
      * @param patientDTO Datos del paciente a modificar
      * @throws ValidationException Si los datos no son válidos o el paciente ya existe
      * @throws BusinessException Si ocurre otro error de negocio
-     * @throws java.io.IOException
+     * @throws IOException
      */
     public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        validatePatientData(patientDTO);
         try {
-            
-            validatePatientData(patientDTO, true);
-            
             Patient patient = createPatientFromDTO(patientDTO, true);
             patientDAO.updatePatient(patient);
-            if(fileManager.hasPatientPhoto(patient.getPatientId())) {
-                if(!patientDTO.getPatientDTOPhotoPath().isEmpty()) {
-                    fileManager.movePhotoToPatientDir(patient.getPatientId(), Path.of(patientDTO.getPatientDTOPhotoPath()));
-                } else {
-                    fileManager.deletePatientPhoto(patient.getPatientId());
-                }
-            }
-            if(!fileManager.hasPatientPhoto(patient.getPatientId()) && !patientDTO.getPatientDTOPhotoPath().isEmpty()) {
-                fileManager.movePhotoToPatientDir(patient.getPatientId(), Path.of(patientDTO.getPatientDTOPhotoPath()));
-            }
-            
+            managePatientPhoto(patientDTO, patient.getPatientId());
         } catch (EntityNotFoundException e) {
             throw new ValidationException("No existe paciente con Id '" + patientDTO.getPatientDTOId() + "'");
         } catch (ConstraintViolationException e) {
-            throw new ValidationException("Ya existe otro paciente con ese " +
-                    ("DNI".equalsIgnoreCase(e.getField()) ? "DNI" : "e-mail"));
+            throw new ValidationException("Ya existe otro paciente con ese " + e.getField());
         } catch (DataAccessException e) {
-            throw new BusinessException("Error de base de datos al actualizar paciente", e);
+            throw new BusinessException("Error al actualizar paciente", e);
         }
     }
     
@@ -124,13 +105,15 @@ public class PatientService {
         } catch (EntityNotFoundException e) {
             throw new ValidationException("No existe paciente con Id '" + patientId + "'");
         } catch (DataAccessException e) {
-            throw new BusinessException("Error de base de datos al eliminar paciente", e);
+            throw new BusinessException("Error al eliminar paciente", e);
         }
     }
 
     /**
      * Obtiene el paciente en base a un dni
      * @param patientId del paciente a buscar
+     * @return PatientDTO 
+     * @throws ValidationException Si los datos no son válidos o el paciente no existe
      * @throws BusinessException Si ocurre un error durante el proceso
      */
     public PatientDTO getPatientById(String patientId) throws ValidationException, BusinessException {
@@ -139,139 +122,110 @@ public class PatientService {
         } catch (EntityNotFoundException e) {
             throw new ValidationException("No existe paciente con Id '" + patientId + "'");
         } catch (DataAccessException e) {
-            throw new BusinessException("Error de base de datos al encontrar paciente", e);
+            throw new BusinessException("Error al buscar paciente", e);
         }
     }
     
     /**
      * Valida los datos del paciente antes de la inserción
      */
-    private void validatePatientData(PatientDTO dto, Boolean isUpdate) throws ValidationException, DataAccessException {
-        // DNI: obligatorio, 8 dígitos
-        String dni = dto.getPatientDTODNI();
-        if (dni == null || !dni.matches("\\d{8}")) {
-            throw new ValidationException("El DNI debe contener exactamente 8 dígitos");
+    private void validatePatientData(PatientDTO dto) throws ValidationException {
+        if (dto.getPatientDTODNI() == null || !dto.getPatientDTODNI().matches("\\d{8}")) {
+            throw new ValidationException("El DNI debe contener 8 dígitos");
         }
-        // Nombre
-        if (dto.getPatientDTOName() == null || dto.getPatientDTOName().trim().isEmpty()) {
-            throw new ValidationException("El nombre del paciente es requerido");
+        if (isNullOrEmpty(dto.getPatientDTOName())) {
+            throw new ValidationException("El nombre es requerido");
         }
-        
-        // Apellido
-        if (dto.getPatientDTOLastName() == null || dto.getPatientDTOLastName().trim().isEmpty()) {
-            throw new ValidationException("El apellido del paciente es requerido");
+        if (isNullOrEmpty(dto.getPatientDTOLastName())) {
+            throw new ValidationException("El apellido es requerido");
         }
-        // Fecha de nacimiento
-        String birth = dto.getPatientDTOBirthDate();
-        if (birth == null || birth.trim().isEmpty()) {
+        if (isNullOrEmpty(dto.getPatientDTOBirthDate())) {
             throw new ValidationException("La fecha de nacimiento es requerida");
         }
-        LocalDate birthDate;
         try {
-            birthDate = LocalDate.parse(birth);
-        } catch (Exception ex) {
-            throw new ValidationException("Formato de fecha inválido (esperado YYYY-MM-DD)");
+            LocalDate birth = LocalDate.parse(dto.getPatientDTOBirthDate());
+            if (birth.isAfter(LocalDate.now())) {
+                throw new ValidationException("La fecha de nacimiento no puede ser futura");
+            }
+        } catch (Exception e) {
+            throw new ValidationException("Formato de fecha inválido (YYYY-MM-DD)");
         }
-        if (birthDate.isAfter(LocalDate.now())) {
-            throw new ValidationException("La fecha de nacimiento no puede ser futura");
+        if (isNullOrEmpty(dto.getPatienDTOOccupation())) {
+            throw new ValidationException("La ocupación es requerida");
         }
-        
-        // Ocupacion
-        if (dto.getPatienDTOOccupation() == null || dto.getPatienDTOOccupation().trim().isEmpty()) {
-            throw new ValidationException("La ocupacion del paciente es requerida");
+        if (!PHONE_PATTERN.matcher(dto.getPatientDTOPhone()).matches()) {
+            throw new ValidationException("Formato de teléfono inválido");
         }
-        
-        // Teléfono
-        String phone = dto.getPatientDTOPhone();
-        if (phone == null || !PHONE_PATTERN.matcher(phone.trim()).matches()) {
-            throw new ValidationException("Teléfono inválido (solo dígitos, 7–15 caracteres)");
+        if (!EMAIL_PATTERN.matcher(dto.getPatientDTOEmail()).matches()) {
+            throw new ValidationException("Formato de email inválido");
         }
-        
-        // E-mail
-        String email = dto.getPatientDTOEmail();
-        if (email == null || !EMAIL_PATTERN.matcher(email.trim()).matches()) {
-            throw new ValidationException("E-mail inválido");
-        }
-        
-        // Ciudad
-        String cityId = dto.getCityId();
-        if (cityId == null || cityId.trim().isEmpty()) {
+        if (isNullOrEmpty(dto.getCityId())) {
             throw new ValidationException("La ciudad es requerida");
         }
-        
-        // Dirección
-        if (dto.getPatientDTOAddress() == null || dto.getPatientDTOAddress().trim().isEmpty()) {
+        if (isNullOrEmpty(dto.getPatientDTOAddress())) {
             throw new ValidationException("La dirección es requerida");
         }
-        
-        // Número
-        String num = dto.getPatientDTOAddressNumber();
-        if (num == null || !num.matches("\\d+")) {
+        if (isNullOrEmpty(dto.getPatientDTOAddressNumber()) || !dto.getPatientDTOAddressNumber().matches("\\d+")) {
             throw new ValidationException("El número de dirección debe ser numérico");
         }
-        
-        // Piso (opcional)
         String floor = dto.getPatientDTOAddressFloor();
-        if (floor != null && !floor.trim().isEmpty() && !floor.matches("\\d+")) {
-            throw new ValidationException("El piso debe ser un número entero");
+        if (floor != null && !floor.isEmpty() && !floor.matches("\\d+")) {
+            throw new ValidationException("El piso debe ser numérico");
         }
+    }
+    
+    private void movePatientPhotoIfExists(PatientDTO dto, UUID patientId) throws IOException {
+        if (!dto.getPatientDTOPhotoPath().isEmpty()) {
+            fileManager.copyPhotoToPatientDir(patientId, Path.of(dto.getPatientDTOPhotoPath()));
+        }
+    }
+
+    /**
+     * Obtiene el paciente en base a un dni
+     * @param patientDTO del paciente
+     * @param patientId Identificador del paciente 
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
+    private void managePatientPhoto(PatientDTO dto, UUID patientId) throws IOException {
+        boolean newPhoto = !fileManager.hasPatientPhoto(patientId) && !dto.getPatientDTOPhotoPath().isEmpty();
+        boolean changedPhoto = fileManager.hasPatientPhoto(patientId) && !dto.getPatientDTOPhotoPath().isEmpty() && (!fileManager.getPatientPhotoPath(patientId).equals(dto.getPatientDTOPhotoPath()));
+        boolean deletedPhoto = fileManager.hasPatientPhoto(patientId) && dto.getPatientDTOPhotoPath().isEmpty();
         
-        // Departamento (opcional)
+        if (newPhoto || changedPhoto) {
+            fileManager.copyPhotoToPatientDir(patientId, Path.of(dto.getPatientDTOPhotoPath()));
+        } 
         
-        // Unicidad: DNI y e-mail
-        // En creación o si cambiaron en edición
-        if (!isUpdate || patientDAO.isPatientDNIExists(dni.trim()) 
-            && (isUpdate && !dto.getPatientDTOId().isEmpty()
-                 && !dni.trim().equalsIgnoreCase(
-                     patientDAO.getPatientByDNI(dni.trim()).getPatientDNI()))) {
-            if (patientDAO.isPatientDNIExists(dni.trim())) {
-                throw new ValidationException("Ya existe un paciente con DNI '" + dni.trim() + "'");
-            }
+        if (deletedPhoto) {
+            fileManager.deletePatientPhoto(patientId);
         }
-        if (!isUpdate || patientDAO.isPatientEmailExists(email.trim())
-            && (isUpdate && !dto.getPatientDTOId().isEmpty()
-                 && !email.trim().equalsIgnoreCase(
-                     patientDAO.getPatientByDNI(dni.trim()).getPatientEmail()))) {
-            if (patientDAO.isPatientEmailExists(email.trim())) {
-                throw new ValidationException("Ya existe un paciente con e-mail '" + email.trim() + "'");
-            }
-        }
+
     }
 
     /**
      * Crea un objeto Patient a partir de un PatientDTO
      */
-    public Patient createPatientFromDTO(PatientDTO dto, Boolean isUpdate) {
-        Patient p = new Patient();
-        if(!isUpdate) {
-            p.setPatientId(UUID.randomUUID());
-        } else {
-            p.setPatientId(UUID.fromString(dto.getPatientDTOId().trim()));
-        }
-
-        p.setPatientDNI(dto.getPatientDTODNI().trim());
-        p.setPatientName(dto.getPatientDTOName().toLowerCase().trim());
-        p.setPatientLastName(dto.getPatientDTOLastName().toLowerCase().trim());
-        p.setPatientBirthDate(LocalDate.parse(dto.getPatientDTOBirthDate().trim()));
-        p.setPatientOccupation(dto.getPatienDTOOccupation().toLowerCase().trim());
-        p.setPatientPhone(dto.getPatientDTOPhone().toLowerCase().trim());
-        p.setPatientEmail(dto.getPatientDTOEmail().toLowerCase().trim());
-        p.setCityId(UUID.fromString(dto.getCityId().trim()));
-        p.setPatientAddress(dto.getPatientDTOAddress().toLowerCase().trim());
-        p.setPatientAddressNumber(Integer.parseInt(dto.getPatientDTOAddressNumber().trim()));
-        p.setPatientAddressFloor(
-            (dto.getPatientDTOAddressFloor() != null && !dto.getPatientDTOAddressFloor().isEmpty())
-            ? Integer.parseInt(dto.getPatientDTOAddressFloor().trim())
-            : 0
+    private Patient createPatientFromDTO(PatientDTO dto, boolean isUpdate) {
+        return new Patient(
+                isUpdate ? UUID.fromString(dto.getPatientDTOId()) : UUID.randomUUID(),
+                dto.getPatientDTODNI().trim(),
+                dto.getPatientDTOName().trim().toLowerCase(),
+                dto.getPatientDTOLastName().trim().toLowerCase(),
+                LocalDate.parse(dto.getPatientDTOBirthDate().trim()),
+                dto.getPatienDTOOccupation().trim().toLowerCase(),
+                dto.getPatientDTOPhone().trim(),
+                dto.getPatientDTOEmail().trim().toLowerCase(),
+                UUID.fromString(dto.getCityId().trim()),
+                dto.getPatientDTOAddress().trim().toLowerCase(),
+                Integer.parseInt(dto.getPatientDTOAddressNumber().trim()),
+                dto.getPatientDTOAddressFloor() != null && !dto.getPatientDTOAddressFloor().isEmpty()
+                        ? Integer.parseInt(dto.getPatientDTOAddressFloor().trim()) : 0,
+                dto.getPatientDTOAddressDepartment() != null ? dto.getPatientDTOAddressDepartment().trim().toLowerCase() : null
         );
-        p.setPatientAddressDepartment(
-            dto.getPatientDTOAddressDepartment() != null 
-            ? dto.getPatientDTOAddressDepartment().toLowerCase().trim() 
-            : null
-        );
-        return p;
     }
 
+    /**
+     * Crea un objeto PatientDTO a partir de un Patient
+     */
     private PatientDTO convertToDTO(Patient p) {
         PatientDTO dto = new PatientDTO();
         dto.setPatientDTOId(p.getPatientId().toString());
@@ -285,26 +239,17 @@ public class PatientService {
         dto.setCityId(p.getCityId().toString());
         dto.setPatientDTOAddress(p.getPatientAddress());
         dto.setPatientDTOAddressNumber(String.valueOf(p.getPatientAddressNumber()));
-        dto.setPatientDTOAddressFloor(
-            p.getPatientAddressFloor() > 0 ? String.valueOf(p.getPatientAddressFloor()) : ""
-        );
-        dto.setPatientDTOAddressDepartment(
-            p.getPatientAddressDepartment() != null ? p.getPatientAddressDepartment() : ""
-        );
-        // photoPath
+        dto.setPatientDTOAddressFloor(p.getPatientAddressFloor() > 0 ? String.valueOf(p.getPatientAddressFloor()) : "");
+        dto.setPatientDTOAddressDepartment(p.getPatientAddressDepartment() != null ? p.getPatientAddressDepartment() : "");
         try {
-            if (fileManager.hasPatientPhoto(p.getPatientId())) {
-                dto.setPatientDTOPhotoPath(
-                    fileManager.getPatientPhoto(p.getPatientId())
-                               .toString()
-                );
-            } else {
-                dto.setPatientDTOPhotoPath("");
-            }
-        } catch (IOException ioe) {
-            // En caso de fallo de E/S, devolvemos vacío (o podríamos loggear)
+            dto.setPatientDTOPhotoPath(fileManager.hasPatientPhoto(p.getPatientId()) ? fileManager.getPatientPhoto(p.getPatientId()).toString() : "");
+        } catch (IOException e) {
             dto.setPatientDTOPhotoPath("");
         }
         return dto;
     }
+    
+    private boolean isNullOrEmpty(String str) {
+        return str == null || str.trim().isEmpty();
+    }    
 }

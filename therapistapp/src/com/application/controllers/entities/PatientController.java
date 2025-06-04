@@ -32,7 +32,7 @@ public class PatientController {
      * @throws java.io.IOException
      */
     public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
-        validatePatientData(patientDTO);
+        validateBasicFields(patientDTO);
         patientService.insertPatient(patientDTO);
     }
     
@@ -44,7 +44,7 @@ public class PatientController {
      * @throws java.io.IOException
      */
     public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
-        validatePatientData(patientDTO);
+        validateBasicFields(patientDTO);
         patientService.updatePatient(patientDTO);
     }
     
@@ -55,10 +55,9 @@ public class PatientController {
      * @throws BusinessException Si ocurre otro error de negocio
      */
     public void deletePatient(String patientId) throws ValidationException, BusinessException {
-        if (patientId == null) {
+        if (patientId == null || patientId.trim().isEmpty()) {
             throw new ValidationException("El Id del paciente es requerido");
         }
-        
         patientService.deletePatient(patientId);
     }
 
@@ -70,8 +69,11 @@ public class PatientController {
      * @throws BusinessException Si ocurre otro error de negocio
      */
     public PatientDTO getPatientById(String patientId) throws ValidationException, BusinessException {
+        if (patientId == null || patientId.trim().isEmpty()) {
+            throw new ValidationException("El Id del paciente es requerido");
+        }
         return patientService.getPatientById(patientId);
-    } 
+    }
     
     /**
      * Busca pacientes en base a su apellido o su nombre
@@ -80,11 +82,11 @@ public class PatientController {
      * @throws BusinessException  Si ocurre otro error de negocio
      */
     public List<PatientDTO> getPatientsThatMatch(String patientData) throws BusinessException {
-        String term = patientData.toLowerCase().trim();
+        String term = patientData != null ? patientData.toLowerCase().trim() : "";
         return patientService.getAllPatients().stream()
-                .filter(p -> p.getPatientDTOLastName().toLowerCase().contains(term) || 
-                        p.getPatientDTOName().toLowerCase().contains(term))
-                .toList();
+            .filter(p -> p.getPatientDTOLastName().toLowerCase().contains(term)
+                     || p.getPatientDTOName().toLowerCase().contains(term))
+            .toList();
     }
     
     /**
@@ -92,42 +94,36 @@ public class PatientController {
      * @param patientDTO datos del paciente a validar
      * @throws ValidationException si la validacion falla
      */
-    private void validatePatientData(PatientDTO dto) throws ValidationException {
-
+    private void validateBasicFields(PatientDTO dto) throws ValidationException {
+        if (dto == null) {
+            throw new ValidationException("Los datos del paciente son requeridos");
+        }
         if (dto.getPatientDTODNI() == null || dto.getPatientDTODNI().trim().isEmpty()) {
             throw new ValidationException("El DNI del paciente es requerido");
         }
-        
         if (dto.getPatientDTOName() == null || dto.getPatientDTOName().trim().isEmpty()) {
             throw new ValidationException("El nombre del paciente es requerido");
         }
-        
         if (dto.getPatientDTOLastName() == null || dto.getPatientDTOLastName().trim().isEmpty()) {
             throw new ValidationException("El apellido del paciente es requerido");
         }
-        
         if (dto.getPatientDTOBirthDate() == null || dto.getPatientDTOBirthDate().trim().isEmpty()) {
             throw new ValidationException("La fecha de nacimiento es requerida");
         }
-                
         if (dto.getPatientDTOPhone() == null || dto.getPatientDTOPhone().trim().isEmpty()) {
-            throw new ValidationException("El numero de celular del paciente es requerido");
+            throw new ValidationException("El número de teléfono del paciente es requerido");
         }
-        
         if (dto.getPatientDTOEmail() == null || dto.getPatientDTOEmail().trim().isEmpty()) {
-            throw new ValidationException("E-mail inválido");
+            throw new ValidationException("El email del paciente es requerido");
         }
-        
         if (dto.getCityId() == null || dto.getCityId().trim().isEmpty()) {
-            throw new ValidationException("La ciudad es requerida");
+            throw new ValidationException("La ciudad del paciente es requerida");
         }
-
         if (dto.getPatientDTOAddress() == null || dto.getPatientDTOAddress().trim().isEmpty()) {
             throw new ValidationException("La dirección del paciente es requerida");
         }
-        
         if (dto.getPatientDTOAddressNumber() == null || dto.getPatientDTOAddressNumber().trim().isEmpty()) {
-            throw new ValidationException("El numero de la direccion del paciente es requerido");
+            throw new ValidationException("El número de dirección del paciente es requerido");
         }
     }
 }

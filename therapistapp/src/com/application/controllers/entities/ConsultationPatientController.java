@@ -47,12 +47,12 @@ public class ConsultationPatientController {
     
     /**
      * Obtiene los pacientes de una consulta determinada
-     * @param consultationId Identificador de la consulta a buscar pacientes
-     * @return lista de DTOs de pacientes de la consulta 
+     * @param consultationId Identificador de la consulta
+     * @return Lista de PatientDTO
      * @throws BusinessException Si ocurre un error durante el proceso
      */
     public List<PatientDTO> getPatientsByConsultationId(String consultationId) throws BusinessException {
-        return consultationPatientService.getPatientsByConsultationId(consultationId).stream().toList();
+        return consultationPatientService.getPatientsByConsultationId(consultationId);
     }
     
     /**
@@ -79,10 +79,6 @@ public class ConsultationPatientController {
      * @throws ValidationException si la validacion falla
      */
     private void validateConsultationPatientData(ConsultationPatientDTO consultationPatientDTO) throws ValidationException {
-
-        if (consultationPatientDTO.getConsultationAmount() == null || consultationPatientDTO.getConsultationAmount().trim().isEmpty()) {
-            throw new ValidationException("El monto de la consulta es requerido");
-        }
 
         if (consultationPatientDTO.getIsPaid()== null || consultationPatientDTO.getIsPaid().trim().isEmpty()) {
             throw new ValidationException("El estado del pago de la consulta es requerido");
