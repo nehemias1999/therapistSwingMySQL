@@ -2,7 +2,7 @@ package com.application.view.panels.consultation;
 
 import com.application.view.panels.consultation.calendar.ModelDate;
 import com.application.interfaces.ICalendarSelectedListener;
-import com.application.controllers.panels.ConsultationsFormController;
+import com.application.controllers.panels.ConsultationsPanelController;
 import com.application.interfaces.IConsultationDialogListener;
 import com.application.interfaces.IConsultationPatientActionsEvent;
 import com.application.interfaces.IPanels;
@@ -22,7 +22,7 @@ import raven.modal.Toast;
 
 public class ConsultationsPanel extends javax.swing.JPanel implements IPanels, IConsultationDialogListener {
 
-    private ConsultationsFormController consultationsFormController;
+    private ConsultationsPanelController consultationsFormController;
     
     ModelDate actualSelectedDate = null;
     
@@ -99,7 +99,7 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanels, I
         
     }
         
-    public void setController(ConsultationsFormController controller) {
+    public void setController(ConsultationsPanelController controller) {
         this.consultationsFormController = controller;
         loadTableData(actualSelectedDate);
     }

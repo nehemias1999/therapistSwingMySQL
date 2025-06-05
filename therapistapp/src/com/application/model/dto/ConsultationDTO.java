@@ -2,9 +2,10 @@ package com.application.model.dto;
 
 public class ConsultationDTO {
     private String consultationDTOId;
-    private String consultationDTOStartDateTime;
+    private String consultationDTODate;
+    private String consultationDTOStartTime;
+    private String consultationDTOEndTime;
     private String consultationDTOAmount;
-    private String consultationDTOEndDateTime;
     private String consultationDTOStatus;
 
     public ConsultationDTO() {
@@ -12,14 +13,16 @@ public class ConsultationDTO {
 
     public ConsultationDTO(
             String consultationDTOId, 
-            String consultationDTOStartDateTime, 
+            String consultationDTODate, 
+            String consultationDTOStartTime, 
+            String consultationDTOEndTime, 
             String consultationDTOAmount, 
-            String consultationDTOEndDateTime, 
             String consultationDTOStatus) {
         this.consultationDTOId = consultationDTOId;
-        this.consultationDTOStartDateTime = consultationDTOStartDateTime;
+        this.consultationDTODate = consultationDTODate;
+        this.consultationDTOStartTime = consultationDTOStartTime;
+        this.consultationDTOEndTime = consultationDTOEndTime;
         this.consultationDTOAmount = consultationDTOAmount;
-        this.consultationDTOEndDateTime = consultationDTOEndDateTime;
         this.consultationDTOStatus = consultationDTOStatus;
     }
 
@@ -31,12 +34,28 @@ public class ConsultationDTO {
         this.consultationDTOId = consultationDTOId;
     }
 
-    public String getConsultationDTOStartDateTime() {
-        return consultationDTOStartDateTime;
+    public String getConsultationDTODate() {
+        return consultationDTODate;
     }
 
-    public void setConsultationDTOStartDateTime(String consultationDTOStartDateTime) {
-        this.consultationDTOStartDateTime = consultationDTOStartDateTime;
+    public void setConsultationDTODate(String consultationDTODate) {
+        this.consultationDTODate = consultationDTODate;
+    }
+
+    public String getConsultationDTOStartTime() {
+        return consultationDTOStartTime;
+    }
+
+    public void setConsultationDTOStartTime(String consultationDTOStartTime) {
+        this.consultationDTOStartTime = consultationDTOStartTime;
+    }
+
+    public String getConsultationDTOEndTime() {
+        return consultationDTOEndTime;
+    }
+
+    public void setConsultationDTOEndTime(String consultationDTOEndTime) {
+        this.consultationDTOEndTime = consultationDTOEndTime;
     }
 
     public String getConsultationDTOAmount() {
@@ -47,31 +66,11 @@ public class ConsultationDTO {
         this.consultationDTOAmount = consultationDTOAmount;
     }
 
-    public String getConsultationDTOEndDateTime() {
-        return consultationDTOEndDateTime;
-    }
-
-    public void setConsultationDTOEndDateTime(String consultationDTOEndDateTime) {
-        this.consultationDTOEndDateTime = consultationDTOEndDateTime;
-    }
-
     public String getConsultationDTOStatus() {
         return consultationDTOStatus;
     }
 
     public void setConsultationDTOStatus(String consultationDTOStatus) {
         this.consultationDTOStatus = consultationDTOStatus;
-    }
-
-    public String getConsultationDTODate() {
-        return consultationDTOStartDateTime.substring(0,10);      
-    }
-    
-    public String getConsultationDTOStartTime() {
-        return consultationDTOStartDateTime.substring(11,16);      
-    }
-    
-    public String getConsultationDTOEndTime() {
-        return consultationDTOEndDateTime.substring(11,16);
     }
 }

@@ -32,18 +32,15 @@ public class ConsultationPatientService {
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
      * @throws BusinessException Si ocurre un error durante el proceso
      */
-    public void insertConsultationPatient(ConsultationPatientDTO consultationPatientDTO) throws ValidationException, BusinessException {
+    public void insertConsultationPatient(ConsultationPatientDTO dto) throws ValidationException, BusinessException {
         try {
-            
-            validateConsultationPatientData(consultationPatientDTO);
-            
-            ConsultationPatient consultationPatient = createConsultationPatientFromDTO(consultationPatientDTO);
-            consultationPatientDAO.insertConsultationPatient(consultationPatient);
-
+            validateConsultationPatientData(dto);
+            ConsultationPatient entity = createConsultationPatientFromDTO(dto);
+            consultationPatientDAO.insertConsultationPatient(entity);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("ID o datos mal formateados", e);
         } catch (DataAccessException e) {
             throw new BusinessException("Error al guardar la consulta en el sistema", e);
-        } catch (IllegalArgumentException e) {
-           throw new ValidationException("Formato de fecha inválido");
         }
     }
         
@@ -56,24 +53,32 @@ public class ConsultationPatientService {
      */
     public void deleteConsultationPatient(String consultationId, String patientId) throws ValidationException, BusinessException {
         try {
-            consultationPatientDAO.deleteConsultationPatient(UUID.fromString(consultationId), UUID.fromString(patientId));
+            UUID cId = UUID.fromString(consultationId);
+            UUID pId = UUID.fromString(patientId);
+            consultationPatientDAO.deleteConsultationPatient(cId, pId);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("ID de consulta o paciente mal formado", e);
         } catch (EntityNotFoundException e) {
-            throw new ValidationException("No existe consulta con Id '" + consultationId + "'");
+            throw new ValidationException("Consulta o paciente no encontrado", e);
         } catch (DataAccessException e) {
-            throw new BusinessException("Error de base de datos al eliminar la consulta", e);
+            throw new BusinessException("Error al eliminar la consulta del sistema", e);
         }
     }
       
     /**
      * Obtiene los pacientes de una consulta determinada
+     * @param consultationId
      * @return Lista de PatientDTO
      * @throws BusinessException Si ocurre un error al acceder a los datos
      */
     public List<PatientDTO> getPatientsByConsultationId(String consultationId) throws BusinessException {
         try {
-            return consultationPatientDAO.getPatientsByConsultationId(UUID.fromString(consultationId)).stream()
-                .map(this::convertToDTO)
+            UUID cId = UUID.fromString(consultationId);
+            return consultationPatientDAO.getPatientsByConsultationId(cId)
+                .stream().map(this::convertToDTO)
                 .collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException("ID de consulta mal formado", e);
         } catch (DataAccessException e) {
             throw new BusinessException("Error al listar pacientes", e);
         }
@@ -88,37 +93,39 @@ public class ConsultationPatientService {
      */
     public void setConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException {
         try {
-            consultationPatientDAO.setConsultationPatientPaid(UUID.fromString(consultationId), UUID.fromString(patientId));         
+            UUID cId = UUID.fromString(consultationId);
+            UUID pId = UUID.fromString(patientId);
+            consultationPatientDAO.setConsultationPatientPaid(cId, pId);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("ID mal formado", e);
         } catch (EntityNotFoundException e) {
-            throw new ValidationException("No existe paciente con Id '" + patientId + "'");
+            throw new ValidationException("Consulta o paciente no encontrado", e);
         } catch (DataAccessException e) {
-            throw new BusinessException("Error de base de datos al actualizar paciente", e);
+            throw new BusinessException("Error de base de datos al actualizar estado de pago", e);
         }
     }
    
     /**
      * Valida los datos básicos de la consulta
      */
-    private void validateConsultationPatientData(ConsultationPatientDTO consultationPatientDTO) throws ValidationException {
-
-        if (consultationPatientDTO.getIsPaid()== null || consultationPatientDTO.getIsPaid().trim().isEmpty()) {
-            throw new ValidationException("El estado del pago de la consulta es requerido");
+    private void validateConsultationPatientData(ConsultationPatientDTO dto) throws ValidationException {
+        if (dto.getIsPaid() == null || dto.getIsPaid().trim().isEmpty()) {
+            throw new ValidationException("El estado del pago es requerido");
         }
-
-        if (consultationPatientDTO.getPatientNotePath() == null || consultationPatientDTO.getPatientNotePath().trim().isEmpty()) {
-            throw new ValidationException("El path de las notas de paciente para la consulta es requerido");
+        if (dto.getPatientNotePath() == null || dto.getPatientNotePath().trim().isEmpty()) {
+            throw new ValidationException("El path de las notas del paciente es requerido");
         }
     }
     
     /**
      * Crea un objeto ConsultationPatient a partir de un ConsultationPatientDTO
      */
-    private ConsultationPatient createConsultationPatientFromDTO(ConsultationPatientDTO consultationPatientDTO) {
+    private ConsultationPatient createConsultationPatientFromDTO(ConsultationPatientDTO dto) {
         return new ConsultationPatient(
-            UUID.fromString(consultationPatientDTO.getConsultationId()),
-            UUID.fromString(consultationPatientDTO.getPatientId()),
-            Boolean.getBoolean(consultationPatientDTO.getIsPaid()),
-            consultationPatientDTO.getPatientNotePath()            
+            UUID.fromString(dto.getConsultationId()),
+            UUID.fromString(dto.getPatientId()),
+            Boolean.valueOf(dto.getIsPaid()),
+            dto.getPatientNotePath()
         );
     }
     
@@ -151,27 +158,19 @@ public class ConsultationPatientService {
         dto.setCityId(p.getCityId().toString());
         dto.setPatientDTOAddress(p.getPatientAddress());
         dto.setPatientDTOAddressNumber(String.valueOf(p.getPatientAddressNumber()));
-        dto.setPatientDTOAddressFloor(
-            p.getPatientAddressFloor() > 0 ? String.valueOf(p.getPatientAddressFloor()) : ""
-        );
-        dto.setPatientDTOAddressDepartment(
-            p.getPatientAddressDepartment() != null ? p.getPatientAddressDepartment() : ""
-        );
- 
+        dto.setPatientDTOAddressFloor(p.getPatientAddressFloor() > 0 ? String.valueOf(p.getPatientAddressFloor()) : "");
+        dto.setPatientDTOAddressDepartment(p.getPatientAddressDepartment() != null ? p.getPatientAddressDepartment() : "");
+
         try {
             if (patientFileManager.hasPatientPhoto(p.getPatientId())) {
-                dto.setPatientDTOPhotoPath(
-                    patientFileManager.getPatientPhoto(p.getPatientId())
-                               .toString()
-                );
+                dto.setPatientDTOPhotoPath(patientFileManager.getPatientPhoto(p.getPatientId()).toString());
             } else {
                 dto.setPatientDTOPhotoPath("");
             }
-        } catch (IOException ioe) {
-            // En caso de fallo de E/S, devolvemos vacío (o podríamos loggear)
+        } catch (IOException e) {
             dto.setPatientDTOPhotoPath("");
         }
-        
+
         return dto;
     }
 }

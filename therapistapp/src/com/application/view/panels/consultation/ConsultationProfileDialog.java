@@ -5,21 +5,26 @@ import com.application.interfaces.IPanels;
 import com.application.model.dto.ConsultationDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.model.enumerations.ViewType;
+import com.application.view.panels.patient.IPatientActionsEvent;
+import com.application.view.panels.patient.PatientActionsCellEditor;
+import com.application.view.panels.renderers.PatientActionsCellRender;
+import com.application.view.panels.renderers.PatientProfileCellRender;
+import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Component;
 import java.awt.Frame;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 public class ConsultationProfileDialog extends javax.swing.JDialog implements IPanels {
     private final IConsultationDialogListener listener;
-    private ViewType viewType;
-    private String consultationId;
+    private final ViewType viewType;
+    private final String consultationId;
     private ConsultationDTO consultationDTO;
     
     private boolean operationSuccess = false;
@@ -39,12 +44,65 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
             jLabelMainTitle.setText("Ver Consulta");
         }
        
-        datePickerStartConsultation.setCloseAfterSelected(true);
-        datePickerStartConsultation.setEditor(jFormattedTextFieldConsultationDate);
+        datePickerConsultationDate.setCloseAfterSelected(true);
+        datePickerConsultationDate.setEditor(jFormattedTextFieldConsultationDate);
         
         loadConsultationData();
+        
+        setStyle();
+        initActionsData();
 
         setLocationRelativeTo(null);
+        
+    }
+    
+    private void initActionsData() {
+        IPatientActionsEvent event = new IPatientActionsEvent() {
+            @Override
+            public void onView(String consultationId) {
+                System.out.println("VER → consulta con ID = " + consultationId);
+                //viewConsultation(consultationId);
+            }
+            @Override
+            public void onEdit(String consultationId) {
+                System.out.println("EDITAR → consulta con ID = " + consultationId);
+                //updateConsultation(consultationId);
+            }
+            @Override
+            public void onDelete(String consultationId) {
+                System.out.println("BORRAR → consulta con ID = " + consultationId);
+                //deleteConsultation(consultationId);
+            }  
+        };
+        
+        jTablePatients.getColumnModel().getColumn(0).setCellRenderer(new PatientProfileCellRender(jTablePatients));
+        jTablePatients.getColumnModel().getColumn(1).setCellRenderer(new PatientActionsCellRender());
+        jTablePatients.getColumnModel().getColumn(1).setCellEditor(new PatientActionsCellEditor(event));
+    }
+    
+    private void setStyle() {
+        TableColumnModel columnModel = jTablePatients.getColumnModel();
+        
+        jTablePatients.getTableHeader().putClientProperty(FlatClientProperties.STYLE, ""
+                + "height:30;"
+                + "hoverBackground:null;"
+                + "pressedBackground:null;"
+                + "separatorColor:$TableHeader.background;"
+                + "font:bold;");
+
+        jTablePatients.putClientProperty(FlatClientProperties.STYLE, ""
+                + "rowHeight:100;"
+                + "showHorizontalLines:true;"
+                + "intercellSpacing:0,1;"
+                + "cellFocusColor:$TableHeader.hoverBackground;"
+                + "selectionBackground:$TableHeader.hoverBackground;"
+                + "selectionForeground:$Table.foreground;");
+
+        jScrollPanePatiens.getVerticalScrollBar().putClientProperty(FlatClientProperties.STYLE, ""
+                + "trackArc:999;"
+                + "trackInsets:3,3,3,3;"
+                + "thumbInsets:3,3,3,3;"
+                + "background:$Table.background;");
         
     }
     
@@ -52,24 +110,15 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
         
         consultationDTO = listener.getConsultationById(consultationId);
         
-        datePickerStartConsultation.setSelectedDate(LocalDate.parse(consultationDTO.getConsultationDTODate()));
+        datePickerConsultationDate.setSelectedDate(LocalDate.parse(consultationDTO.getConsultationDTODate()));
         jTextFieldStartTime.setText(consultationDTO.getConsultationDTOStartTime());
         jTextFieldEndTime.setText(consultationDTO.getConsultationDTOEndTime());
-                
-        loadConsultationAmount();
+        jTextFieldAmount.setText(consultationDTO.getConsultationDTOAmount());
 
         loadConsultationPatients();
         
     }
-    
-    private void loadConsultationAmount() {
-    
-        String consultationAmount = listener.getConsultationAmountByConsultationId(consultationId);
         
-        jTextFieldAmount.setText(consultationAmount);
-        
-    }
-    
     private void loadConsultationPatients() {
                
         DefaultTableModel tableModel = (DefaultTableModel) jTablePatients.getModel();
@@ -185,7 +234,7 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        datePickerStartConsultation = new raven.datetime.component.date.DatePicker();
+        datePickerConsultationDate = new raven.datetime.component.date.DatePicker();
         jPanelMainForm = new javax.swing.JPanel();
         jPanelMainTitle = new javax.swing.JPanel();
         jLabelMainTitle = new javax.swing.JLabel();
@@ -424,7 +473,7 @@ public class ConsultationProfileDialog extends javax.swing.JDialog implements IP
     }//GEN-LAST:event_jButtonCancelActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private raven.datetime.component.date.DatePicker datePickerStartConsultation;
+    private raven.datetime.component.date.DatePicker datePickerConsultationDate;
     private javax.swing.JButton jButtonAdd;
     private javax.swing.JButton jButtonCancel;
     private javax.swing.JFormattedTextField jFormattedTextFieldConsultationDate;

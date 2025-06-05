@@ -3,7 +3,7 @@ package com.application.view.panels.patient;
 import com.application.view.panels.renderers.PatientProfileCellRender;
 import com.application.view.panels.renderers.PatientActionsCellRender;
 import com.application.interfaces.IPanels;
-import com.application.controllers.panels.PatientsFormController;
+import com.application.controllers.panels.PatientsPanelController;
 import com.application.interfaces.IPatientDialogListener;
 import com.application.model.dto.CityDTO;
 import com.application.model.dto.PatientDTO;
@@ -18,7 +18,7 @@ import static raven.modal.Toast.Type.SUCCESS;
 
 public class PatientsPanel extends javax.swing.JPanel implements IPanels, IPatientDialogListener {
 
-    private PatientsFormController patientsFormController;
+    private PatientsPanelController patientsFormController;
     DefaultTableModel tableModel;
     
     public PatientsPanel() {
@@ -76,7 +76,7 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanels, IPatie
                 + "background:$Table.background;");
     }
         
-    public void setController(PatientsFormController controller) {
+    public void setController(PatientsPanelController controller) {
         this.patientsFormController = controller;
         loadTableData();
     }

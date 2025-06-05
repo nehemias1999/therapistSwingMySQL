@@ -1,6 +1,6 @@
 package com.application.view.panels.consultation;
 
-import com.application.controllers.panels.ConsultationsFormController;
+import com.application.controllers.panels.ConsultationsPanelController;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.interfaces.IPanels;
@@ -12,19 +12,18 @@ import com.application.model.enumerations.ViewType;
 import java.awt.Component;
 import java.awt.Frame;
 import java.io.IOException;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class ConsultationDialog extends javax.swing.JDialog implements IPanels {
-    private final ConsultationsFormController controller;
+    private final ConsultationsPanelController controller;
     private ViewType viewType;
     private ConsultationDTO consultationDTO;
     
     private boolean operationSuccess = false;
 
-    public ConsultationDialog(Frame owner, ConsultationsFormController controller, ViewType viewtype, ConsultationDTO consultationDTO) {
+    public ConsultationDialog(Frame owner, ConsultationsPanelController controller, ViewType viewtype, ConsultationDTO consultationDTO) {
         super(owner, "Agregar consulta", true);
         this.controller = controller;
         this.viewType = viewtype;
@@ -110,7 +109,7 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanels {
      * @param consultationDTO
      * @return true si el guardado fue exitoso, false si canceló o hubo error.  
      */
-    public static boolean showDialog(Component parent, ConsultationsFormController controller, ViewType viewType, ConsultationDTO consultationDTO) {
+    public static boolean showDialog(Component parent, ConsultationsPanelController controller, ViewType viewType, ConsultationDTO consultationDTO) {
         Frame owner = JOptionPane.getFrameForComponent(parent);
         ConsultationDialog dialog = new ConsultationDialog(owner, controller, viewType, consultationDTO);
         dialog.setVisible(true);  

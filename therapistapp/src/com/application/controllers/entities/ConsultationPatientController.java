@@ -23,7 +23,7 @@ public class ConsultationPatientController {
      * @throws BusinessException Si ocurre un error durante el proceso
      */
     public void insertConsultationPatient(ConsultationPatientDTO consultationPatientDTO) throws ValidationException, BusinessException {
-        validateConsultationPatientData(consultationPatientDTO);
+        validateBasicFields(consultationPatientDTO);
         consultationPatientService.insertConsultationPatient(consultationPatientDTO);
     }
     
@@ -35,13 +35,12 @@ public class ConsultationPatientController {
      * @throws BusinessException Si ocurre un error durante el proceso
      */
     public void deleteConsultationPatient(String consultationId, String patientId) throws ValidationException, BusinessException {
-        if (consultationId == null) {
-            throw new ValidationException("El identificador de la consulta es requerido");
+        if (consultationId == null || consultationId.trim().isEmpty()) {
+            throw new ValidationException("El Identificador de la consulta es requerido");
         }
-        if (patientId == null) {
-            throw new ValidationException("El identificador del paciente es requerido");
+        if (patientId == null || patientId.trim().isEmpty()) {
+            throw new ValidationException("El Identificador del paciente es requerido");
         }
-        
         consultationPatientService.deleteConsultationPatient(consultationId, patientId);
     }
     
@@ -49,9 +48,13 @@ public class ConsultationPatientController {
      * Obtiene los pacientes de una consulta determinada
      * @param consultationId Identificador de la consulta
      * @return Lista de PatientDTO
+     * @throws ValidationException Si los datos no son válidos o la consulta no existe
      * @throws BusinessException Si ocurre un error durante el proceso
      */
-    public List<PatientDTO> getPatientsByConsultationId(String consultationId) throws BusinessException {
+    public List<PatientDTO> getPatientsByConsultationId(String consultationId) throws ValidationException, BusinessException {
+        if (consultationId == null || consultationId.trim().isEmpty()) {
+            throw new ValidationException("El Identificador de la consulta es requerido");
+        }
         return consultationPatientService.getPatientsByConsultationId(consultationId);
     }
     
@@ -63,13 +66,12 @@ public class ConsultationPatientController {
      * @throws BusinessException Si ocurre un error durante el proceso
      */
     public void setConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException {
-        if (consultationId == null) {
-            throw new ValidationException("El identificador de la consulta es requerido");
+        if (consultationId == null || consultationId.trim().isEmpty()) {
+            throw new ValidationException("El Identificador de la consulta es requerido");
         }
-        if (patientId == null) {
-            throw new ValidationException("El identificador del paciente es requerido");
+        if (patientId == null || patientId.trim().isEmpty()) {
+            throw new ValidationException("El Identificador del paciente es requerido");
         }
-        
         consultationPatientService.setConsultationPatientPaid(consultationId, patientId);
     }
 
@@ -78,12 +80,13 @@ public class ConsultationPatientController {
      * @param consultationPatientDTO datos de; paciente de la consulta a validar
      * @throws ValidationException si la validacion falla
      */
-    private void validateConsultationPatientData(ConsultationPatientDTO consultationPatientDTO) throws ValidationException {
-
+    private void validateBasicFields(ConsultationPatientDTO consultationPatientDTO) throws ValidationException {
+        if (consultationPatientDTO == null) {
+            throw new ValidationException("Los datos son requeridos");
+        }
         if (consultationPatientDTO.getIsPaid()== null || consultationPatientDTO.getIsPaid().trim().isEmpty()) {
             throw new ValidationException("El estado del pago de la consulta es requerido");
         }
-
         if (consultationPatientDTO.getPatientNotePath() == null || consultationPatientDTO.getPatientNotePath().trim().isEmpty()) {
             throw new ValidationException("El path de las notas de paciente para la consulta es requerido");
         }

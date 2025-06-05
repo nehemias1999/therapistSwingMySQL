@@ -11,13 +11,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Collections;
 
-public class PatientsFormController {
+public class PatientsPanelController {
     
     private final PatientController patientController;
     private final CityController cityController;
     private final PatientsPanel patientsForm;
     
-    public PatientsFormController(PatientController patientController, CityController cityController) {
+    public PatientsPanelController(PatientController patientController, CityController cityController) {
         this.patientController = patientController;
         this.cityController = cityController;
         

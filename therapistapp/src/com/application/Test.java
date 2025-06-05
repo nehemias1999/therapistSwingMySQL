@@ -85,9 +85,9 @@ public class Test {
 //          "SCHEDULED"
 //         );
 //
-//        ConsultationService cs = new ConsultationService();
-//        
-//        ConsultationController cc = new ConsultationController(cs);
+        ConsultationService cs = new ConsultationService();
+        
+        ConsultationController cc = new ConsultationController(cs);
 //        
 //        System.out.println(cc.getConsultationAmountByConsultationId("20735758-d837-40d1-bd6e-a520e1c44866"));
         
@@ -97,9 +97,9 @@ public class Test {
         
 //        cs.deleteConsultation("e941c0ef-2d0c-4b4b-a0e2-0a5e3cf0e278");
         
- //       List<ConsultationDTO> consultations = cs.getConsultationsByDate("2025-05-30");
+        List<ConsultationDTO> consultations = cs.getConsultationsByDate("2025-05-30");
         
-   //     System.out.println(consultations.toString());
+        System.out.println(consultations.toString());
    
 //        ConsultationPatientDTO cp = new ConsultationPatientDTO(
 //          "20735758-d837-40d1-bd6e-a520e1c44866",

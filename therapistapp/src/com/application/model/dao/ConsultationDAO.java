@@ -7,7 +7,8 @@ import com.application.model.entities.Consultation;
 import com.application.model.enumerations.ConsultationStatus;
 
 import java.sql.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -20,16 +21,18 @@ public class ConsultationDAO {
     private static final String INSERT_SQL =
         "INSERT INTO tbl_consultation ( " +
         "consultation_id, " +
-        "consultation_start_datetime, " +
-        "consultation_end_datetime, " +
+        "consultation_date, " +
+        "consultation_start_time, " +
+        "consultation_end_time, " +
         "consultation_amount, " +
         "consultation_status " +
         ") VALUES (?, ?, ?, ?)";
     
     private static final String UPDATE_SQL =
         "UPDATE tbl_consultation SET " +
-        "consultation_start_datetime = ?, " +
-        "consultation_end_datetime = ?, " +
+        "consultation_date = ?, " +
+        "consultation_start_time = ?, " +
+        "consultation_end_time = ?, " +
         "consultation_amount = ?," +
         "consultation_status = ? " +
         "WHERE consultation_id = ?";
@@ -41,14 +44,15 @@ public class ConsultationDAO {
         "SELECT * FROM tbl_consultation WHERE consultation_id = ? and is_active = true";
         
     private static final String SELECT_CONSULTATION_BY_DATE =
-        "SELECT * FROM tbl_consultation WHERE DATE(consultation_start_datetime) = ? and is_active = true ORDER BY consultation_start_datetime";
+        "SELECT * FROM tbl_consultation WHERE consultation_date = ? and is_active = true ORDER BY consultation_start_time";
+    
+    private static final String CHECK_START_DATETIME_SQL =
+        "SELECT COUNT(*) FROM tbl_consultation " +
+        "WHERE consultation_date = ? AND consultation_start_time = ?";
     
     private static final String SELECT_CONSULTATON_AMOUNT_BY_CONSULTATION_ID =
         "SELECT consultation_amount FROM tbl_consultation WHERE consultation_id = ? and is_active = true";
     
-    private static final String CHECK_START_DATETIME_SQL =
-        "SELECT COUNT(*) FROM tbl_consultation WHERE consultation_start_datetime = ?";
-
     private static final String UNIQUE_CONSULTATION_TIME_CONSTRAINT = "uk_consultation_time";
 
     /**
@@ -62,9 +66,11 @@ public class ConsultationDAO {
              PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
 
             ps.setString(1, consultation.getConsultationId().toString());
-            ps.setObject(2, consultation.getConsultationStartDateTime());
-            ps.setObject(3, consultation.getConsultationEndDateTime());
-            ps.setString(4, consultation.getConsultationStatus().toString());
+            ps.setObject(2, consultation.getConsultationDate());
+            ps.setObject(3, consultation.getConsultationStartTime());
+            ps.setObject(4, consultation.getConsultationEndTime());
+            ps.setDouble(5, consultation.getConsultationAmount());
+            ps.setString(6, consultation.getConsultationStatus().toString());
 
             ps.executeUpdate();
 
@@ -87,10 +93,13 @@ public class ConsultationDAO {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(UPDATE_SQL)) {
 
-            ps.setObject(1, consultation.getConsultationStartDateTime());
-            ps.setObject(2, consultation.getConsultationEndDateTime());
-            ps.setString(3, consultation.getConsultationStatus().name());
-            ps.setString(4, consultation.getConsultationId().toString());
+            ps.setObject(1, consultation.getConsultationDate());
+            ps.setObject(2, consultation.getConsultationStartTime());
+            ps.setObject(3, consultation.getConsultationEndTime());
+            ps.setDouble(4, consultation.getConsultationAmount());
+            ps.setString(5, consultation.getConsultationStatus().toString());
+            
+            ps.setString(6, consultation.getConsultationId().toString());
 
             int rows = ps.executeUpdate();
             if (rows == 0) {
@@ -204,26 +213,28 @@ public class ConsultationDAO {
     
     /**
      * Verifica si existe una consulta con la fecha/hora de inicio indicada
-     * @param startDateTime Fecha y hora de inicio a verificar
+     * @param consultationDate Fecha de la consulta
+     * @param consultationStartTime horario de inicio de la consulta
      * @return true si ya existe, false en caso contrario
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public boolean isConsultationStartDatetimeExists(LocalDateTime startDateTime) {
+    public boolean isConsultationStartDatetimeExists(LocalDate consultationDate, LocalTime consultationStartTime) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(CHECK_START_DATETIME_SQL)) {
 
-            ps.setTimestamp(1, Timestamp.valueOf(startDateTime));
+            ps.setDate(1, Date.valueOf(consultationDate));          // Correcto para LocalDate → java.sql.Date
+            ps.setTime(2, Time.valueOf(consultationStartTime));     // Correcto para LocalTime → java.sql.Time
+
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-                return false;
+                return rs.next() && rs.getInt(1) > 0;
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Error al verificar existencia de consulta en la fecha/hora: " + startDateTime, e);
+            String message = String.format("Error al verificar existencia de consulta en %s %s", consultationDate, consultationStartTime);
+            throw new DataAccessException(message, e);
         }
     }
+
     
     /**
      * Mapea un ResultSet a un objeto Consultation
@@ -231,8 +242,9 @@ public class ConsultationDAO {
     private Consultation mapResultSetToConsultation(ResultSet rs) throws SQLException {
         return new Consultation(
             UUID.fromString(rs.getString("consultation_id")),
-            rs.getTimestamp("consultation_start_datetime").toLocalDateTime(),
-            rs.getTimestamp("consultation_end_datetime").toLocalDateTime(),
+            rs.getDate("consultation_date").toLocalDate(),
+            rs.getTime("consultation_start_time").toLocalTime(),    
+            rs.getTime("consultation_end_time").toLocalTime(),
             rs.getDouble("consultation_amount"),
             ConsultationStatus.valueOf(rs.getString("consultation_status"))
         );

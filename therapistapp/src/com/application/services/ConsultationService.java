@@ -8,8 +8,10 @@ import com.application.model.dao.ConsultationDAO;
 import com.application.model.dto.ConsultationDTO;
 import com.application.model.entities.Consultation;
 import com.application.model.enumerations.ConsultationStatus;
+import java.time.LocalDate;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
@@ -89,9 +91,7 @@ public class ConsultationService {
      */
     public ConsultationDTO getConsultationById(String consultationId) throws BusinessException {
         try {
-  
             return convertToDTO(consultationDAO.getConsultationById(UUID.fromString(consultationId)));
-
         } catch (DataAccessException e) {
             throw new BusinessException("Error al listar consultas", e);
         }
@@ -143,30 +143,33 @@ public class ConsultationService {
      */
     private void validateConsultationData(ConsultationDTO consultationDTO) throws ValidationException {
 
-        LocalDateTime startDateTime;
-        LocalDateTime endDateTime;
-        double amount;
+        LocalDate consultationDate;
+        LocalTime consultationStartTime;
+        LocalTime consultationEndTime;
+        double consultationAmount;
 
-        // Validar y parsear fecha de inicio
         try {
-            startDateTime = LocalDateTime.parse(consultationDTO.getConsultationDTOStartDateTime());
+            consultationDate = LocalDate.parse(consultationDTO.getConsultationDTODate());
         } catch (Exception e) {
-            throw new ValidationException("La fecha y hora de inicio tiene un formato inválido. Debe ser yyyy-MM-ddTHH:mm");
+            throw new ValidationException("La fecha tiene un formato inválido. Debe ser yyyy-MM-dd");
         }
 
-        // Validar y parsear fecha de fin
         try {
-            endDateTime = LocalDateTime.parse(consultationDTO.getConsultationDTOEndDateTime());
+            consultationStartTime = LocalTime.parse(consultationDTO.getConsultationDTOStartTime());
         } catch (Exception e) {
-            throw new ValidationException("La fecha y hora de fin tiene un formato inválido. Debe ser yyyy-MM-ddTHH:mm");
+            throw new ValidationException("El horario de inicio tiene un formato inválido. Debe ser HH:mm");
+        }
+        
+        try {
+            consultationEndTime = LocalTime.parse(consultationDTO.getConsultationDTOEndTime());
+        } catch (Exception e) {
+            throw new ValidationException("El horario de fin tiene un formato inválido. Debe ser HH:mm");
         }
 
-        // Validar que la fecha de inicio sea anterior a la de fin
-        if (!startDateTime.isBefore(endDateTime)) {
-            throw new ValidationException("La fecha y hora de inicio debe ser anterior a la de fin");
+        if (!consultationStartTime.isBefore(consultationEndTime)) {
+            throw new ValidationException("El horario de inicio debe ser anterior al horario de fin");
         }
 
-        // Validar que el status sea parte del enum
         try {
             ConsultationStatus.valueOf(consultationDTO.getConsultationDTOStatus());
         } catch (IllegalArgumentException | NullPointerException e) {
@@ -175,18 +178,17 @@ public class ConsultationService {
 
         // Validar monto
         try {
-            amount = Double.parseDouble(consultationDTO.getConsultationDTOAmount());
+            consultationAmount = Double.parseDouble(consultationDTO.getConsultationDTOAmount());
         } catch (NumberFormatException e) {
             throw new ValidationException("El monto debe ser un número válido");
         }
 
-        if (amount <= 0) {
+        if (consultationAmount <= 0) {
             throw new ValidationException("El monto de la consulta debe ser mayor a cero");
         }
 
-        // Validar disponibilidad del horario
-        if (consultationDAO.isConsultationStartDatetimeExists(startDateTime)) {
-            throw new ValidationException("Ya existe una consulta en la fecha y hora indicada: " + startDateTime);
+        if (consultationDAO.isConsultationStartDatetimeExists(consultationDate, consultationStartTime)) {
+            throw new ValidationException("Ya existe una consulta en la fecha y hora indicada: " + consultationDate);
         }
     }
     
@@ -201,8 +203,9 @@ public class ConsultationService {
         
         return new Consultation(
             consultationId,
-            LocalDateTime.parse(consultationDTO.getConsultationDTOStartDateTime()),
-            LocalDateTime.parse(consultationDTO.getConsultationDTOEndDateTime()),
+            LocalDate.parse(consultationDTO.getConsultationDTODate()),
+            LocalTime.parse(consultationDTO.getConsultationDTOStartTime()),
+            LocalTime.parse(consultationDTO.getConsultationDTOEndTime()),
             Double.valueOf(consultationDTO.getConsultationDTOAmount()),
             ConsultationStatus.valueOf(consultationDTO.getConsultationDTOStatus())
         );
@@ -214,8 +217,9 @@ public class ConsultationService {
     private ConsultationDTO convertToDTO(Consultation c) {
         ConsultationDTO dto = new ConsultationDTO();
         dto.setConsultationDTOId(c.getConsultationId().toString());
-        dto.setConsultationDTOStartDateTime(c.getConsultationStartDateTime().toString());
-        dto.setConsultationDTOEndDateTime(c.getConsultationEndDateTime().toString());
+        dto.setConsultationDTODate(c.getConsultationDate().toString());
+        dto.setConsultationDTOStartTime(c.getConsultationStartTime().toString());
+        dto.setConsultationDTOEndTime(c.getConsultationEndTime().toString());
         dto.setConsultationDTOStatus(c.getConsultationStatus().toString());
         
         return dto;

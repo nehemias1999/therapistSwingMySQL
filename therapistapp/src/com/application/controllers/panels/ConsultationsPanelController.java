@@ -8,17 +8,16 @@ import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.ConsultationDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.view.panels.consultation.ConsultationsPanel;
-import java.io.IOException;
 import java.util.List;
 
-public class ConsultationsFormController {
+public class ConsultationsPanelController {
     
     private final ConsultationController consultationController;
     private final ConsultationPatientController consultationPatientController;
     private final PatientController patientController;
     private final ConsultationsPanel consultationsForm;
     
-    public ConsultationsFormController(
+    public ConsultationsPanelController(
             ConsultationController consultationController, 
             ConsultationPatientController consultationPatientController,
             PatientController patientController) {
@@ -84,9 +83,12 @@ public class ConsultationsFormController {
      * @param consultationId Identificador de la consulta a buscar
      * @return DTO de la consulta
      */
-    public ConsultationDTO getConsultationById(String consultationId) {
+    public ConsultationDTO getConsultationById(String consultationId)  {
         try {
             return consultationController.getConsultationById(consultationId);
+        } catch (ValidationException e) {
+            consultationsForm.showErrorMessage("Validación: " + e.getMessage());
+            return null;
         } catch (BusinessException e) {
             consultationsForm.showErrorMessage("Error al obtener consulta: " + e.getMessage());
             return null;
@@ -101,6 +103,9 @@ public class ConsultationsFormController {
     public List<ConsultationDTO> getConsultationsByDate(String consultationDate) {
         try {
             return consultationController.getConsultationsByDate(consultationDate);
+        } catch (ValidationException e) {
+            consultationsForm.showErrorMessage("Validación: " + e.getMessage());
+            return List.of();
         } catch (BusinessException e) {
             consultationsForm.showErrorMessage("Error al obtener consultas por fecha: " + e.getMessage());
             return List.of();
@@ -115,6 +120,9 @@ public class ConsultationsFormController {
     public String getConsultationAmountByConsultationId(String consultationId) {
         try {
             return consultationController.getConsultationAmountByConsultationId(consultationId);
+        } catch (ValidationException e) {
+            consultationsForm.showErrorMessage("Validación: " + e.getMessage());
+            return null;
         } catch (BusinessException e) {
             consultationsForm.showErrorMessage("Error al obtener monto de la consulta: " + e.getMessage());
             return null;
@@ -142,6 +150,9 @@ public class ConsultationsFormController {
     public List<PatientDTO> getPatientsByConsultationId(String consultationId) {
         try {
             return consultationPatientController.getPatientsByConsultationId(consultationId);
+        } catch (ValidationException e) {
+            consultationsForm.showErrorMessage("Validación: " + e.getMessage());
+            return List.of();
         } catch (BusinessException e) {
             consultationsForm.showErrorMessage("Error al obtener pacientes de la consulta: " + e.getMessage());
             return List.of();

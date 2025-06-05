@@ -2,7 +2,7 @@
 
 <Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JDialogFormInfo">
   <NonVisualComponents>
-    <Component class="raven.datetime.component.date.DatePicker" name="datePickerStartConsultation">
+    <Component class="raven.datetime.component.date.DatePicker" name="datePickerConsultationDate">
     </Component>
   </NonVisualComponents>
   <Properties>

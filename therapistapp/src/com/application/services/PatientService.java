@@ -58,8 +58,8 @@ public class PatientService {
      * @throws IOException
      */
     public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
-        validatePatientData(patientDTO);
         try {
+            validatePatientData(patientDTO);
             Patient patient = createPatientFromDTO(patientDTO, false);
             patientDAO.insertPatient(patient);
             fileManager.initPatientFolders(patient.getPatientId());
@@ -78,9 +78,9 @@ public class PatientService {
      * @throws BusinessException Si ocurre otro error de negocio
      * @throws IOException
      */
-    public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
-        validatePatientData(patientDTO);
+    public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {       
         try {
+            validatePatientData(patientDTO);
             Patient patient = createPatientFromDTO(patientDTO, true);
             patientDAO.updatePatient(patient);
             managePatientPhoto(patientDTO, patient.getPatientId());

@@ -1,26 +1,29 @@
 package com.application.model.entities;
 
 import com.application.model.enumerations.ConsultationStatus;
-
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.UUID;
 
 public class Consultation {
     private UUID consultationId;
-    private LocalDateTime consultationStartDateTime;
-    private LocalDateTime consultationEndDateTime;
+    private LocalDate consultationDate;
+    private LocalTime consultationStartTime;
+    private LocalTime consultationEndTime;
     private Double consultationAmount;
     private ConsultationStatus consultationStatus;
 
     public Consultation(
             UUID consultationId, 
-            LocalDateTime consultationStartDateTime, 
-            LocalDateTime consultationEndDateTime, 
+            LocalDate consultationDate, 
+            LocalTime consultationStartTime, 
+            LocalTime consultationEndTime, 
             Double consultationAmount, 
             ConsultationStatus consultationStatus) {
         this.consultationId = consultationId;
-        this.consultationStartDateTime = consultationStartDateTime;
-        this.consultationEndDateTime = consultationEndDateTime;
+        this.consultationDate = consultationDate;
+        this.consultationStartTime = consultationStartTime;
+        this.consultationEndTime = consultationEndTime;
         this.consultationAmount = consultationAmount;
         this.consultationStatus = consultationStatus;
     }
@@ -33,20 +36,28 @@ public class Consultation {
         this.consultationId = consultationId;
     }
 
-    public LocalDateTime getConsultationStartDateTime() {
-        return consultationStartDateTime;
+    public LocalDate getConsultationDate() {
+        return consultationDate;
     }
 
-    public void setConsultationStartDateTime(LocalDateTime consultationStartDateTime) {
-        this.consultationStartDateTime = consultationStartDateTime;
+    public void setConsultationDate(LocalDate consultationDate) {
+        this.consultationDate = consultationDate;
     }
 
-    public LocalDateTime getConsultationEndDateTime() {
-        return consultationEndDateTime;
+    public LocalTime getConsultationStartTime() {
+        return consultationStartTime;
     }
 
-    public void setConsultationEndDateTime(LocalDateTime consultationEndDateTime) {
-        this.consultationEndDateTime = consultationEndDateTime;
+    public void setConsultationStartTime(LocalTime consultationStartTime) {
+        this.consultationStartTime = consultationStartTime;
+    }
+
+    public LocalTime getConsultationEndTime() {
+        return consultationEndTime;
+    }
+
+    public void setConsultationEndTime(LocalTime consultationEndTime) {
+        this.consultationEndTime = consultationEndTime;
     }
 
     public Double getConsultationAmount() {
@@ -63,5 +74,5 @@ public class Consultation {
 
     public void setConsultationStatus(ConsultationStatus consultationStatus) {
         this.consultationStatus = consultationStatus;
-    } 
+    }
 }

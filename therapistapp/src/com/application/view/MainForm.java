@@ -20,8 +20,8 @@ import com.application.controllers.entities.CityController;
 import com.application.controllers.entities.ConsultationController;
 import com.application.controllers.entities.ConsultationPatientController;
 import com.application.controllers.entities.PatientController;
-import com.application.controllers.panels.ConsultationsFormController;
-import com.application.controllers.panels.PatientsFormController;
+import com.application.controllers.panels.ConsultationsPanelController;
+import com.application.controllers.panels.PatientsPanelController;
 import com.application.services.CityService;
 import com.application.services.ConsultationPatientService;
 import com.application.services.ConsultationService;
@@ -80,11 +80,11 @@ public class MainForm extends JLayeredPane {
             // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
                         
             if (index == 0) {
-                Application.showForm(new ConsultationsFormController(consultationController, consultationPatientController, patientController).getView());
+                Application.showForm(new ConsultationsPanelController(consultationController, consultationPatientController, patientController).getView());
             }
             
             if (index == 1) {
-                Application.showForm(new PatientsFormController(patientController, cityController).getView());
+                Application.showForm(new PatientsPanelController(patientController, cityController).getView());
             }
                         
         });

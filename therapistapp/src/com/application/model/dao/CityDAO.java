@@ -44,17 +44,14 @@ public class CityDAO {
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
     public List<City> getAllCities() {
-        List<City> cities = new ArrayList<>();
-
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(SELECT_ALL_CITY);
              ResultSet rs = ps.executeQuery()) {
-            
+
+            List<City> cities = new ArrayList<>();
             while (rs.next()) {
-                City city = mapResultSetToCity(rs);
-                cities.add(city);
+                cities.add(mapResultSetToCity(rs));
             }
-            
             return cities;
 
         } catch (SQLException e) {
@@ -75,12 +72,11 @@ public class CityDAO {
             ps.setString(1, city.getCityId().toString());
             ps.setString(2, city.getCityName());
             ps.setString(3, city.getCityZIPCode());
-
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            // Verificar si es violación de constraint única
-            if (e.getMessage().contains("Duplicate entry") && e.getMessage().contains(UNIQUE_CITY_CONSTRAINT)) {
+            if (e.getErrorCode() == MYSQL_DUPLICATE_ERROR &&
+                e.getMessage().contains(UNIQUE_CITY_CONSTRAINT)) {
                 throw new ConstraintViolationException("City", "name");
             }
             throw new DataAccessException("Error al insertar ciudad", e);
@@ -107,8 +103,8 @@ public class CityDAO {
             }
 
         } catch (SQLException e) {
-            if (e.getErrorCode() == MYSQL_DUPLICATE_ERROR
-                && e.getMessage().contains(UNIQUE_CITY_CONSTRAINT)) {
+            if (e.getErrorCode() == MYSQL_DUPLICATE_ERROR &&
+                e.getMessage().contains(UNIQUE_CITY_CONSTRAINT)) {
                 throw new ConstraintViolationException("City", "name");
             }
             throw new DataAccessException("Error al actualizar ciudad", e);
@@ -146,9 +142,8 @@ public class CityDAO {
     public City getCityById(UUID cityId) {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(SELECT_CITY_BY_ID)) {
-            
+
             ps.setString(1, cityId.toString());
-            
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToCity(rs);
@@ -156,7 +151,7 @@ public class CityDAO {
                     throw new EntityNotFoundException("City", cityId);
                 }
             }
-            
+
         } catch (SQLException e) {
             throw new DataAccessException("Error al buscar ciudad por ID", e);
         }
@@ -174,7 +169,6 @@ public class CityDAO {
              PreparedStatement ps = conn.prepareStatement(SELECT_CITY_NAME_BY_ID)) {
 
             ps.setString(1, cityId.toString());
-
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getString("city_name");

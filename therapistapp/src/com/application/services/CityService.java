@@ -76,6 +76,7 @@ public class CityService {
     * Elimina una ciudad existente
     * @param cityId campo clave de entidad City a eliminar
     * @throws ValidationException Si la ciudad no existe para el parametro ingresado
+    * @throws BusinessException Si ocurre un error durante el proceso
     */    
     public void deleteCity(String cityId) throws ValidationException, BusinessException {
         try {
@@ -91,11 +92,14 @@ public class CityService {
      * Obtiene el nombre de la ciudad asociado al Id
      * @param cityId
      * @return String
+     * @throws @throws ValidationException Si los datos no son válidos o la ciudad no existe
      * @throws BusinessException Si ocurre un error al acceder a los datos
      */
-    public String getCityNameById(String cityId) throws BusinessException {
+    public String getCityNameById(String cityId) throws ValidationException, BusinessException {
         try {
             return cityDAO.getCityNameById(UUID.fromString(cityId));
+        } catch (EntityNotFoundException e) {
+            throw new ValidationException("No existe la ciudad con Id '" + cityId + "'");
         } catch (DataAccessException e) {
             throw new BusinessException("Error al obtener la ciudad", e);
         }
@@ -110,14 +114,14 @@ public class CityService {
         String name = cityDTO.getCityName();
         String zipCode = cityDTO.getCityZIPCode();
 
-        if (name == null || name.trim().isEmpty()) {
+        if (isNullOrEmpty(cityDTO.getCityName())) {
             throw new ValidationException("El nombre de la ciudad es requerido");
         }
         if (name.length() > 100) {
             throw new ValidationException("El nombre de la ciudad no puede exceder 100 caracteres");
         }
 
-        if (zipCode == null || zipCode.trim().isEmpty()) {
+        if (isNullOrEmpty(cityDTO.getCityZIPCode())) {
             throw new ValidationException("El código postal es requerido");
         }
         if (!zipCode.matches("\\d{4,10}")) {
@@ -155,4 +159,8 @@ public class CityService {
             city.getCityZIPCode()
         );
     }
+    
+    private boolean isNullOrEmpty(String str) {
+        return str == null || str.trim().isEmpty();
+    }   
 }

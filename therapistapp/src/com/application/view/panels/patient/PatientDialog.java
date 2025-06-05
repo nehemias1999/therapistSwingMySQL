@@ -93,6 +93,22 @@ public class PatientDialog extends javax.swing.JDialog {
         
         loadPatientData();
         
+        jTextFieldDNI.setEnabled(false);
+        jTextFieldName.setEnabled(false);
+        jTextFieldLastName.setEnabled(false);
+        jFormattedTextFieldBirthDate.setEnabled(false);
+        jTextFieldOccupation.setEnabled(false);
+        jTextFieldPhone.setEnabled(false);
+        jTextFieldEmail.setEnabled(false);
+        jComboBoxCities.setEnabled(false);
+        jTextFieldAddress.setEnabled(false);
+        jTextFieldAddressNumber.setEnabled(false);
+        jTextFieldAddressFloor.setEnabled(false); 
+        jTextFieldAddressDepartment.setEnabled(false);
+        
+        jButtonAddPhoto.setVisible(false);
+        jButtonRemovePhoto.setVisible(false);
+   
         jButtonCancel.setVisible(false);
         jButtonAdd.setText("Volver");
         
@@ -443,11 +459,11 @@ public class PatientDialog extends javax.swing.JDialog {
         jPanelActionsLayout.setVerticalGroup(
             jPanelActionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelActionsLayout.createSequentialGroup()
-                .addGap(36, 36, 36)
+                .addGap(10, 10, 10)
                 .addGroup(jPanelActionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButtonAdd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButtonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 33, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -497,7 +513,7 @@ public class PatientDialog extends javax.swing.JDialog {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextFieldDNI, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabelDNI))
@@ -545,9 +561,9 @@ public class PatientDialog extends javax.swing.JDialog {
                         .addComponent(jLabelAddressNumber)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanelPhoto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jPanelActions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanelActions, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());

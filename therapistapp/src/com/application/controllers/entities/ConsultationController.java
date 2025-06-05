@@ -22,7 +22,7 @@ public class ConsultationController {
      * @throws BusinessException Si ocurre un error durante el proceso
      */
     public void insertConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
-        validateConsultationData(consultationDTO);
+        validateBasicFields(consultationDTO);
         consultationService.insertConsultation(consultationDTO);
     }
     
@@ -33,7 +33,7 @@ public class ConsultationController {
      * @throws BusinessException Si ocurre un error durante el proceso
      */
     public void updateConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
-        validateConsultationData(consultationDTO);
+        validateBasicFields(consultationDTO);
         consultationService.updateConsultation(consultationDTO);
     }
     
@@ -45,9 +45,8 @@ public class ConsultationController {
      */
     public void deleteConsultation(String consultationId) throws ValidationException, BusinessException {
         if (consultationId == null || consultationId.trim().isEmpty()) {
-            throw new ValidationException("El Id de la consulta es requerido");
+            throw new ValidationException("El Identificador de la consulta es requerido");
         }
-        
         consultationService.deleteConsultation(consultationId);
     }
     
@@ -55,9 +54,13 @@ public class ConsultationController {
      * Obtiene la consulta para un identificador determinado
      * @param consultationId Identificador de la consulta a buscar
      * @return DTO de la consulta 
+     * @throws ValidationException  Si los datos no son válidos o la consulta no existe
      * @throws BusinessException Si ocurre un error durante el proceso
      */
-    public ConsultationDTO getConsultationById(String consultationId) throws BusinessException {
+    public ConsultationDTO getConsultationById(String consultationId) throws ValidationException, BusinessException {
+        if (consultationId == null || consultationId.trim().isEmpty()) {
+            throw new ValidationException("El Identificador de la consulta es requerido");
+        }
         return consultationService.getConsultationById(consultationId);
     }
     
@@ -65,9 +68,13 @@ public class ConsultationController {
      * Obtiene las consulta para un dia determinado
      * @param consultationDate fecha de las consultas a buscar
      * @return lista de DTOs de consulta para la fecha especificada
+     * @throws ValidationException  Si los datos no son válidos o la consulta no existe
      * @throws BusinessException Si ocurre un error durante el proceso
      */
-    public List<ConsultationDTO> getConsultationsByDate(String consultationDate) throws BusinessException {
+    public List<ConsultationDTO> getConsultationsByDate(String consultationDate) throws ValidationException, BusinessException {
+        if (consultationDate == null || consultationDate.trim().isEmpty()) {
+            throw new ValidationException("La fecha de la consulta es requerida");
+        }
         return consultationService.getConsultationsByDate(consultationDate).stream().toList();
     }
     
@@ -75,9 +82,13 @@ public class ConsultationController {
      * Obtiene el monto de una consulta determinada
      * @param consultationId Identificador de la consulta a buscar monto
      * @return Monto de la consulta 
+     * @throws ValidationException  Si los datos no son válidos o la consulta no existe 
      * @throws BusinessException Si ocurre un error durante el proceso
      */
-    public String getConsultationAmountByConsultationId(String consultationId) throws BusinessException {
+    public String getConsultationAmountByConsultationId(String consultationId) throws ValidationException, BusinessException {
+        if (consultationId == null || consultationId.trim().isEmpty()) {
+            throw new ValidationException("El Identificador de la consulta es requerido");
+        }
         return consultationService.getConsultationAmountByConsultationId(consultationId);
     }
     
@@ -86,17 +97,21 @@ public class ConsultationController {
      * @param consultationDTO datos de la consulta a validar
      * @throws ValidationException si algún dato obligatorio es inválido
      */
-    public void validateConsultationData(ConsultationDTO consultationDTO) throws ValidationException {
+    public void validateBasicFields(ConsultationDTO consultationDTO) throws ValidationException {
         if (consultationDTO == null) {
             throw new ValidationException("Los datos de la consulta no pueden ser nulos");
         }
 
-        if (isBlank(consultationDTO.getConsultationDTOStartDateTime())) {
-            throw new ValidationException("La fecha y hora de inicio de la consulta es requerida");
+        if (isBlank(consultationDTO.getConsultationDTODate())) {
+            throw new ValidationException("La fecha de la consulta es requerida");
+        }
+        
+        if (isBlank(consultationDTO.getConsultationDTOStartTime())) {
+            throw new ValidationException("El horario de inicio de la consulta es requerido");
         }
 
-        if (isBlank(consultationDTO.getConsultationDTOEndDateTime())) {
-            throw new ValidationException("La fecha y hora de fin de la consulta es requerida");
+        if (isBlank(consultationDTO.getConsultationDTOEndTime())) {
+            throw new ValidationException("El horario de fin de la consulta es requerido");
         }
 
         if (isBlank(consultationDTO.getConsultationDTOAmount())) {

@@ -105,13 +105,11 @@ public class ConsultationPatientDAO {
 
             ps.setString(1, consultationId.toString());
             try (ResultSet rs = ps.executeQuery()) {
-                
                 List<Patient> patients = new ArrayList<>();
                 while (rs.next()) {
                     patients.add(mapResultSetToPatient(rs));
                 }
                 return patients;
-                
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error obteniendo pacientes por consulta", e);
@@ -137,7 +135,7 @@ public class ConsultationPatientDAO {
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Error al verificar existencia de tupla", e);
+            throw new DataAccessException("Error al actualizar estado de pago", e);
         }
     }
     

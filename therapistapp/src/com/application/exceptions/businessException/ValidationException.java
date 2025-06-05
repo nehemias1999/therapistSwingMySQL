@@ -47,7 +47,17 @@ public class ValidationException extends Exception {
             this.errors = Collections.unmodifiableMap(new HashMap<>(errors));
         }
     }
-
+    
+    /**
+    * Excepción con mensaje global y causa encadenada.
+    * @param message mensaje global de la excepción
+    * @param cause excepción original que causó esta
+    */
+    public ValidationException(String message, Throwable cause) {
+        super(message, cause);
+        this.errors = Collections.emptyMap();
+    }
+    
     /**
      * @return Mapa (campo→mensaje) con los errores detallados; nunca null.
      */
