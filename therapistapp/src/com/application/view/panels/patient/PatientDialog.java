@@ -1,5 +1,8 @@
 package com.application.view.panels.patient;
 
+import com.application.exceptions.businessException.BusinessException;
+import com.application.exceptions.businessException.ValidationException;
+import com.application.interfaces.IPanelMessages;
 import com.application.interfaces.IPatientDialogListener;
 import com.application.model.dto.CityDTO;
 import com.application.model.dto.PatientDTO;
@@ -7,13 +10,14 @@ import com.application.model.enumerations.ViewType;
 import java.awt.Component;
 import java.awt.Frame;
 import java.io.File;
+import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class PatientDialog extends javax.swing.JDialog {
+public class PatientDialog extends javax.swing.JDialog implements IPanelMessages {
     private final IPatientDialogListener listener;
     private final ViewType viewType;
     private final String patientId;
@@ -29,7 +33,11 @@ public class PatientDialog extends javax.swing.JDialog {
      * @param viewtype
      * @param patientId
      */
-    public PatientDialog(Frame owner, IPatientDialogListener listenter, ViewType viewtype, String patientId) {
+    public PatientDialog(
+            Frame owner, 
+            IPatientDialogListener listenter, 
+            ViewType viewtype, 
+            String patientId) {
         super(owner, "Thera Kairos", true);
         initComponents();
         this.listener = listenter;
@@ -115,7 +123,7 @@ public class PatientDialog extends javax.swing.JDialog {
     }
          
     /**  
-     * Carga el objeto jComboBoxCities
+     * Carga lops datos cargados del objeto Paciente
      */
     private void loadPatientData() {
         
@@ -159,34 +167,7 @@ public class PatientDialog extends javax.swing.JDialog {
             }
         }
     }
-    
-    /**  
-     * Crea un PatientDTO de los datos cargados en el formulario  
-     * @return PatientDTO 
-     */
-    private PatientDTO getPatientDTO() {
-        String patientId = (viewType == ViewType.UPDATE && patientDTO != null) ? patientDTO.getPatientDTOId() : "";
-        String patientBirthDate = datePicker.isDateSelected() ? Date.valueOf(datePicker.getSelectedDate()).toString() : null;
-        CityDTO selectedCity = (CityDTO) jComboBoxCities.getSelectedItem();
-
-        return new PatientDTO(
-            patientId,
-            jTextFieldDNI.getText().trim(),
-            jTextFieldName.getText().trim(),
-            jTextFieldLastName.getText().trim(),
-            patientBirthDate,
-            jTextFieldOccupation.getText().trim(),
-            jTextFieldPhone.getText().trim(),
-            jTextFieldEmail.getText().trim(),
-            selectedCity != null ? selectedCity.getCityId() : null,
-            jTextFieldAddress.getText().trim(),
-            jTextFieldAddressNumber.getText().trim(),
-            jTextFieldAddressFloor.getText().trim(),
-            jTextFieldAddressDepartment.getText().trim(),
-            patientPhotoPath
-        );
-    }
-    
+        
     /**  
      * Agrega una foto asociada al paciente  
      */
@@ -217,25 +198,54 @@ public class PatientDialog extends javax.swing.JDialog {
     }
     
     /**  
-     * Carga el objeto jComboBoxCities
+     * Crea un PatientDTO con los datos cargados en el formulario  
+     * @return PatientDTO 
+     */
+    private PatientDTO getPatientDTO() {
+        CityDTO selectedCity = (CityDTO) jComboBoxCities.getSelectedItem();
+
+        return new PatientDTO(
+            (viewType == ViewType.UPDATE && patientDTO != null) ? patientDTO.getPatientDTOId() : "",
+            jTextFieldDNI.getText().trim(),
+            jTextFieldName.getText().trim(),
+            jTextFieldLastName.getText().trim(),
+            datePicker.isDateSelected() ? Date.valueOf(datePicker.getSelectedDate()).toString() : null,
+            jTextFieldOccupation.getText().trim(),
+            jTextFieldPhone.getText().trim(),
+            jTextFieldEmail.getText().trim(),
+            selectedCity != null ? selectedCity.getCityId() : null,
+            jTextFieldAddress.getText().trim(),
+            jTextFieldAddressNumber.getText().trim(),
+            jTextFieldAddressFloor.getText().trim(),
+            jTextFieldAddressDepartment.getText().trim(),
+            patientPhotoPath
+        );
+    }
+    
+    /**  
+     * Elige la accion a realizar por el objeto jButtonAdd
      */
     private void saveAction() {
-        
-        if (viewType == ViewType.INSERT) {
-            listener.insertPatient(getPatientDTO());
+        try {
+            
+            if (viewType == ViewType.INSERT) {
+                listener.insertPatient(getPatientDTO());
+            } 
+            
+            if (viewType == ViewType.UPDATE) {
+                listener.updatePatient(getPatientDTO());
+            }
+
             operationSuccess = true;
-        } 
-        
-        if (viewType == ViewType.UPDATE) {
-            listener.updatePatient(getPatientDTO());
-            operationSuccess = true;
+            dispose(); 
+
+        } catch (ValidationException | BusinessException e) {
+            showErrorMessage(e.getMessage());
+            operationSuccess = false;
+        } catch (IOException e) {
+            showErrorMessage("Error al manejar la foto del paciente: " + e.getMessage());
+            operationSuccess = false;
         }
-        
-        if (viewType == ViewType.VIEW) {
-            operationSuccess = true;
-        }
-                
-        dispose();
     }
     
     /**  
@@ -246,6 +256,26 @@ public class PatientDialog extends javax.swing.JDialog {
         dispose();
     }
     
+    @Override
+    public void showInformationMessage(String message) {
+        JOptionPane.showMessageDialog(
+                this, 
+                message, 
+                "Información", 
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    @Override
+    public void showErrorMessage(String message) {
+        JOptionPane.showMessageDialog(
+                this, 
+                message, 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE
+        );
+    }
+    
     /**  
      * Llama al diálogo y bloquea hasta que se cierre.  
      * @param listener
@@ -253,7 +283,10 @@ public class PatientDialog extends javax.swing.JDialog {
      * @param patientId
      * @return true si el guardado fue exitoso, false si canceló o hubo error.  
      */
-    public static Boolean showDialog(IPatientDialogListener listener, ViewType viewType, String patientId) {
+    public static Boolean showDialog(
+            IPatientDialogListener listener, 
+            ViewType viewType, 
+            String patientId) {
         Frame ownerFrame = JOptionPane.getFrameForComponent((Component) listener);
         PatientDialog dialog = new PatientDialog(ownerFrame, listener, viewType, patientId);
         dialog.setVisible(true);

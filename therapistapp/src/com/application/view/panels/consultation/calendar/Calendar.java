@@ -1,15 +1,9 @@
 package com.application.view.panels.consultation.calendar;
 
-import com.application.view.panels.consultation.calendar.PanelDay;
-import com.application.view.panels.consultation.calendar.PanelMonth;
-import com.application.view.panels.consultation.calendar.PanelHeader;
-import com.application.view.panels.consultation.calendar.ModelMonth;
-import com.application.view.panels.consultation.calendar.ModelDate;
-import com.application.view.panels.consultation.calendar.PanelYear;
 import com.application.interfaces.ICalendarEventCellRender;
 import com.application.interfaces.ICalendarSelectedListener;
 import com.application.interfaces.ICalendarCellListener;
-import com.application.view.panels.renderers.DefaultCalendarEventCellRender;
+import com.application.view.panels.renderers.CalendarEventCellRender;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.util.Animator;
 import com.formdev.flatlaf.util.CubicBezierEasing;
@@ -34,7 +28,7 @@ public class Calendar extends JPanel {
     private Animator animator;
     private Date date = new Date();
     private int selected = 1;
-    private ICalendarEventCellRender calendarEventCellRender = new DefaultCalendarEventCellRender();
+    private ICalendarEventCellRender calendarEventCellRender = new CalendarEventCellRender();
     private final List<ICalendarSelectedListener> events = new ArrayList<>();
 
     public Calendar() {

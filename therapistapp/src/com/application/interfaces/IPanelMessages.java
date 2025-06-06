@@ -1,6 +1,9 @@
 package com.application.interfaces;
 
-public interface IPanels {
+public interface IPanelMessages {
+    
     void showInformationMessage(String message);
+    
     void showErrorMessage(String message);
+    
 }

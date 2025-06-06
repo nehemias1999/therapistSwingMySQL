@@ -3,10 +3,6 @@ package com.application.view.panels.consultation.calendar;
 import java.util.Calendar;
 import java.util.Date;
 
-/**
- *
- * @author Raven
- */
 public class ModelDate {
 
     public int getYear() {

@@ -17,10 +17,6 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-/**
- *
- * @author Raven
- */
 public class LightDarkMode extends JPanel {
 
     public void setMenuFull(boolean menuFull) {
@@ -48,8 +44,8 @@ public class LightDarkMode extends JPanel {
         putClientProperty(FlatClientProperties.STYLE, ""
                 + "arc:999;"
                 + "background:$Menu.lightdark.background");
-        buttonLight = new JButton("Light", new FlatSVGIcon("com/application/view/mode/light.svg"));
-        buttonDark = new JButton("Dark", new FlatSVGIcon("com/application/view/mode/dark.svg"));
+        buttonLight = new JButton("Light", new FlatSVGIcon("com/application/view/resources/svg/light.svg"));
+        buttonDark = new JButton("Dark", new FlatSVGIcon("com/application/view/resources/svg/dark.svg"));
         buttonLighDark = new JButton();
         buttonLighDark.putClientProperty(FlatClientProperties.STYLE, ""
                 + "arc:999;"
@@ -101,9 +97,9 @@ public class LightDarkMode extends JPanel {
         addStyle(buttonLight, !isDark);
         addStyle(buttonDark, isDark);
         if (isDark) {
-            buttonLighDark.setIcon(new FlatSVGIcon("com/application/view/mode/dark.svg"));
+            buttonLighDark.setIcon(new FlatSVGIcon("com/application/view/resources/svg/dark.svg"));
         } else {
-            buttonLighDark.setIcon(new FlatSVGIcon("com/application/view/mode/light.svg"));
+            buttonLighDark.setIcon(new FlatSVGIcon("com/application/view/resources/svg/light.svg"));
         }
     }
 

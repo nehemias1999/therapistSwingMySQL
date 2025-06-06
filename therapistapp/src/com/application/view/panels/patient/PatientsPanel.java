@@ -2,23 +2,26 @@ package com.application.view.panels.patient;
 
 import com.application.view.panels.renderers.PatientProfileCellRender;
 import com.application.view.panels.renderers.PatientActionsCellRender;
-import com.application.interfaces.IPanels;
 import com.application.controllers.panels.PatientsPanelController;
+import com.application.exceptions.businessException.BusinessException;
+import com.application.exceptions.businessException.ValidationException;
 import com.application.interfaces.IPatientDialogListener;
 import com.application.model.dto.CityDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.model.enumerations.ViewType;
 import com.formdev.flatlaf.FlatClientProperties;
+import java.io.IOException;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import raven.modal.Toast;
 import static raven.modal.Toast.Type.SUCCESS;
+import com.application.interfaces.IPanelMessages;
 
-public class PatientsPanel extends javax.swing.JPanel implements IPanels, IPatientDialogListener {
+public class PatientsPanel extends javax.swing.JPanel implements IPanelMessages, IPatientDialogListener {
 
-    private PatientsPanelController patientsFormController;
+    private PatientsPanelController patientsPanelController;
     DefaultTableModel tableModel;
     
     public PatientsPanel() {
@@ -77,7 +80,7 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanels, IPatie
     }
         
     public void setController(PatientsPanelController controller) {
-        this.patientsFormController = controller;
+        this.patientsPanelController = controller;
         loadTableData();
     }
 
@@ -87,7 +90,7 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanels, IPatie
         tableModel.setRowCount(0);
 
         try {
-            List<PatientDTO> patientsDTO = patientsFormController.getAllPatients();
+            List<PatientDTO> patientsDTO = patientsPanelController.getAllPatients();
             for (PatientDTO patientDTO : patientsDTO) {
                 tableModel.addRow(new Object[]{patientDTO, patientDTO.getPatientDTOId()});
             }
@@ -102,7 +105,7 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanels, IPatie
         tableModel.setRowCount(0);
 
         try {
-            List<PatientDTO> patientsDTO = patientsFormController.getPatientsThatMatch(patientLastName);
+            List<PatientDTO> patientsDTO = patientsPanelController.getPatientsThatMatch(patientLastName);
             for (PatientDTO patientDTO : patientsDTO) {
                 tableModel.addRow(new Object[]{patientDTO, patientDTO.getPatientDTOId()});
             }
@@ -114,9 +117,9 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanels, IPatie
     public void callDialogToInsertPatient() {
         try {
             Boolean inserted = PatientDialog.showDialog(this, ViewType.INSERT, "");
+            initActionsData();
+            loadTableData();
             if(inserted) {
-                initActionsData();
-                loadTableData();
                 Toast.show(this, SUCCESS, "Paciente agregado exitosamente");
             }
         } catch (Exception ex) {
@@ -126,11 +129,10 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanels, IPatie
         
     public void callDialogToUpdatePatient(String patientId) {
         try {
-            PatientDTO patientDTO = patientsFormController.getPatientById(patientId);
             Boolean updated = PatientDialog.showDialog(this, ViewType.UPDATE, patientId);
+            initActionsData();
+            loadTableData();
             if(updated) {
-                initActionsData();
-                loadTableData();
                 Toast.show(this, SUCCESS, "Paciente modificado exitosamente");
             }
         } catch (Exception ex) {
@@ -141,10 +143,10 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanels, IPatie
     public void callDialogToDeletePatient(String patientId) {
         try {
             Boolean deleted = confirmAction("¿Está seguro de eliminar este paciente?");
+            initActionsData();
+            loadTableData();
             if (deleted) {
-                patientsFormController.deletePatient(patientId);
-                initActionsData();
-                loadTableData();
+                patientsPanelController.deletePatient(patientId);
                 Toast.show(this, Toast.Type.SUCCESS, "Paciente eliminado exitosamente");
             }
         } catch (Exception ex) {
@@ -154,8 +156,9 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanels, IPatie
     
     public void callDialogToViewPatient(String patientId) {
         try {
-            PatientDTO patientDTO = patientsFormController.getPatientById(patientId);
             PatientDialog.showDialog(this, ViewType.VIEW, patientId);
+            initActionsData();
+            loadTableData();
         } catch (Exception ex) {
             showErrorMessage("Error al visualizar paciente: " + ex.getMessage());
         } 
@@ -163,22 +166,22 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanels, IPatie
     
     @Override
     public PatientDTO getPatientById(String patientId) {
-        return patientsFormController.getPatientById(patientId);
+        return patientsPanelController.getPatientById(patientId);
     }
     
     @Override
     public List<CityDTO> getAllCities() {
-        return patientsFormController.getAllCities();
+        return patientsPanelController.getAllCities();
     }
     
     @Override
-    public void insertPatient(PatientDTO patientDTO) {
-        patientsFormController.insertPatient(patientDTO);
+    public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        patientsPanelController.insertPatient(patientDTO);
     }
     
     @Override
-    public void updatePatient(PatientDTO patientDTO) {
-        patientsFormController.updatePatient(patientDTO);
+    public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        patientsPanelController.updatePatient(patientDTO);
     }
     
     @Override

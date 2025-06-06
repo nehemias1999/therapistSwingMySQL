@@ -77,21 +77,7 @@ public class ConsultationController {
         }
         return consultationService.getConsultationsByDate(consultationDate).stream().toList();
     }
-    
-    /**
-     * Obtiene el monto de una consulta determinada
-     * @param consultationId Identificador de la consulta a buscar monto
-     * @return Monto de la consulta 
-     * @throws ValidationException  Si los datos no son válidos o la consulta no existe 
-     * @throws BusinessException Si ocurre un error durante el proceso
-     */
-    public String getConsultationAmountByConsultationId(String consultationId) throws ValidationException, BusinessException {
-        if (consultationId == null || consultationId.trim().isEmpty()) {
-            throw new ValidationException("El Identificador de la consulta es requerido");
-        }
-        return consultationService.getConsultationAmountByConsultationId(consultationId);
-    }
-    
+        
     /**
      * Valida los datos estructurales mínimos de la consulta
      * @param consultationDTO datos de la consulta a validar

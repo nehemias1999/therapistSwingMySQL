@@ -1,13 +1,13 @@
-package com.application.view.panels.consultation.calendar;
+package com.application.view.panels.renderers;
 
-import com.application.view.panels.consultation.calendar.DynamicCell;
 import com.application.interfaces.IDynamicCellRender;
+import com.application.view.panels.consultation.calendar.DynamicCell;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-public abstract class CellRenderCustom<E> implements IDynamicCellRender<E> {
+public abstract class CalendarCellRender<E> implements IDynamicCellRender<E> {
 
     public Point getMouse() {
         return mouse;
@@ -17,7 +17,7 @@ public abstract class CellRenderCustom<E> implements IDynamicCellRender<E> {
         this.mouse = mouse;
     }
 
-    public CellRenderCustom(Point mouse) {
+    public CalendarCellRender(Point mouse) {
         this.mouse = mouse;
     }
 

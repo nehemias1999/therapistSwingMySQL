@@ -7,7 +7,7 @@ import javax.swing.JTable;
 
 public class PatientActionsCellEditor extends DefaultCellEditor {
 
-    private IPatientActionsEvent event;
+    private final IPatientActionsEvent event;
 
     public PatientActionsCellEditor(IPatientActionsEvent event) {
         super(new JCheckBox());

@@ -2,10 +2,6 @@ package com.application.view.panels.consultation.calendar;
 
 import java.util.Calendar;
 
-/**
- *
- * @author Raven
- */
 public class ModelMonth {
 
     public int getYear() {

@@ -1,5 +1,6 @@
 package com.application.view.panels.consultation.calendar;
 
+import com.application.view.panels.renderers.CalendarCellRender;
 import com.application.interfaces.IDynamicCellListener;
 import com.application.interfaces.ICalendarCellListener;
 import com.formdev.flatlaf.FlatClientProperties;
@@ -63,7 +64,7 @@ public class PanelMonth extends DynamicCell<ModelMonth> {
         };
         addEventDynamicCellListenter(dynamicCellListener);
         addMouseMotionListener(mouseAdapter);
-        setDynamicCellRender(new CellRenderCustom<ModelMonth>(mouse) {
+        setDynamicCellRender(new CalendarCellRender<ModelMonth>(mouse) {
             @Override
             public void paintCell(Graphics2D g2, Rectangle2D rectangle, ModelMonth e) {
                 FontMetrics fm = g2.getFontMetrics();

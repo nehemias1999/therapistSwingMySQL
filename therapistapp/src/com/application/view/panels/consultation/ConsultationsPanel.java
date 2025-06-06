@@ -3,26 +3,33 @@ package com.application.view.panels.consultation;
 import com.application.view.panels.consultation.calendar.ModelDate;
 import com.application.interfaces.ICalendarSelectedListener;
 import com.application.controllers.panels.ConsultationsPanelController;
+import com.application.exceptions.businessException.BusinessException;
+import com.application.exceptions.businessException.ValidationException;
 import com.application.interfaces.IConsultationDialogListener;
 import com.application.interfaces.IConsultationPatientActionsEvent;
-import com.application.interfaces.IPanels;
+import com.application.interfaces.IPatientDialogListener;
+import com.application.model.dto.CityDTO;
 import com.application.model.dto.ConsultationDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.model.enumerations.ViewType;
+import com.application.view.panels.patient.PatientDialog;
 import com.application.view.panels.renderers.ConsultationPatientActionsCellRender;
 import com.application.view.panels.renderers.ConsultationPatientProfileCellRender;
 import com.application.view.panels.renderers.ConsultationPatientTimeCellRender;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import raven.modal.Toast;
+import static raven.modal.Toast.Type.SUCCESS;
+import com.application.interfaces.IPanelMessages;
 
-public class ConsultationsPanel extends javax.swing.JPanel implements IPanels, IConsultationDialogListener {
+public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMessages, IConsultationDialogListener, IPatientDialogListener {
 
-    private ConsultationsPanelController consultationsFormController;
+    private ConsultationsPanelController consultationsPanelController;
     
     ModelDate actualSelectedDate = null;
     
@@ -49,18 +56,15 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanels, I
         IConsultationPatientActionsEvent event = new IConsultationPatientActionsEvent() {
             @Override
             public void onView(String consultationId) {
-                System.out.println("VER → consulta con ID = " + consultationId);
-                //viewConsultation(consultationId);
+                callDialogToViewConsultation(consultationId);
             }
             @Override
             public void onEdit(String consultationId) {
-                System.out.println("EDITAR → consulta con ID = " + consultationId);
-                updateConsultation(consultationId);
+                callDialogToUpdateConsultation(consultationId);
             }
             @Override
             public void onDelete(String consultationId) {
-                System.out.println("BORRAR → consulta con ID = " + consultationId);
-                deleteConsultation(consultationId);
+                callDialogToDeleteConsultation(consultationId);
             }  
         };
         
@@ -72,9 +76,6 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanels, I
             
     private void setStyle() {
         TableColumnModel columnModel = jTableMain.getColumnModel();
-        
-        columnModel.getColumn(0).setPreferredWidth(100);
-        columnModel.getColumn(2).setPreferredWidth(200);
         
         jTableMain.getTableHeader().putClientProperty(FlatClientProperties.STYLE, ""
                 + "height:30;"
@@ -100,7 +101,7 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanels, I
     }
         
     public void setController(ConsultationsPanelController controller) {
-        this.consultationsFormController = controller;
+        this.consultationsPanelController = controller;
         loadTableData(actualSelectedDate);
     }
     
@@ -113,14 +114,14 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanels, I
 
         tableModel.setRowCount(0);
 
-        List<ConsultationDTO> consultationsDTO = consultationsFormController.getConsultationsByDate(date.toFormattedDate());
+        List<ConsultationDTO> consultationsDTO = consultationsPanelController.getConsultationsByDate(date.toFormattedDate());
 
         if (consultationsDTO.isEmpty()) {
             return;
         }
 
         for (ConsultationDTO consultationDTO : consultationsDTO) {
-            List<PatientDTO> patientsDTO = consultationsFormController.getPatientsByConsultationId(consultationDTO.getConsultationDTOId());
+            List<PatientDTO> patientsDTO = consultationsPanelController.getPatientsByConsultationId(consultationDTO.getConsultationDTOId());
 
             if (patientsDTO.isEmpty()) continue;
 
@@ -134,60 +135,106 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanels, I
         }
     }
         
-    public void insertConsultation() {
-        boolean saved = ConsultationDialog.showDialog(this, consultationsFormController, ViewType.INSERT, new ConsultationDTO());
-        if (saved) {
-            Toast.show(this, Toast.Type.SUCCESS, "Consulta agregada exitosamente");
+    public void callDialogToInsertConsultation() {
+        try {
+            Boolean inserted = ConsultationDialog.showDialog(this, ViewType.INSERT, "");
             initActionsData();
             loadTableData(actualSelectedDate);
-        }
+            if(inserted) {
+                Toast.show(this, SUCCESS, "Consulta agregada exitosamente");
+            }
+        } catch (Exception ex) {
+            showErrorMessage("Error al agregar consulta: " + ex.getMessage());
+        } 
     }
         
-    public void insertPatient() {
-//        try {
-//            
-//            boolean saved = PatientFormDialog.showDialog(this, patientFormController, ViewType.INSERT, new PatientDTO());
-//            if (saved) {
-//                Toast.show(this, Toast.Type.SUCCESS, "Paciente agregado exitosamente");
-//            }
-//            
-//        } catch (Exception ex) {
-//            showErrorMessage("Error al mostrar el formulario: " + ex.getMessage());
-//        }
+    public void callDialogToInsertPatient() {
+        try {
+            Boolean inserted = PatientDialog.showDialog(this, ViewType.INSERT, "");
+            initActionsData();
+            if(inserted) {
+                Toast.show(this, SUCCESS, "Paciente agregado exitosamente");
+            }
+        } catch (Exception ex) {
+            showErrorMessage("Error al agregar paciente: " + ex.getMessage());
+        } 
     }
         
-    public void updateConsultation(String consultationId) {
-        boolean updated = ConsultationProfileDialog.showDialog(this, ViewType.UPDATE, consultationId);
-        if (updated) {
-            Toast.show(this, Toast.Type.SUCCESS, "Consulta modificada exitosamente");
+    public void callDialogToUpdateConsultation(String consultationId) {
+        try {
+            Boolean updated = ConsultationDialog.showDialog(this, ViewType.UPDATE, consultationId);
             initActionsData();
             loadTableData(actualSelectedDate);
+            if(updated) {
+                Toast.show(this, SUCCESS, "Consulta modificada exitosamente");
+            }
+        } catch (Exception ex) {
+            showErrorMessage("Error al modificar consulta: " + ex.getMessage());
         }
     }
     
-    public void deleteConsultation(String consultationId) {
-        boolean confirmed = confirmAction("¿Está seguro de eliminar esta consulta?");
-        if (!confirmed) return;
-
-        consultationsFormController.deleteConsultation(consultationId);
-        Toast.show(this, Toast.Type.SUCCESS, "Consulta eliminada exitosamente");
-        initActionsData();
-        loadTableData(actualSelectedDate);
+    public void callDialogToDeleteConsultation(String consultationId) {
+        try {
+            Boolean deleted = confirmAction("¿Está seguro de eliminar este paciente?");
+            initActionsData();
+            loadTableData(actualSelectedDate);
+            if (deleted) {
+                consultationsPanelController.deleteConsultation(consultationId);
+                Toast.show(this, Toast.Type.SUCCESS, "Consulta eliminada exitosamente");
+            }
+        } catch (Exception ex) {
+            showErrorMessage("Error al eliminar consulta: " + ex.getMessage());
+        } 
     }
-            
+     
+    public void callDialogToViewConsultation(String consultationId) {
+        try {
+            ConsultationDialog.showDialog(this, ViewType.VIEW, consultationId);
+            initActionsData();
+            loadTableData(actualSelectedDate);
+        } catch (Exception ex) {
+            showErrorMessage("Error al visualizar la consulta: " + ex.getMessage());
+        } 
+    }
+    
     @Override
     public ConsultationDTO getConsultationById(String consultationId) {
-        return consultationsFormController.getConsultationById(consultationId);
+        return consultationsPanelController.getConsultationById(consultationId);
     }
-    
-    @Override
-    public String getConsultationAmountByConsultationId(String consultationId) {
-        return consultationsFormController.getConsultationAmountByConsultationId(consultationId);
-    }
-    
+        
     @Override
     public List<PatientDTO> getPatientsByConsultationId(String consultationId) {
-        return consultationsFormController.getPatientsByConsultationId(consultationId);
+        return consultationsPanelController.getPatientsByConsultationId(consultationId);
+    }
+    
+    @Override
+    public void insertConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
+        consultationsPanelController.insertConsultation(consultationDTO);
+    } 
+    
+    @Override
+    public void updateConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
+        consultationsPanelController.updateConsultation(consultationDTO);
+    }
+    
+    @Override
+    public PatientDTO getPatientById(String patientId) {
+        return consultationsPanelController.getPatientById(patientId);
+    }
+
+    @Override
+    public List<CityDTO> getAllCities() {
+        return consultationsPanelController.getAllCities();
+    }
+
+    @Override
+    public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        consultationsPanelController.insertPatient(patientDTO);
+    }
+
+    @Override
+    public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        consultationsPanelController.updatePatient(patientDTO);
     }
 
     @Override
@@ -352,11 +399,11 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanels, I
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonAddConsultationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddConsultationActionPerformed
-        insertConsultation();
+        callDialogToInsertConsultation();
     }//GEN-LAST:event_jButtonAddConsultationActionPerformed
 
     private void jButtonAddPatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddPatientActionPerformed
-        // TODO add your handling code here:
+        callDialogToInsertPatient();
     }//GEN-LAST:event_jButtonAddPatientActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

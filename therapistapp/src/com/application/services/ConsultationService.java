@@ -9,8 +9,6 @@ import com.application.model.dto.ConsultationDTO;
 import com.application.model.entities.Consultation;
 import com.application.model.enumerations.ConsultationStatus;
 import java.time.LocalDate;
-
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -122,21 +120,6 @@ public class ConsultationService {
     }
        
     /**
-     * Obtiene el monto de una consulta determinada
-     * @param consultationId identificador de la consulta
-     * @return Monto de la consulta
-     * @throws BusinessException Si ocurre un error durante el proceso
-     */
-    public String getConsultationAmountByConsultationId(String consultationId) throws BusinessException {
-        try {
-            return consultationDAO.getConsultationAmountByConsultationId(UUID.fromString(consultationId))
-                    .toString();
-        } catch (DataAccessException e) {
-            throw new BusinessException("Error al obtener el monto de la consulta", e);
-        }
-    }
-
-    /**
      * Valida los datos de formato y de negocio de la consulta
      * @param consultationDTO datos de la consulta a validar
      * @throws ValidationException si algún dato obligatorio es inválido
@@ -220,6 +203,7 @@ public class ConsultationService {
         dto.setConsultationDTODate(c.getConsultationDate().toString());
         dto.setConsultationDTOStartTime(c.getConsultationStartTime().toString());
         dto.setConsultationDTOEndTime(c.getConsultationEndTime().toString());
+        dto.setConsultationDTOAmount(c.getConsultationAmount().toString());
         dto.setConsultationDTOStatus(c.getConsultationStatus().toString());
         
         return dto;

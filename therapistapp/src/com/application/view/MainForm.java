@@ -19,6 +19,7 @@ import com.application.Application;
 import com.application.controllers.entities.CityController;
 import com.application.controllers.entities.ConsultationController;
 import com.application.controllers.entities.ConsultationPatientController;
+import com.application.controllers.entities.ControllerRegistry;
 import com.application.controllers.entities.PatientController;
 import com.application.controllers.panels.ConsultationsPanelController;
 import com.application.controllers.panels.PatientsPanelController;
@@ -67,24 +68,21 @@ public class MainForm extends JLayeredPane {
             menuButton = new JButton();
         }
         String icon = (getComponentOrientation().isLeftToRight()) ? "menu_left.svg" : "menu_right.svg";
-        menuButton.setIcon(new FlatSVGIcon("com/application/view/menu/svg/" + icon, 0.8f));
+        menuButton.setIcon(new FlatSVGIcon("com/application/view/resources/svg/" + icon, 0.8f));
     }
 
     private void initMenuEvent() {
-        ConsultationController consultationController = new ConsultationController(new ConsultationService());
-        ConsultationPatientController consultationPatientController = new ConsultationPatientController(new ConsultationPatientService());
-        PatientController patientController = new PatientController(new PatientService());
-        CityController cityController = new CityController(new CityService());
+        ControllerRegistry controllerRegistry = new ControllerRegistry();
         
         menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
             // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
                         
             if (index == 0) {
-                Application.showForm(new ConsultationsPanelController(consultationController, consultationPatientController, patientController).getView());
+                Application.showForm(new ConsultationsPanelController(controllerRegistry).getView());
             }
             
             if (index == 1) {
-                Application.showForm(new PatientsPanelController(patientController, cityController).getView());
+                Application.showForm(new PatientsPanelController(controllerRegistry).getView());
             }
                         
         });
@@ -97,7 +95,7 @@ public class MainForm extends JLayeredPane {
         } else {
             icon = (full) ? "menu_right.svg" : "menu_left.svg";
         }
-        menuButton.setIcon(new FlatSVGIcon("com/application/view/menu/svg/" + icon, 0.8f));
+        menuButton.setIcon(new FlatSVGIcon("com/application/view/resources/svg/" + icon, 0.8f));
         menu.setMenuFull(full);
         revalidate();
     }

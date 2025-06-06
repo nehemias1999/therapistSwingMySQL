@@ -50,9 +50,6 @@ public class ConsultationDAO {
         "SELECT COUNT(*) FROM tbl_consultation " +
         "WHERE consultation_date = ? AND consultation_start_time = ?";
     
-    private static final String SELECT_CONSULTATON_AMOUNT_BY_CONSULTATION_ID =
-        "SELECT consultation_amount FROM tbl_consultation WHERE consultation_id = ? and is_active = true";
-    
     private static final String UNIQUE_CONSULTATION_TIME_CONSTRAINT = "uk_consultation_time";
 
     /**
@@ -187,30 +184,7 @@ public class ConsultationDAO {
             throw new DataAccessException("Error al obtener consultas por fecha", e);
         }
     }
-    
-    /**
-     * Obtiene el monto de una consulta determinada
-     * @param consultationId Identificador de la consulta
-     * @return Monto de la consulta
-     * @throws DataAccessException Si ocurre un error al acceder a la base de datos
-     */
-    public Double getConsultationAmountByConsultationId(UUID consultationId) {
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(SELECT_CONSULTATON_AMOUNT_BY_CONSULTATION_ID)) {
-
-            ps.setString(1, consultationId.toString());
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getDouble("consultation_amount");
-                } else {
-                    throw new EntityNotFoundException("Consultation", consultationId.toString());
-                }
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error al obtener el monto de la consulta", e);
-        }
-    }
-    
+        
     /**
      * Verifica si existe una consulta con la fecha/hora de inicio indicada
      * @param consultationDate Fecha de la consulta

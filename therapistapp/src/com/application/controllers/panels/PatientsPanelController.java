@@ -1,6 +1,7 @@
 package com.application.controllers.panels;
 
 import com.application.controllers.entities.CityController;
+import com.application.controllers.entities.ControllerRegistry;
 import com.application.controllers.entities.PatientController;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
@@ -13,14 +14,12 @@ import java.util.Collections;
 
 public class PatientsPanelController {
     
-    private final PatientController patientController;
-    private final CityController cityController;
+    private final ControllerRegistry controllerRegistry;
     private final PatientsPanel patientsForm;
     
-    public PatientsPanelController(PatientController patientController, CityController cityController) {
-        this.patientController = patientController;
-        this.cityController = cityController;
-        
+    public PatientsPanelController(ControllerRegistry controllerRegistry) {
+        this.controllerRegistry = controllerRegistry;
+
         this.patientsForm = new PatientsPanel();
         this.patientsForm.setController(this);
     }
@@ -35,7 +34,7 @@ public class PatientsPanelController {
      */
     public List<PatientDTO> getAllPatients() {
         try {
-            List<PatientDTO> patients = patientController.getAllPatients();
+            List<PatientDTO> patients = controllerRegistry.getPatientController().getAllPatients();
             return patients != null ? patients : Collections.emptyList();
         } catch (BusinessException e) {
             patientsForm.showErrorMessage("Error al obtener pacientes: " + e.getMessage());
@@ -49,7 +48,7 @@ public class PatientsPanelController {
      */
     public List<CityDTO> getAllCities() {
         try {
-            List<CityDTO> cities = cityController.getAllCities();
+            List<CityDTO> cities = controllerRegistry.getCityController().getAllCities();
             return cities != null ? cities : Collections.emptyList();
         } catch (BusinessException e) {
             patientsForm.showErrorMessage("Error al obtener ciudades: " + e.getMessage());
@@ -60,29 +59,23 @@ public class PatientsPanelController {
     /**
      * Inserta un nuevo paciente
      * @param patientDTO Datos del paciente a insertar
+     * @throws com.application.exceptions.businessException.ValidationException
+     * @throws com.application.exceptions.businessException.BusinessException
+     * @throws java.io.IOException
      */
-    public void insertPatient(PatientDTO patientDTO) {
-        try {
-            patientController.insertPatient(patientDTO);
-        } catch (ValidationException | BusinessException e) {
-            patientsForm.showErrorMessage(e.getMessage());
-        } catch (IOException e) {
-            patientsForm.showErrorMessage("Error al guardar la foto del paciente: " + e.getMessage());
-        }
+    public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        controllerRegistry.getPatientController().insertPatient(patientDTO);
     }
     
     /**
      * Modifica paciente existente
      * @param patientDTO Datos del paciente a modificar
+     * @throws com.application.exceptions.businessException.ValidationException
+     * @throws com.application.exceptions.businessException.BusinessException
+     * @throws java.io.IOException
      */
-    public void updatePatient(PatientDTO patientDTO) {
-        try {
-            patientController.updatePatient(patientDTO);
-        } catch (ValidationException | BusinessException e) {
-            patientsForm.showErrorMessage(e.getMessage());
-        } catch (IOException e) {
-            patientsForm.showErrorMessage("Error al actualizar la foto del paciente: " + e.getMessage());
-        }
+    public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
+        controllerRegistry.getPatientController().updatePatient(patientDTO);
     }
     
     /**
@@ -91,7 +84,7 @@ public class PatientsPanelController {
      */
     public void deletePatient(String patientId) {
         try {
-            patientController.deletePatient(patientId);
+            controllerRegistry.getPatientController().deletePatient(patientId);
         } catch (ValidationException | BusinessException e) {
             patientsForm.showErrorMessage(e.getMessage());
         }
@@ -104,7 +97,7 @@ public class PatientsPanelController {
      */
     public PatientDTO getPatientById(String patientId) {
         try {
-            return patientController.getPatientById(patientId);
+            return controllerRegistry.getPatientController().getPatientById(patientId);
         } catch (ValidationException | BusinessException e) {
             patientsForm.showErrorMessage(e.getMessage());
             return null;
@@ -118,7 +111,7 @@ public class PatientsPanelController {
      */
     public String getCityNameById(String cityId) {
         try {
-            return cityController.getCityNameById(cityId);
+            return controllerRegistry.getCityController().getCityNameById(cityId);
         } catch (ValidationException | BusinessException e) {
             patientsForm.showErrorMessage(e.getMessage());
             return null;
@@ -132,7 +125,7 @@ public class PatientsPanelController {
      */
     public List<PatientDTO> getPatientsThatMatch(String patientData) {
         try {
-            List<PatientDTO> result = patientController.getPatientsThatMatch(patientData);
+            List<PatientDTO> result = controllerRegistry.getPatientController().getPatientsThatMatch(patientData);
             return result != null ? result : Collections.emptyList();
         } catch (BusinessException e) {
             patientsForm.showErrorMessage("Error en búsqueda: " + e.getMessage());

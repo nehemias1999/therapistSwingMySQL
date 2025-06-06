@@ -1,5 +1,6 @@
 package com.application.view.panels.consultation.calendar;
 
+import com.application.view.panels.renderers.CalendarCellRender;
 import com.application.interfaces.ICalendarCellListener;
 import com.application.interfaces.IDynamicCellListener;
 import com.formdev.flatlaf.FlatClientProperties;
@@ -14,10 +15,11 @@ import java.awt.geom.Rectangle2D;
 import java.util.Calendar;
 import java.util.Date;
 import javax.swing.SwingUtilities;
+import com.application.interfaces.IDatePanelListener;
 
 public class PanelDay extends DynamicCell<ModelDate> {
 
-    public void setPanelDateListener(PanelDateListener panelDateListener) {
+    public void setPanelDateListener(IDatePanelListener panelDateListener) {
         this.panelDateListener = panelDateListener;
     }
 
@@ -35,7 +37,7 @@ public class PanelDay extends DynamicCell<ModelDate> {
     private ModelMonth month;
     public static final String DATE[] = {"Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"};
     private ICalendarCellListener calendarCellListener;
-    private PanelDateListener panelDateListener;
+    private IDatePanelListener panelDateListener;
 
     public PanelDay() {
         init();
@@ -85,7 +87,7 @@ public class PanelDay extends DynamicCell<ModelDate> {
         };
         addEventDynamicCellListenter(dynamicCellListener);
         addMouseMotionListener(mouseAdapter);
-        setDynamicCellRender(new CellRenderCustom<ModelDate>(mouse) {
+        setDynamicCellRender(new CalendarCellRender<ModelDate>(mouse) {
             @Override
             public void paint(Graphics2D g2, Rectangle rectangle) {
                 FontMetrics fm = g2.getFontMetrics();
