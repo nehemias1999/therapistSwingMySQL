@@ -40,8 +40,10 @@ DROP TABLE IF EXISTS `tbl_consultation`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tbl_consultation` (
   `consultation_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT (uuid()),
-  `consultation_start_datetime` datetime NOT NULL,
-  `consultation_end_datetime` datetime DEFAULT NULL,
+  `consultation_date` date NOT NULL,
+  `consultation_start_time` time NOT NULL,
+  `consultation_end_time` time NOT NULL,
+  `consultation_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `consultation_status` enum('SCHEDULED','COMPLETED','CANCELLED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SCHEDULED',
   `is_active` tinyint NOT NULL DEFAULT '1',
   PRIMARY KEY (`consultation_id`)
@@ -58,7 +60,6 @@ DROP TABLE IF EXISTS `tbl_consultation_patient`;
 CREATE TABLE `tbl_consultation_patient` (
   `consultation_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `patient_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `consultation_amount` decimal(10,2) NOT NULL,
   `is_paid` tinyint(1) NOT NULL DEFAULT '0',
   `patient_note_path` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_active` tinyint NOT NULL DEFAULT '1',
@@ -108,4 +109,4 @@ CREATE TABLE `tbl_patient` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-02 20:27:41
+-- Dump completed on 2025-06-07 13:10:07

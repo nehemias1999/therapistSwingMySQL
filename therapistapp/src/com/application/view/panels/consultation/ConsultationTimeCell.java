@@ -2,9 +2,9 @@ package com.application.view.panels.consultation;
 
 import java.awt.Font;
 
-public class ConsultationPatientTimeCell extends javax.swing.JPanel {
+public class ConsultationTimeCell extends javax.swing.JPanel {
 
-    public ConsultationPatientTimeCell(String consultationTime, Font font) {
+    public ConsultationTimeCell(String consultationTime, Font font) {
         initComponents();
         jLabelTime.setText(consultationTime);
     }

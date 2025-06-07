@@ -16,5 +16,9 @@ public interface IConsultationDialogListener {
     
     void updateConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException;
     
+    PatientDTO getPatientById(String patientId);
+    
+    void deletePatientConsultation(String consultationId, String patientId);
+    
 }
 

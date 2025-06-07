@@ -276,6 +276,16 @@ public class PatientDialog extends javax.swing.JDialog implements IPanelMessages
         );
     }
     
+    @Override
+    public Boolean showConfirmAction(String message) {
+        return JOptionPane.showConfirmDialog(
+                this, 
+                message, 
+                "Confirmar acción", 
+                JOptionPane.YES_NO_OPTION
+        ) == JOptionPane.YES_OPTION;
+    }
+    
     /**  
      * Llama al diálogo y bloquea hasta que se cierre.  
      * @param listener

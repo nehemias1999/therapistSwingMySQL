@@ -1,23 +1,23 @@
 package com.application.view.panels.consultation;
 
-import com.application.interfaces.IConsultationPatientActionsEvent;
+import com.application.interfaces.IConsultationActionsEvent;
 import java.awt.Component;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JTable;
 
-public class ConsultationPatientActionsCellEditor extends DefaultCellEditor {
+public class ConsultationActionsCellEditor extends DefaultCellEditor {
 
-    private final IConsultationPatientActionsEvent event;
+    private final IConsultationActionsEvent event;
 
-    public ConsultationPatientActionsCellEditor(IConsultationPatientActionsEvent event) {
+    public ConsultationActionsCellEditor(IConsultationActionsEvent event) {
         super(new JCheckBox());
         this.event = event;
     }
 
     @Override
     public Component getTableCellEditorComponent(JTable jtable, Object object, boolean isSelected, int row, int column) {
-        ConsultationPatientActionsCell action = new ConsultationPatientActionsCell();
+        ConsultationActionsCell action = new ConsultationActionsCell();
         action.initEvent(event, String.valueOf(object));
         action.setBackground(jtable.getSelectionBackground());
         return action;

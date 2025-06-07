@@ -6,4 +6,6 @@ public interface IPanelMessages {
     
     void showErrorMessage(String message);
     
+    Boolean showConfirmAction(String message);
+    
 }

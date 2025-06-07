@@ -1,4 +1,4 @@
-package com.application.view.panels.consultation;
+package com.application.view.panels.consultation.dialog;
 
 import com.application.interfaces.IConsultationPatientActionsEvent;
 
@@ -8,10 +8,9 @@ public class ConsultationPatientActionsCell extends javax.swing.JPanel {
         initComponents();
     }
 
-    public void initEvent(IConsultationPatientActionsEvent event, String consultationId) {
-        jButtonVisualize.addActionListener(ae -> event.onView(consultationId));
-        jButtonUpdate.addActionListener(ae -> event.onEdit(consultationId));
-        jButtonDelete.addActionListener(ae -> event.onDelete(consultationId)); 
+    public void initEvent(IConsultationPatientActionsEvent event, String patientId) {
+        jButtonVisualize.addActionListener(ae -> event.onView(patientId));
+        jButtonDelete .addActionListener(ae -> event.onDelete(patientId)); 
     }
 
     /**
@@ -24,15 +23,12 @@ public class ConsultationPatientActionsCell extends javax.swing.JPanel {
     private void initComponents() {
 
         jButtonVisualize = new javax.swing.JButton();
-        jButtonUpdate = new javax.swing.JButton();
         jButtonDelete = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(0, 100));
         setPreferredSize(new java.awt.Dimension(250, 100));
 
         jButtonVisualize.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/application/view/resources/png/view.png"))); // NOI18N
-
-        jButtonUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/application/view/resources/png/edit.png"))); // NOI18N
 
         jButtonDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/application/view/resources/png/delete.png"))); // NOI18N
 
@@ -43,11 +39,9 @@ public class ConsultationPatientActionsCell extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(93, 93, 93)
                 .addComponent(jButtonVisualize, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jButtonUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jButtonDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(30, Short.MAX_VALUE))
+                .addContainerGap(61, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -55,7 +49,6 @@ public class ConsultationPatientActionsCell extends javax.swing.JPanel {
                 .addContainerGap(31, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jButtonDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButtonUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButtonVisualize, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(31, 31, 31))
         );
@@ -63,7 +56,6 @@ public class ConsultationPatientActionsCell extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonDelete;
-    private javax.swing.JButton jButtonUpdate;
     private javax.swing.JButton jButtonVisualize;
     // End of variables declaration//GEN-END:variables
 }

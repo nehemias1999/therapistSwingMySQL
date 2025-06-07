@@ -142,7 +142,7 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanelMessages,
     
     public void callDialogToDeletePatient(String patientId) {
         try {
-            Boolean deleted = confirmAction("¿Está seguro de eliminar este paciente?");
+            Boolean deleted = showConfirmAction("¿Está seguro de eliminar este paciente?");
             initActionsData();
             loadTableData();
             if (deleted) {
@@ -203,8 +203,9 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanelMessages,
                 JOptionPane.ERROR_MESSAGE
         );
     }
-
-    public boolean confirmAction(String message) {
+    
+    @Override
+    public Boolean showConfirmAction(String message) {
         return JOptionPane.showConfirmDialog(
                 this, 
                 message, 

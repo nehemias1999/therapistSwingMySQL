@@ -1,17 +1,17 @@
-package com.application.view.panels.consultation;
+package com.application.view.panels.consultation.dialog;
 
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.interfaces.IConsultationDialogListener;
+import com.application.interfaces.IConsultationPatientActionsEvent;
 import com.application.interfaces.IPanelMessages;
 import com.application.model.dto.ConsultationDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.model.enumerations.ConsultationStatus;
 import com.application.model.enumerations.ViewType;
-import com.application.view.panels.patient.IPatientActionsEvent;
-import com.application.view.panels.patient.PatientActionsCellEditor;
-import com.application.view.panels.renderers.PatientActionsCellRender;
-import com.application.view.panels.renderers.PatientProfileCellRender;
+import com.application.view.panels.patient.PatientDialog;
+import com.application.view.panels.renderers.ConsultationPatientActionsCellRender;
+import com.application.view.panels.renderers.ConsultationPatientProfileCellRender;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Component;
 import java.awt.Frame;
@@ -25,6 +25,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import raven.datetime.component.time.TimeEvent;
 import raven.datetime.component.time.TimeSelectionListener;
+import raven.modal.Toast;
 
 public class ConsultationDialog extends javax.swing.JDialog implements IPanelMessages {
     private final IConsultationDialogListener listener;
@@ -149,27 +150,22 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
     }
     
     private void initActionsData() {
-        IPatientActionsEvent event = new IPatientActionsEvent() {
+        IConsultationPatientActionsEvent event = new IConsultationPatientActionsEvent() {
             @Override
-            public void onView(String consultationId) {
-                System.out.println("VER → consulta con ID = " + consultationId);
-                //viewConsultation(consultationId);
+            public void onView(String patientId) {
+                System.out.println("VER → paciente con ID = " + patientId);
+                callDialogToViewPatient(patientId);
             }
             @Override
-            public void onEdit(String consultationId) {
-                System.out.println("EDITAR → consulta con ID = " + consultationId);
-                //updateConsultation(consultationId);
-            }
-            @Override
-            public void onDelete(String consultationId) {
-                System.out.println("BORRAR → consulta con ID = " + consultationId);
-                //deleteConsultation(consultationId);
+            public void onDelete(String patientId) {
+                System.out.println("BORRAR → paciente con ID = " + patientId);
+                callDialogToDeletePatient(patientId);
             }  
         };
         
-        jTablePatients.getColumnModel().getColumn(0).setCellRenderer(new PatientProfileCellRender(jTablePatients));
-        jTablePatients.getColumnModel().getColumn(1).setCellRenderer(new PatientActionsCellRender());
-        jTablePatients.getColumnModel().getColumn(1).setCellEditor(new PatientActionsCellEditor(event));
+        jTablePatients.getColumnModel().getColumn(0).setCellRenderer(new ConsultationPatientProfileCellRender(jTablePatients));
+        jTablePatients.getColumnModel().getColumn(1).setCellRenderer(new ConsultationPatientActionsCellRender());
+        jTablePatients.getColumnModel().getColumn(1).setCellEditor(new ConsultationPatientActionsCellEditor(event));
     }
     
     private void setStyle() {
@@ -278,12 +274,47 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
             operationSuccess = false;
         }
     }
-        
+
+    /**  
+     * Elige la accion a realizar por el objeto jButtonCancel
+     */
     private void cancelAction() {
         operationSuccess = false;
         dispose();
     }
     
+    /**  
+     * Elimina el paciente de la consulta
+     * @param patientId Identifiador del paciente
+     */
+    public void callDialogToDeletePatient(String patientId) {
+        try {
+            Boolean deleted = showConfirmAction("¿Está seguro de eliminar este paciente?");
+            initActionsData();
+            loadConsultationPatients();
+            if (deleted) {
+                //consultationsPanelController.deletePatient(patientId);
+                Toast.show(this, Toast.Type.SUCCESS, "Paciente eliminado exitosamente");
+            }
+        } catch (Exception ex) {
+            showErrorMessage("Error al eliminar paciente: " + ex.getMessage());
+        } 
+    }
+    
+    /**  
+     * Muestra los datos del paciente
+     * @param patientId Identificador del paciente
+     */
+    public void callDialogToViewPatient(String patientId) {
+//        try {
+//            PatientDialog.showDialog(this, ViewType.VIEW, patientId);
+//            initActionsData();
+//            loadConsultationPatients();
+//        } catch (Exception ex) {
+//            showErrorMessage("Error al visualizar paciente: " + ex.getMessage());
+//        } 
+    }
+        
     @Override
     public void showInformationMessage(String message) {
         JOptionPane.showMessageDialog(
@@ -302,6 +333,16 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
                 "Error", 
                 JOptionPane.ERROR_MESSAGE
         );
+    }
+
+    @Override
+    public Boolean showConfirmAction(String message) {
+        return JOptionPane.showConfirmDialog(
+                this, 
+                message, 
+                "Confirmar acción", 
+                JOptionPane.YES_NO_OPTION
+        ) == JOptionPane.YES_OPTION;
     }
     
     /**  

@@ -1,10 +1,12 @@
 package com.application.view.panels.consultation;
 
+import com.application.view.panels.consultation.dialog.ConsultationDialog;
 import com.application.view.panels.consultation.calendar.ModelDate;
 import com.application.interfaces.ICalendarSelectedListener;
 import com.application.controllers.panels.ConsultationsPanelController;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
+import com.application.interfaces.IConsultationActionsEvent;
 import com.application.interfaces.IConsultationDialogListener;
 import com.application.interfaces.IConsultationPatientActionsEvent;
 import com.application.interfaces.IPatientDialogListener;
@@ -13,9 +15,9 @@ import com.application.model.dto.ConsultationDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.model.enumerations.ViewType;
 import com.application.view.panels.patient.PatientDialog;
-import com.application.view.panels.renderers.ConsultationPatientActionsCellRender;
-import com.application.view.panels.renderers.ConsultationPatientProfileCellRender;
-import com.application.view.panels.renderers.ConsultationPatientTimeCellRender;
+import com.application.view.panels.renderers.ConsultationActionsCellRender;
+import com.application.view.panels.renderers.ConsultationProfileCellRender;
+import com.application.view.panels.renderers.ConsultationTimeCellRender;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -53,7 +55,7 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
     }
     
     private void initActionsData() {
-        IConsultationPatientActionsEvent event = new IConsultationPatientActionsEvent() {
+        IConsultationActionsEvent event = new IConsultationActionsEvent() {
             @Override
             public void onView(String consultationId) {
                 callDialogToViewConsultation(consultationId);
@@ -68,10 +70,10 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
             }  
         };
         
-        jTableMain.getColumnModel().getColumn(0).setCellRenderer(new ConsultationPatientTimeCellRender(jTableMain));
-        jTableMain.getColumnModel().getColumn(1).setCellRenderer(new ConsultationPatientProfileCellRender(jTableMain));
-        jTableMain.getColumnModel().getColumn(2).setCellRenderer(new ConsultationPatientActionsCellRender());
-        jTableMain.getColumnModel().getColumn(2).setCellEditor(new ConsultationPatientActionsCellEditor(event));
+        jTableMain.getColumnModel().getColumn(0).setCellRenderer(new ConsultationTimeCellRender(jTableMain));
+        jTableMain.getColumnModel().getColumn(1).setCellRenderer(new ConsultationProfileCellRender(jTableMain));
+        jTableMain.getColumnModel().getColumn(2).setCellRenderer(new ConsultationActionsCellRender());
+        jTableMain.getColumnModel().getColumn(2).setCellEditor(new ConsultationActionsCellEditor(event));
     }
             
     private void setStyle() {
@@ -175,7 +177,7 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
     
     public void callDialogToDeleteConsultation(String consultationId) {
         try {
-            Boolean deleted = confirmAction("¿Está seguro de eliminar este paciente?");
+            Boolean deleted = showConfirmAction("¿Está seguro de eliminar este paciente?");
             initActionsData();
             loadTableData(actualSelectedDate);
             if (deleted) {
@@ -218,6 +220,11 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
     }
     
     @Override
+    public void deletePatientConsultation(String consultationId, String patientId) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+    
+    @Override
     public PatientDTO getPatientById(String patientId) {
         return consultationsPanelController.getPatientById(patientId);
     }
@@ -257,15 +264,14 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
         );
     }
     
-    public boolean confirmAction(String message) {
-        int option = JOptionPane.showConfirmDialog(
-            this,                   
-            message,                   
-            "Confirmar acción",        
-            JOptionPane.YES_NO_OPTION, 
-            JOptionPane.QUESTION_MESSAGE
-        );
-        return option == JOptionPane.YES_OPTION;
+    @Override
+    public Boolean showConfirmAction(String message) {
+        return JOptionPane.showConfirmDialog(
+                this, 
+                message, 
+                "Confirmar acción", 
+                JOptionPane.YES_NO_OPTION
+        ) == JOptionPane.YES_OPTION;
     }
     
     /**
