@@ -143,12 +143,12 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanelMessages,
     public void callDialogToDeletePatient(String patientId) {
         try {
             Boolean deleted = showConfirmAction("¿Está seguro de eliminar este paciente?");
-            initActionsData();
-            loadTableData();
             if (deleted) {
                 patientsPanelController.deletePatient(patientId);
                 Toast.show(this, Toast.Type.SUCCESS, "Paciente eliminado exitosamente");
-            }
+            }          
+            initActionsData();
+            loadTableData();
         } catch (Exception ex) {
             showErrorMessage("Error al eliminar paciente: " + ex.getMessage());
         } 

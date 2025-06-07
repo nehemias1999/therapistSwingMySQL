@@ -41,13 +41,10 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
         
         this.actualSelectedDate = new ModelDate();
         
-        calendar.addCalendarSelectedListener(new ICalendarSelectedListener() {
-            @Override
-            public void selected(MouseEvent evt, ModelDate date) {
-                actualSelectedDate = date;
-                jLabelSelectedDate.setText(String.valueOf(date.getDay()) + "/" + date.getMonth()+ "/" + date.getYear());
-                loadTableData(date);
-            }    
+        calendar.addCalendarSelectedListener((MouseEvent evt, ModelDate date) -> {
+            actualSelectedDate = date;
+            jLabelSelectedDate.setText(String.valueOf(date.getDay()) + "/" + date.getMonth()+ "/" + date.getYear());
+            loadTableData(date);    
         });
         
         initActionsData();
