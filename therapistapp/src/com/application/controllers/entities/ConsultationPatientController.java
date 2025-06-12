@@ -8,6 +8,7 @@ import com.application.model.dto.PatientDTO;
 import java.util.List;
 
 import com.application.services.ConsultationPatientService;
+import java.io.IOException;
 
 public class ConsultationPatientController {
     private final ConsultationPatientService consultationPatientService;
@@ -17,14 +18,26 @@ public class ConsultationPatientController {
     }
     
     /**
-     * Inserta un nuevo paciente en una consulta existente en el sistema
-     * @param consultationPatientDTO Datos del paciente a insertar
+     * Inserta una lista de pacientes en una consulta existente en el sistema
+     * @param consultationId Identificador de la consulta
+     * @param consultationPatientsId Identificadores de los pacientes
+     * @throws ValidationException Si los datos no son válidos o la consulta no existe
+     * @throws BusinessException Si ocurre un error durante el proceso
+     * @throws java.io.IOException
+     */
+    public void insertConsultationPatients(String consultationId, List<String> consultationPatientsId) throws ValidationException, BusinessException, IOException {
+        consultationPatientService.insertConsultationPatients(consultationId, consultationPatientsId);
+    }
+    
+    /**
+     * Modifica una lista de pacientes en una consulta existente en el sistema
+     * @param consultationId Identificador de la consulta
+     * @param consultationPatientsId Identificadores de los pacientes
      * @throws ValidationException Si los datos no son válidos o la consulta no existe
      * @throws BusinessException Si ocurre un error durante el proceso
      */
-    public void insertConsultationPatient(ConsultationPatientDTO consultationPatientDTO) throws ValidationException, BusinessException {
-        validateBasicFields(consultationPatientDTO);
-        consultationPatientService.insertConsultationPatient(consultationPatientDTO);
+    public void updateConsultationPatients(String consultationId, List<String> consultationPatientsId) throws ValidationException, BusinessException {
+      //  consultationPatientService.updateConsultationPatients(consultationId, consultationPatientsId);
     }
     
     /**
@@ -56,6 +69,24 @@ public class ConsultationPatientController {
             throw new ValidationException("El Identificador de la consulta es requerido");
         }
         return consultationPatientService.getPatientsByConsultationId(consultationId);
+    }
+    
+    /**
+     * Verifica si el estado del pago de la consulta es pago o no
+     * @param consultationId Identificador de la consulta
+     * @param patientId Identificador del paciente
+     * @return Boolean Si el estado es pago o no
+     * @throws ValidationException Si los datos no son válidos o la consulta no existe
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
+    public Boolean isConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException {
+        if (consultationId == null || consultationId.trim().isEmpty()) {
+            throw new ValidationException("El Identificador de la consulta es requerido");
+        }
+        if (patientId == null || patientId.trim().isEmpty()) {
+            throw new ValidationException("El Identificador del paciente es requerido");
+        }
+        return consultationPatientService.isConsultationPatientPaid(consultationId, patientId);
     }
     
     /**

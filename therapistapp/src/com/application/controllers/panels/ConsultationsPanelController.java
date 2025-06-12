@@ -30,21 +30,56 @@ public class ConsultationsPanelController {
     /**
      * Inserta una nueva consulta en el sistema
      * @param consultationDTO Datos de la consulta a insertar
+     * @param consultationPatientsId Identificadores de los pacientes
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
      * @throws BusinessException Si ocurre un error durante el proceso
+     * @throws java.io.IOException
      */
-    public void insertConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
-        controllerRegistry.getConsultationController().insertConsultation(consultationDTO);
+    public void insertConsultation(ConsultationDTO consultationDTO, List<String> consultationPatientsId) throws ValidationException, BusinessException, IOException {
+        controllerRegistry.getConsultationController()
+                .insertConsultation(consultationDTO);
+        controllerRegistry.getConsultationPatientController()
+                .insertConsultationPatients(consultationDTO.getConsultationDTOId(), consultationPatientsId);
     }
     
     /**
      * Modifica una consulta existente en el sistema
      * @param consultationDTO Datos de la consulta a modificar
+     * @param consultationPatientsId Identificadores delos pacientes
+     * @throws ValidationException Si los datos no son válidos o la consulta ya existe
+     * @throws BusinessException Si ocurre un error durante el proceso
+     * @throws java.io.IOException
+     */
+    public void updateConsultation(ConsultationDTO consultationDTO, List<String> consultationPatientsId) throws ValidationException, BusinessException, IOException {
+        controllerRegistry.getConsultationController()
+                .updateConsultation(consultationDTO);
+        controllerRegistry.getConsultationPatientController()
+                .updateConsultationPatients(consultationDTO.getConsultationDTOId(), consultationPatientsId);
+    }
+    
+    /**
+     * Verifica si el estado del pago de la consulta es pago o no
+     * @param consultationId Identificador de la consulta
+     * @param patientId Identificador del paciente
+     * @return Boolean Si el estado es pago o no
+     * @throws ValidationException Si los datos no son válidos o la consulta no existe
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
+    public Boolean isConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException {
+        return controllerRegistry.getConsultationPatientController()
+                .isConsultationPatientPaid(consultationId, patientId);
+    }
+    
+    /**
+     * Modifica al paciente para que se setee la consulta en paga
+     * @param consultationId Identificador de la consulta
+     * @param patientId Identificador del paciente
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
      * @throws BusinessException Si ocurre un error durante el proceso
      */
-    public void updateConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
-        controllerRegistry.getConsultationController().updateConsultation(consultationDTO);
+    public void setConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException {
+        controllerRegistry.getConsultationPatientController()
+                .setConsultationPatientPaid(consultationId, patientId);
     }
     
     /**
@@ -124,7 +159,7 @@ public class ConsultationsPanelController {
             return List.of();
         }
     }
-      
+          
     /**
      * Obtiene el paciente en base a su Id
      * @param patientId

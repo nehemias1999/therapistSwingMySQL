@@ -9,10 +9,14 @@ public class ConsultationPatientActionsCell extends javax.swing.JPanel {
     }
 
     public void initEvent(IConsultationPatientActionsEvent event, String patientId) {
-        jButtonVisualize.addActionListener(ae -> event.onView(patientId));
+        jButtonIsPaid.addActionListener(ae -> event.onIsPaid(patientId));
         jButtonDelete .addActionListener(ae -> event.onDelete(patientId)); 
     }
 
+    public void setIsPaid(boolean isPaid) {
+        jButtonIsPaid.setEnabled(!isPaid);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -22,13 +26,13 @@ public class ConsultationPatientActionsCell extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButtonVisualize = new javax.swing.JButton();
+        jButtonIsPaid = new javax.swing.JButton();
         jButtonDelete = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(0, 100));
         setPreferredSize(new java.awt.Dimension(250, 100));
 
-        jButtonVisualize.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/application/view/resources/png/view.png"))); // NOI18N
+        jButtonIsPaid.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/application/view/resources/png/paid.png"))); // NOI18N
 
         jButtonDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/application/view/resources/png/delete.png"))); // NOI18N
 
@@ -37,11 +41,11 @@ public class ConsultationPatientActionsCell extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(93, 93, 93)
-                .addComponent(jButtonVisualize, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(32, Short.MAX_VALUE)
+                .addComponent(jButtonIsPaid, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jButtonDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(61, Short.MAX_VALUE))
+                .addGap(31, 31, 31))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -49,13 +53,13 @@ public class ConsultationPatientActionsCell extends javax.swing.JPanel {
                 .addContainerGap(31, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jButtonDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButtonVisualize, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButtonIsPaid, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(31, 31, 31))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonDelete;
-    private javax.swing.JButton jButtonVisualize;
+    private javax.swing.JButton jButtonIsPaid;
     // End of variables declaration//GEN-END:variables
 }

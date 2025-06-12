@@ -14,6 +14,7 @@ import com.application.model.entities.ConsultationPatient;
 import com.application.model.entities.Patient;
 import com.application.utils.PatientsFilesManager;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,21 +28,43 @@ public class ConsultationPatientService {
     }
     
     /**
-     * Inserta un nuevo paciente en una consulta existente en el sistema
-     * @param consultationPatientDTO datos del paciente a insertar en la consulta
-     * @throws ValidationException Si los datos no son válidos o la consulta ya existe
+     * Inserta una lista de pacientes en una consulta existente en el sistema
+     * @param consultationId Identificador de la consulta
+     * @param consultationPatientsId Identificadores de los pacientes
+     * @throws ValidationException Si los datos no son válidos o la consulta no existe
      * @throws BusinessException Si ocurre un error durante el proceso
+     * @throws java.io.IOException
      */
-    public void insertConsultationPatient(ConsultationPatientDTO dto) throws ValidationException, BusinessException {
+    public void insertConsultationPatients(String consultationId, List<String> consultationPatientsId) throws ValidationException, BusinessException, IOException {
         try {
-            validateConsultationPatientData(dto);
-            ConsultationPatient entity = createConsultationPatientFromDTO(dto);
-            consultationPatientDAO.insertConsultationPatient(entity);
+            List<ConsultationPatient> consultationPatients = createConsultationPatients(consultationId, consultationPatientsId);
+            for(ConsultationPatient cp: consultationPatients) {
+                consultationPatientDAO.insertConsultationPatient(cp);
+            }
         } catch (IllegalArgumentException e) {
-            throw new ValidationException("ID o datos mal formateados", e);
+            throw new ValidationException("Id o datos mal formateados", e);
         } catch (DataAccessException e) {
             throw new BusinessException("Error al guardar la consulta en el sistema", e);
         }
+    }
+    
+    private List<ConsultationPatient> createConsultationPatients(String consultationId, List<String> consultationPatientsId) throws IOException {
+        List<ConsultationPatient> result = new ArrayList<>();
+        Boolean isGroupSession = consultationPatientsId.size() > 1;
+        
+        for(String patientId: consultationPatientsId) {
+            UUID consultationUUID = UUID.fromString(consultationId);
+            UUID patientUUID = UUID.fromString(patientId);
+            
+            ConsultationPatient cp = new ConsultationPatient(
+                    consultationUUID,
+                    patientUUID,
+                    Boolean.FALSE,
+                    patientFileManager.createWordNoteFile(consultationUUID, patientUUID, isGroupSession).toString()
+            );
+            result.add(cp);
+        }
+        return result;
     }
         
     /**
@@ -83,6 +106,28 @@ public class ConsultationPatientService {
             throw new BusinessException("Error al listar pacientes", e);
         }
     }    
+
+    /**
+     * Verifica si el estado del pago de la consulta es pago o no
+     * @param consultationId Identificador de la consulta
+     * @param patientId Identificador del paciente
+     * @return Boolean Si el estado es pago o no
+     * @throws ValidationException Si los datos no son válidos o la consulta no existe
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
+    public Boolean isConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException {
+        try {
+            UUID cId = UUID.fromString(consultationId);
+            UUID pId = UUID.fromString(patientId);
+            return consultationPatientDAO.isConsultationPatientPaid(cId, pId);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("ID mal formado", e);
+        } catch (EntityNotFoundException e) {
+            throw new ValidationException("Consulta o paciente no encontrado", e);
+        } catch (DataAccessException e) {
+            throw new BusinessException("Error de base de datos al actualizar estado de pago", e);
+        }
+    }
     
     /**
      * Modifica el estado del pago a 'pagado' de un paciente para una consulta determinada

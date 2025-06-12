@@ -31,12 +31,9 @@ public class ConsultationService {
      */
     public void insertConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
         try {
-            
             validateConsultationData(consultationDTO);
-            
             Consultation consultation = createConsultationFromDTO(consultationDTO);
             consultationDAO.insertConsultation(consultation);
-
         } catch (DataAccessException e) {
             throw new BusinessException("Error al guardar la consulta en el sistema", e);
         } catch (IllegalArgumentException e) {

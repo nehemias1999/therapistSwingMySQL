@@ -1,6 +1,7 @@
 package com.application.view.panels.consultation.dialog;
 
 import com.application.interfaces.IConsultationPatientActionsEvent;
+import com.application.model.dto.PatientDTO;
 import java.awt.Component;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
@@ -16,10 +17,11 @@ public class ConsultationPatientActionsCellEditor extends DefaultCellEditor {
     }
 
     @Override
-    public Component getTableCellEditorComponent(JTable jtable, Object object, boolean isSelected, int row, int column) {
-        ConsultationPatientActionsCell action = new ConsultationPatientActionsCell();
-        action.initEvent(event, String.valueOf(object));
-        action.setBackground(jtable.getSelectionBackground());
-        return action;
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        PatientDTO patient = (PatientDTO) value;
+        ConsultationPatientActionsCell cell = new ConsultationPatientActionsCell();
+        cell.initEvent(event, patient.getPatientDTOId());
+        cell.setIsPaid(patient.isPaid());
+        return cell;
     }
 }

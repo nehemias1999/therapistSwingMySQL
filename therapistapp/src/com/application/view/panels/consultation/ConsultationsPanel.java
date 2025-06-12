@@ -2,13 +2,11 @@ package com.application.view.panels.consultation;
 
 import com.application.view.panels.consultation.dialog.ConsultationDialog;
 import com.application.view.panels.consultation.calendar.ModelDate;
-import com.application.interfaces.ICalendarSelectedListener;
 import com.application.controllers.panels.ConsultationsPanelController;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.interfaces.IConsultationActionsEvent;
 import com.application.interfaces.IConsultationDialogListener;
-import com.application.interfaces.IConsultationPatientActionsEvent;
 import com.application.interfaces.IPatientDialogListener;
 import com.application.model.dto.CityDTO;
 import com.application.model.dto.ConsultationDTO;
@@ -207,23 +205,28 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
     }
     
     @Override
-    public void insertConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
-        consultationsPanelController.insertConsultation(consultationDTO);
+    public void insertConsultation(ConsultationDTO consultationDTO, List<String> consultationPatientsId) throws ValidationException, BusinessException, IOException {
+        consultationsPanelController.insertConsultation(consultationDTO, consultationPatientsId);
     } 
     
     @Override
-    public void updateConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
-        consultationsPanelController.updateConsultation(consultationDTO);
-    }
-    
-    @Override
-    public void deletePatientConsultation(String consultationId, String patientId) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public void updateConsultation(ConsultationDTO consultationDTO, List<String> consultationPatientsId) throws ValidationException, BusinessException, IOException {
+        consultationsPanelController.updateConsultation(consultationDTO, consultationPatientsId);
     }
     
     @Override
     public PatientDTO getPatientById(String patientId) {
         return consultationsPanelController.getPatientById(patientId);
+    }
+    
+    @Override
+    public Boolean isConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException {
+        return consultationsPanelController.isConsultationPatientPaid(consultationId, patientId);
+    }
+    
+    @Override
+    public void setConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException {
+        consultationsPanelController.setConsultationPatientPaid(consultationId, patientId);
     }
 
     @Override

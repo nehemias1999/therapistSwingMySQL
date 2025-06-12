@@ -7,8 +7,7 @@ public class ConsultationPatientProfileCell extends javax.swing.JPanel {
 
     public ConsultationPatientProfileCell(PatientDTO patientDTO, Font font) {
         initComponents();
-        jLabelCompleteNameAndAge.setText(
-                patientDTO.getPatientDTOFormattedCompleteName() + " (" + patientDTO.getPatientDTOActualAge() + ")");
+        jLabelCompleteName.setText(patientDTO.getPatientDTOFormattedCompleteName());
         jLabelOccupation.setText(patientDTO.getPatienDTOOccupation());
         if (patientDTO.getPatientDTOPhotoPath() != null) {
             jLabelPhoto.setIcon(patientDTO.getPatientDTOIcon());
@@ -19,14 +18,14 @@ public class ConsultationPatientProfileCell extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabelCompleteNameAndAge = new javax.swing.JLabel();
+        jLabelCompleteName = new javax.swing.JLabel();
         jLabelOccupation = new javax.swing.JLabel();
         jLabelPhoto = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(500, 100));
 
-        jLabelCompleteNameAndAge.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        jLabelCompleteNameAndAge.setText("Nombre Completo y edad");
+        jLabelCompleteName.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
+        jLabelCompleteName.setText("Nombre Completo");
 
         jLabelOccupation.setText("Ocupacion");
 
@@ -40,7 +39,7 @@ public class ConsultationPatientProfileCell extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabelOccupation, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabelCompleteNameAndAge, javax.swing.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE))
+                    .addComponent(jLabelCompleteName, javax.swing.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -50,7 +49,7 @@ public class ConsultationPatientProfileCell extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 22, Short.MAX_VALUE)
-                        .addComponent(jLabelCompleteNameAndAge)
+                        .addComponent(jLabelCompleteName)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabelOccupation)
                         .addGap(0, 23, Short.MAX_VALUE))
@@ -61,7 +60,7 @@ public class ConsultationPatientProfileCell extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabelCompleteNameAndAge;
+    private javax.swing.JLabel jLabelCompleteName;
     private javax.swing.JLabel jLabelOccupation;
     private javax.swing.JLabel jLabelPhoto;
     // End of variables declaration//GEN-END:variables

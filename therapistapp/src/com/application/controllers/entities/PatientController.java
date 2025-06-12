@@ -16,9 +16,9 @@ public class PatientController {
     }
  
     /**
-     * Retrieves all patients from the system
-     * @return List of PatientDTO objects
-     * @throws BusinessException If there's an error accessing data
+     * Obtiene todos los pacientes del sistemas
+     * @return List PatientDTO
+     * @throws BusinessException Si ocurre un error accediendo a los datos
      */
     public List<PatientDTO> getAllPatients() throws BusinessException {
         return patientService.getAllPatients();

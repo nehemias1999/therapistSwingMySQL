@@ -1,5 +1,6 @@
 package com.application.view.panels.renderers;
 
+import com.application.model.dto.PatientDTO;
 import com.application.view.panels.consultation.dialog.ConsultationPatientActionsCell;
 import java.awt.Component;
 import javax.swing.JTable;
@@ -8,10 +9,11 @@ import javax.swing.table.DefaultTableCellRenderer;
 public class ConsultationPatientActionsCellRender extends DefaultTableCellRenderer {
 
     @Override
-    public Component getTableCellRendererComponent(JTable jtable, Object object, boolean isSeleted, boolean bln1, int row, int column) {
-        Component com = super.getTableCellRendererComponent(jtable, object, isSeleted, bln1, row, column);
+    public Component getTableCellRendererComponent(JTable jtable, Object object, boolean isSelected, boolean hasFocus, int row, int column) {
+        PatientDTO patient = (PatientDTO) object;
         ConsultationPatientActionsCell action = new ConsultationPatientActionsCell();
-        action.setBackground(com.getBackground());
+        action.setIsPaid(patient.isPaid());
+        action.setBackground(jtable.getBackground());
         return action;
     }
 }

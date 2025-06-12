@@ -1,5 +1,6 @@
 package com.application.utils;
 
+import java.awt.Desktop;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -194,6 +195,30 @@ public class PatientsFilesManager {
             }
         }
         return deleted;
+    }
+    
+    public Path createWordNoteFile(UUID consultationId, UUID patientId, boolean isGroupSession) throws IOException {
+        String subFolder = isGroupSession ? "notes/group" : "notes/single";
+        Path dir = baseDir.resolve(patientId.toString()).resolve(subFolder);
+        Files.createDirectories(dir);
+
+        String fileName = String.valueOf(consultationId) + ".docx";
+        Path noteFile = dir.resolve(fileName);
+
+        return Files.createFile(noteFile);
+    }
+    
+    public void openWordFile(Path wordFilePath) throws IOException {
+        if (Desktop.isDesktopSupported()) {
+            Desktop desktop = Desktop.getDesktop();
+            if (Files.exists(wordFilePath)) {
+                desktop.open(wordFilePath.toFile());
+            } else {
+                throw new IOException("El archivo no existe: " + wordFilePath.toString());
+            }
+        } else {
+            throw new UnsupportedOperationException("El sistema no soporta Desktop.open()");
+        }
     }
 
     /**

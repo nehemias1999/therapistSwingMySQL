@@ -23,6 +23,8 @@ public class PatientDTO {
     private String patientDTOAddressDepartment;
     // Manejar la imagen asociada al paciente
     private String patientDTOPhotoPath;
+    // Maneja el estado del pago de la consulta
+    private Boolean isPaid;
     
     private static final String DEFAULT_PHOTO_PATH = "C:\\Users\\nsalazar\\Documents\\therapistapp\\appdata\\default_photo_user.jpg"; 
 
@@ -198,6 +200,14 @@ public class PatientDTO {
     public String getPatientDTOFormattedCompleteName() {
         return patientDTOLastName + ", " + patientDTOName;
     }
+    
+    public boolean isPaid() {
+        return isPaid;
+    }
+
+    public void setPaid(boolean isPaid) {
+        this.isPaid = isPaid;
+    } 
     
     @Override
     public String toString() {

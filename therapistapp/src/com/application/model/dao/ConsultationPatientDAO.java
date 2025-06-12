@@ -22,7 +22,7 @@ public class ConsultationPatientDAO {
         "patient_id, " +
         "is_paid, " +
         "patient_note_path " +
-        ") VALUES (?, ?, ?, ?, ?)";
+        ") VALUES (?, ?, ?, ?)";
     
     private static final String UPDATE_SQL =
         "UPDATE tbl_consultation_patient SET " +
@@ -36,6 +36,10 @@ public class ConsultationPatientDAO {
             "SELECT * FROM tbl_patient p " +
             "JOIN tbl_consultation_patient cp ON p.patient_id = cp.patient_id " +
             "WHERE cp.consultation_id = ?";
+    
+    private static final String SELECT_IS_PAID =
+            "SELECT cp.is_paid FROM tbl_consultation_patient cp " +
+            "WHERE consultation_id = ? and patient_id = ?";
         
     private static final String UPDATE_IS_PAID_TRUE =
         "UPDATE tbl_consultation_patient SET " +
@@ -113,6 +117,34 @@ public class ConsultationPatientDAO {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error obteniendo pacientes por consulta", e);
+        }
+    }
+    
+    /**
+     * Verifica si el estado del pago de la consulta es pago (is_paid = true) o no (is_paid = false)
+     * @param consultationId Identificador de la consulta
+     * @param patientId Identificador del paciente
+     * @return Boolean indicando si el paciente pagó la consulta
+     * @throws EntityNotFoundException Si no se encuentra la fila correspondiente
+     * @throws DataAccessException Si ocurre un error al acceder a la base de datos
+     */
+    public Boolean isConsultationPatientPaid(UUID consultationId, UUID patientId) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_IS_PAID)) {
+
+            ps.setString(1, consultationId.toString());
+            ps.setString(2, patientId.toString());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean("is_paid");
+                } else {
+                    throw new EntityNotFoundException("consulta/paciente", consultationId + "/" + patientId);
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Error al verificar si el paciente pagó la consulta", e);
         }
     }
 

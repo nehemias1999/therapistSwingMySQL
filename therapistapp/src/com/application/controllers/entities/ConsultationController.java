@@ -3,6 +3,7 @@ package com.application.controllers.entities;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.ConsultationDTO;
+import com.application.model.dto.PatientDTO;
 import com.application.services.ConsultationService;
 
 import java.util.List;

@@ -26,7 +26,7 @@ public class ConsultationDAO {
         "consultation_end_time, " +
         "consultation_amount, " +
         "consultation_status " +
-        ") VALUES (?, ?, ?, ?)";
+        ") VALUES (?, ?, ?, ?, ?, ?)";
     
     private static final String UPDATE_SQL =
         "UPDATE tbl_consultation SET " +
