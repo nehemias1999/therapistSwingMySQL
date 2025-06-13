@@ -7,7 +7,7 @@ import com.application.model.dto.PatientDTO;
 import java.io.IOException;
 import java.util.List;
 
-public interface IPatientDialogListener {
+public interface IPatientDialog {
     
     PatientDTO getPatientById(String patientId); 
     

@@ -6,17 +6,14 @@ public class ConsultationPatient {
     private UUID consultationId;
     private UUID patientId;
     private Boolean isPaid;
-    private String patientNotePath;
 
     public ConsultationPatient(
             UUID consultationId, 
             UUID patientId, 
-            Boolean isPaid, 
-            String patientNotePath) {
+            Boolean isPaid) {
         this.consultationId = consultationId;
         this.patientId = patientId;
         this.isPaid = isPaid;
-        this.patientNotePath = patientNotePath;
     }
 
     public UUID getConsultationId() {
@@ -42,12 +39,5 @@ public class ConsultationPatient {
     public void setIsPaid(Boolean isPaid) {
         this.isPaid = isPaid;
     }
-
-    public String getPatientNotePath() {
-        return patientNotePath;
-    }
-
-    public void setPatientNotePath(String patientNotePath) {
-        this.patientNotePath = patientNotePath;
-    }    
+  
 }

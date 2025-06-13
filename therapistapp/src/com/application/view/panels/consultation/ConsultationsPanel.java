@@ -6,8 +6,6 @@ import com.application.controllers.panels.ConsultationsPanelController;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.interfaces.IConsultationActionsEvent;
-import com.application.interfaces.IConsultationDialogListener;
-import com.application.interfaces.IPatientDialogListener;
 import com.application.model.dto.CityDTO;
 import com.application.model.dto.ConsultationDTO;
 import com.application.model.dto.PatientDTO;
@@ -26,8 +24,10 @@ import javax.swing.table.TableColumnModel;
 import raven.modal.Toast;
 import static raven.modal.Toast.Type.SUCCESS;
 import com.application.interfaces.IPanelMessages;
+import com.application.interfaces.IConsultationDialog;
+import com.application.interfaces.IPatientDialog;
 
-public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMessages, IConsultationDialogListener, IPatientDialogListener {
+public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMessages, IConsultationDialog, IPatientDialog {
 
     private ConsultationsPanelController consultationsPanelController;
     
@@ -205,15 +205,20 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
     }
     
     @Override
-    public void insertConsultation(ConsultationDTO consultationDTO, List<String> consultationPatientsId) throws ValidationException, BusinessException, IOException {
-        consultationsPanelController.insertConsultation(consultationDTO, consultationPatientsId);
+    public void insertConsultation(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
+        consultationsPanelController.insertConsultation(consultationDTO, consultationPatientsDTO);
     } 
     
     @Override
-    public void updateConsultation(ConsultationDTO consultationDTO, List<String> consultationPatientsId) throws ValidationException, BusinessException, IOException {
-        consultationsPanelController.updateConsultation(consultationDTO, consultationPatientsId);
+    public void updateConsultation(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
+        consultationsPanelController.updateConsultation(consultationDTO, consultationPatientsDTO);
     }
     
+    @Override
+    public List<PatientDTO> getAllPatients() {
+        return consultationsPanelController.getAllPatients();
+    }
+        
     @Override
     public PatientDTO getPatientById(String patientId) {
         return consultationsPanelController.getPatientById(patientId);

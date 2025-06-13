@@ -5,7 +5,6 @@ import com.application.view.panels.renderers.PatientActionsCellRender;
 import com.application.controllers.panels.PatientsPanelController;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
-import com.application.interfaces.IPatientDialogListener;
 import com.application.model.dto.CityDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.model.enumerations.ViewType;
@@ -18,8 +17,9 @@ import javax.swing.table.TableColumnModel;
 import raven.modal.Toast;
 import static raven.modal.Toast.Type.SUCCESS;
 import com.application.interfaces.IPanelMessages;
+import com.application.interfaces.IPatientDialog;
 
-public class PatientsPanel extends javax.swing.JPanel implements IPanelMessages, IPatientDialogListener {
+public class PatientsPanel extends javax.swing.JPanel implements IPanelMessages, IPatientDialog {
 
     private PatientsPanelController patientsPanelController;
     DefaultTableModel tableModel;

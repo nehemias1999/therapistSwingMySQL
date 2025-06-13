@@ -36,17 +36,17 @@ public class Test {
 //        
 //        cr.getConsultationController().insertConsultation(c);
 //        
-        ConsultationPatientService cps = new ConsultationPatientService();
-        
-        List<String> cpid = new ArrayList<>();
-        
-        cpid.add("ca23bc0c-b62b-4e67-aa75-3446a62a4d7e");
-        cpid.add("c2d92a63-a07f-47b5-8995-bf582773d97b");
-        cpid.add("bca53da8-4e50-41dc-ab77-b73ca61fcc4e");
-        cpid.add("87c660ca-ed31-4682-9eba-d25003ae5b3c");
-        
-        cps.insertConsultationPatients("28b7f46e-eb7f-40e5-8d5b-f9bef5ea4b10", cpid);      
-        
+//        ConsultationPatientService cps = new ConsultationPatientService();
+//        
+//        List<String> cpid = new ArrayList<>();
+//        
+//        cpid.add("ca23bc0c-b62b-4e67-aa75-3446a62a4d7e");
+//        cpid.add("c2d92a63-a07f-47b5-8995-bf582773d97b");
+//        cpid.add("bca53da8-4e50-41dc-ab77-b73ca61fcc4e");
+//        cpid.add("87c660ca-ed31-4682-9eba-d25003ae5b3c");
+//        
+//        cps.insertConsultationPatients("28b7f46e-eb7f-40e5-8d5b-f9bef5ea4b10", cpid);      
+//        
     }
     
 }

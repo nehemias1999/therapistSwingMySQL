@@ -3,8 +3,8 @@ package com.application.controllers.entities;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.ConsultationDTO;
-import com.application.model.dto.PatientDTO;
 import com.application.services.ConsultationService;
+import java.io.IOException;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,8 +21,9 @@ public class ConsultationController {
      * @param consultationDTO Datos de la consulta a insertar
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
      * @throws BusinessException Si ocurre un error durante el proceso
+     * @throws java.io.IOException
      */
-    public void insertConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
+    public void insertConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException, IOException {
         validateBasicFields(consultationDTO);
         consultationService.insertConsultation(consultationDTO);
     }

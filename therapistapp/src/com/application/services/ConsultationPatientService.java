@@ -30,14 +30,13 @@ public class ConsultationPatientService {
     /**
      * Inserta una lista de pacientes en una consulta existente en el sistema
      * @param consultationId Identificador de la consulta
-     * @param consultationPatientsId Identificadores de los pacientes
+     * @param consultationPatientsDTO Datos de los pacientes
      * @throws ValidationException Si los datos no son válidos o la consulta no existe
      * @throws BusinessException Si ocurre un error durante el proceso
-     * @throws java.io.IOException
      */
-    public void insertConsultationPatients(String consultationId, List<String> consultationPatientsId) throws ValidationException, BusinessException, IOException {
+    public void insertConsultationPatients(String consultationId, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException {
         try {
-            List<ConsultationPatient> consultationPatients = createConsultationPatients(consultationId, consultationPatientsId);
+            List<ConsultationPatient> consultationPatients = createConsultationPatients(consultationId, consultationPatientsDTO);
             for(ConsultationPatient cp: consultationPatients) {
                 consultationPatientDAO.insertConsultationPatient(cp);
             }
@@ -48,19 +47,38 @@ public class ConsultationPatientService {
         }
     }
     
-    private List<ConsultationPatient> createConsultationPatients(String consultationId, List<String> consultationPatientsId) throws IOException {
+    /**
+     * Modificar una lista de pacientes en una consulta existente en el sistema
+     * @param consultationId Identificador de la consulta
+     * @param consultationPatientsDTO Datos de los pacientes
+     * @throws ValidationException Si los datos no son válidos o la consulta no existe
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
+    public void updateConsultationPatients(String consultationId, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException {
+        try {
+            List<ConsultationPatient> consultationPatients = createConsultationPatients(consultationId, consultationPatientsDTO);
+            for(ConsultationPatient cp: consultationPatients) {
+                consultationPatientDAO.insertConsultationPatient(cp);
+            }
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Id o datos mal formateados", e);
+        } catch (DataAccessException e) {
+            throw new BusinessException("Error al guardar la consulta en el sistema", e);
+        }
+    }
+    
+    private List<ConsultationPatient> createConsultationPatients(String consultationId, List<PatientDTO> consultationPatientsDTO) {
         List<ConsultationPatient> result = new ArrayList<>();
-        Boolean isGroupSession = consultationPatientsId.size() > 1;
+        Boolean isGroupSession = consultationPatientsDTO.size() > 1;
         
-        for(String patientId: consultationPatientsId) {
+        for(PatientDTO patientDTO: consultationPatientsDTO) {
             UUID consultationUUID = UUID.fromString(consultationId);
-            UUID patientUUID = UUID.fromString(patientId);
+            UUID patientUUID = UUID.fromString(patientDTO.getPatientDTOId());
             
             ConsultationPatient cp = new ConsultationPatient(
                     consultationUUID,
                     patientUUID,
-                    Boolean.FALSE,
-                    patientFileManager.createWordNoteFile(consultationUUID, patientUUID, isGroupSession).toString()
+                    patientDTO.isPaid()
             );
             result.add(cp);
         }
@@ -157,9 +175,6 @@ public class ConsultationPatientService {
         if (dto.getIsPaid() == null || dto.getIsPaid().trim().isEmpty()) {
             throw new ValidationException("El estado del pago es requerido");
         }
-        if (dto.getPatientNotePath() == null || dto.getPatientNotePath().trim().isEmpty()) {
-            throw new ValidationException("El path de las notas del paciente es requerido");
-        }
     }
     
     /**
@@ -169,8 +184,7 @@ public class ConsultationPatientService {
         return new ConsultationPatient(
             UUID.fromString(dto.getConsultationId()),
             UUID.fromString(dto.getPatientId()),
-            Boolean.valueOf(dto.getIsPaid()),
-            dto.getPatientNotePath()
+            Boolean.valueOf(dto.getIsPaid())
         );
     }
     
@@ -182,7 +196,6 @@ public class ConsultationPatientService {
         dto.setConsultationId(cp.getConsultationId().toString());
         dto.setPatientId(cp.getPatientId().toString());
         dto.setIsPaid(cp.getIsPaid().toString());
-        dto.setPatientNotePath(cp.getPatientNotePath());
         
         return dto;
     }

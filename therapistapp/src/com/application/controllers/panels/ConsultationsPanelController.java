@@ -30,31 +30,30 @@ public class ConsultationsPanelController {
     /**
      * Inserta una nueva consulta en el sistema
      * @param consultationDTO Datos de la consulta a insertar
-     * @param consultationPatientsId Identificadores de los pacientes
+     * @param consultationPatientsDTO Datos de los pacientes
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
      * @throws BusinessException Si ocurre un error durante el proceso
      * @throws java.io.IOException
      */
-    public void insertConsultation(ConsultationDTO consultationDTO, List<String> consultationPatientsId) throws ValidationException, BusinessException, IOException {
+    public void insertConsultation(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
         controllerRegistry.getConsultationController()
                 .insertConsultation(consultationDTO);
         controllerRegistry.getConsultationPatientController()
-                .insertConsultationPatients(consultationDTO.getConsultationDTOId(), consultationPatientsId);
+                .insertConsultationPatients(consultationDTO.getConsultationDTOId(), consultationPatientsDTO);
     }
     
     /**
      * Modifica una consulta existente en el sistema
      * @param consultationDTO Datos de la consulta a modificar
-     * @param consultationPatientsId Identificadores delos pacientes
+     * @param consultationPatientsDTO Datos de los pacientes
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
      * @throws BusinessException Si ocurre un error durante el proceso
-     * @throws java.io.IOException
      */
-    public void updateConsultation(ConsultationDTO consultationDTO, List<String> consultationPatientsId) throws ValidationException, BusinessException, IOException {
+    public void updateConsultation(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException {
         controllerRegistry.getConsultationController()
                 .updateConsultation(consultationDTO);
         controllerRegistry.getConsultationPatientController()
-                .updateConsultationPatients(consultationDTO.getConsultationDTOId(), consultationPatientsId);
+                .updateConsultationPatients(consultationDTO.getConsultationDTOId(), consultationPatientsDTO);
     }
     
     /**
@@ -150,7 +149,8 @@ public class ConsultationsPanelController {
      */
     public List<PatientDTO> getPatientsByConsultationId(String consultationId) {
         try {
-            return controllerRegistry.getConsultationPatientController().getPatientsByConsultationId(consultationId);
+            return controllerRegistry.getConsultationPatientController()
+                    .getPatientsByConsultationId(consultationId);
         } catch (ValidationException e) {
             consultationsForm.showErrorMessage("Validación: " + e.getMessage());
             return List.of();

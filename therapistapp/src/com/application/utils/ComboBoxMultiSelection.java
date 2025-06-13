@@ -1,4 +1,4 @@
-package com.application.view.panels.consultation;
+package com.application.utils;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;

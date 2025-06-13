@@ -60,6 +60,7 @@ public class PatientDTO {
         this.patientDTOAddressFloor = patientDTOAddressFloor;
         this.patientDTOAddressDepartment = patientDTOAddressDepartment;
         this.patientDTOPhotoPath = patientDTOPhotoPath;
+        this.isPaid = false;
     }
 
     public String getPatientDTOId() {
@@ -213,4 +214,23 @@ public class PatientDTO {
     public String toString() {
         return patientDTOLastName + ", " + patientDTOName; 
     }
+    
+    public void imprimirPorConsola() {
+        System.out.println("ID: " + patientDTOId);
+        System.out.println("DNI: " + patientDTODNI);
+        System.out.println("Nombre: " + patientDTOName);
+        System.out.println("Apellido: " + patientDTOLastName);
+        System.out.println("Nacimiento: " + patientDTOBirthDate);
+        System.out.println("Ocupación: " + patientDTOOccupation);
+        System.out.println("Teléfono: " + patientDTOPhone);
+        System.out.println("Email: " + patientDTOEmail);
+        System.out.println("Ciudad ID: " + cityId);
+        System.out.println("Dirección: " + patientDTOAddress);
+        System.out.println("Número: " + patientDTOAddressNumber);
+        System.out.println("Piso: " + patientDTOAddressFloor);
+        System.out.println("Departamento: " + patientDTOAddressDepartment);
+        System.out.println("Foto: " + patientDTOPhotoPath);
+        System.out.println("¿Pagó?: " + isPaid);
+    }
+    
 }

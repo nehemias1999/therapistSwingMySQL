@@ -4,7 +4,6 @@ public class ConsultationPatientDTO {
     private String consultationId;
     private String patientId;
     private String isPaid;
-    private String patientNotePath;
 
     public ConsultationPatientDTO() {
     }
@@ -12,12 +11,10 @@ public class ConsultationPatientDTO {
     public ConsultationPatientDTO(
             String consultationId, 
             String patientId, 
-            String isPaid, 
-            String patientNotePath) {
+            String isPaid) {
         this.consultationId = consultationId;
         this.patientId = patientId;
         this.isPaid = isPaid;
-        this.patientNotePath = patientNotePath;
     }
     
     public String getConsultationId() {
@@ -43,12 +40,5 @@ public class ConsultationPatientDTO {
     public void setIsPaid(String isPaid) {
         this.isPaid = isPaid;
     }
-
-    public String getPatientNotePath() {
-        return patientNotePath;
-    }
-
-    public void setPatientNotePath(String patientNotePath) {
-        this.patientNotePath = patientNotePath;
-    }   
+  
 }

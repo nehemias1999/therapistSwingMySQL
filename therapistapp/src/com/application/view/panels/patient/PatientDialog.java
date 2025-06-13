@@ -3,7 +3,6 @@ package com.application.view.panels.patient;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.interfaces.IPanelMessages;
-import com.application.interfaces.IPatientDialogListener;
 import com.application.model.dto.CityDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.model.enumerations.ViewType;
@@ -16,9 +15,10 @@ import java.time.LocalDate;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import com.application.interfaces.IPatientDialog;
 
 public class PatientDialog extends javax.swing.JDialog implements IPanelMessages {
-    private final IPatientDialogListener listener;
+    private final IPatientDialog listener;
     private final ViewType viewType;
     private final String patientId;
     private PatientDTO patientDTO;   
@@ -35,7 +35,7 @@ public class PatientDialog extends javax.swing.JDialog implements IPanelMessages
      */
     public PatientDialog(
             Frame owner, 
-            IPatientDialogListener listenter, 
+            IPatientDialog listenter, 
             ViewType viewtype, 
             String patientId) {
         super(owner, "Thera Kairos", true);
@@ -294,7 +294,7 @@ public class PatientDialog extends javax.swing.JDialog implements IPanelMessages
      * @return true si el guardado fue exitoso, false si canceló o hubo error.  
      */
     public static Boolean showDialog(
-            IPatientDialogListener listener, 
+            IPatientDialog listener, 
             ViewType viewType, 
             String patientId) {
         Frame ownerFrame = JOptionPane.getFrameForComponent((Component) listener);

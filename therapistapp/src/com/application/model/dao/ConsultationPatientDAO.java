@@ -21,7 +21,6 @@ public class ConsultationPatientDAO {
         "consultation_id, " +
         "patient_id, " +
         "is_paid, " +
-        "patient_note_path " +
         ") VALUES (?, ?, ?, ?)";
     
     private static final String UPDATE_SQL =
@@ -32,7 +31,7 @@ public class ConsultationPatientDAO {
     private static final String DELETE_SQL =
         "UPDATE tbl_consultation_patient SET is_active = false WHERE consultation_id = ? and patient_id = ?";
 
-    private static final String SELECT_PATIENTS_BY_CONSULTATION =
+    private static final String SELECT_PATIENTS_BY_CONSULTATION_ID =
             "SELECT * FROM tbl_patient p " +
             "JOIN tbl_consultation_patient cp ON p.patient_id = cp.patient_id " +
             "WHERE cp.consultation_id = ?";
@@ -61,7 +60,6 @@ public class ConsultationPatientDAO {
             ps.setString(1, consultationPatient.getConsultationId().toString());
             ps.setString(2, consultationPatient.getPatientId().toString());
             ps.setBoolean(3, consultationPatient.getIsPaid());
-            ps.setString(4, consultationPatient.getPatientNotePath());
 
             ps.executeUpdate();
 
@@ -105,7 +103,7 @@ public class ConsultationPatientDAO {
      */
     public List<Patient> getPatientsByConsultationId(UUID consultationId) {
         try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(SELECT_PATIENTS_BY_CONSULTATION)) {
+             PreparedStatement ps = conn.prepareStatement(SELECT_PATIENTS_BY_CONSULTATION_ID)) {
 
             ps.setString(1, consultationId.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -178,8 +176,7 @@ public class ConsultationPatientDAO {
         return new ConsultationPatient(
             UUID.fromString(rs.getString("consultation_id")),
             UUID.fromString(rs.getString("patient_id")),
-            rs.getBoolean("is_paid"),
-            rs.getString("patient_note_path")
+            rs.getBoolean("is_paid")
         );
     }
 

@@ -8,6 +8,8 @@ import com.application.model.dao.ConsultationDAO;
 import com.application.model.dto.ConsultationDTO;
 import com.application.model.entities.Consultation;
 import com.application.model.enumerations.ConsultationStatus;
+import com.application.utils.ConsultationsFilesManager;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
@@ -18,9 +20,11 @@ import java.util.stream.Collectors;
 
 public class ConsultationService {
     private final ConsultationDAO consultationDAO;
+    private final ConsultationsFilesManager fileManager;
 
     public ConsultationService() {
         this.consultationDAO = new ConsultationDAO();
+        this.fileManager = new ConsultationsFilesManager(); 
     }
     
     /**
@@ -28,12 +32,15 @@ public class ConsultationService {
      * @param consultationDTO Datos de la consulta a insertar
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
      * @throws BusinessException Si ocurre un error durante el proceso
+     * @throws java.io.IOException
      */
-    public void insertConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
+    public void insertConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException, IOException {
         try {
             validateConsultationData(consultationDTO);
             Consultation consultation = createConsultationFromDTO(consultationDTO);
             consultationDAO.insertConsultation(consultation);
+            fileManager.initConsultationFolders(consultation.getConsultationId());
+            fileManager.createNotesFile(consultation.getConsultationId());
         } catch (DataAccessException e) {
             throw new BusinessException("Error al guardar la consulta en el sistema", e);
         } catch (IllegalArgumentException e) {

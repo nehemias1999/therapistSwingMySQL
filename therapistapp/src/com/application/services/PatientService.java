@@ -246,6 +246,7 @@ public class PatientService {
         } catch (IOException e) {
             dto.setPatientDTOPhotoPath("");
         }
+        dto.setPaid(false);
         return dto;
     }
     

@@ -2,7 +2,6 @@ package com.application.view.panels.consultation.dialog;
 
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
-import com.application.interfaces.IConsultationDialogListener;
 import com.application.interfaces.IConsultationPatientActionsEvent;
 import com.application.interfaces.IPanelMessages;
 import com.application.model.dto.ConsultationDTO;
@@ -20,9 +19,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
@@ -30,9 +26,15 @@ import javax.swing.table.TableColumnModel;
 import raven.datetime.component.time.TimeEvent;
 import raven.datetime.component.time.TimeSelectionListener;
 import raven.modal.Toast;
+import com.application.interfaces.IConsultationDialog;
+import com.application.interfaces.IConsultationPatientsDialog;
+import com.application.view.panels.consultation.patient.dialog.ConsultationPatientsDialog;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public class ConsultationDialog extends javax.swing.JDialog implements IPanelMessages {
-    private final IConsultationDialogListener listener;
+public class ConsultationDialog extends javax.swing.JDialog implements IPanelMessages, IConsultationPatientsDialog {
+    private final IConsultationDialog listener;
     private final ViewType viewType;
     private final String consultationId;
     private ConsultationDTO consultationDTO;
@@ -49,7 +51,7 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
      */
     public ConsultationDialog(
             Frame owner, 
-            IConsultationDialogListener listener,
+            IConsultationDialog listener,
             ViewType viewType, 
             String consultationId) {
         super(owner, "Thera Kairos", true);
@@ -61,6 +63,8 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
         this.consultationId = consultationId;
         
         setComponents();
+        
+        consultationPatientsDTO = new ArrayList<PatientDTO>();
         
         if (viewType == ViewType.INSERT) {
             loadPatientDataForInsertView();
@@ -231,24 +235,21 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
             return;
         }
 
-        if(consultationPatientsDTO == null) {
+        if(consultationPatientsDTO.isEmpty()) {
             consultationPatientsDTO = listener.getPatientsByConsultationId(consultationId);
         }        
         
-        if (consultationPatientsDTO != null) {
+        if (!consultationPatientsDTO.isEmpty()) {
+            
             for (PatientDTO patientDTO : consultationPatientsDTO) {
-                
-                try {
-                    patientDTO.setPaid(listener.isConsultationPatientPaid(consultationId, patientDTO.getPatientDTOId()));
-                } catch (ValidationException | BusinessException e) {
-                    showErrorMessage(e.getMessage());
-                }
                 
                 tableModel.addRow(new Object[]{
                     patientDTO, 
                     patientDTO
                 });
+                
             }
+            
         }
     }
     
@@ -272,10 +273,9 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
      * @return List String 
      */
     private List<String> getConsultationPatientsId() {       
-//        return consultationPatientsDTO.stream()
-//               .map(PatientDTO::getPatientDTOId)
-//               .collect(Collectors.toList());
-        return Collections.emptyList();
+        return consultationPatientsDTO.stream()
+               .map(PatientDTO::getPatientDTOId)
+               .collect(Collectors.toList());
     }
     
     /**  
@@ -285,11 +285,11 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
         try {
             
             if (viewType == ViewType.INSERT) {
-                listener.insertConsultation(getConsultationDTO(), getConsultationPatientsId());
+                listener.insertConsultation(getConsultationDTO(), consultationPatientsDTO);
             } 
             
             if (viewType == ViewType.UPDATE) {
-                listener.updateConsultation(getConsultationDTO(), getConsultationPatientsId());
+                listener.updateConsultation(getConsultationDTO(), consultationPatientsDTO);
             }
 
             operationSuccess = true;
@@ -299,7 +299,7 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
             showErrorMessage(e.getMessage());
             operationSuccess = false;
         } catch (IOException e) {
-            showErrorMessage("Error al manejar las notas de los pacientes: " + e.getMessage());
+            showErrorMessage("Error al manejar las notas de la consulta: " + e.getMessage());
             operationSuccess = false;
         }
     }
@@ -316,30 +316,59 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
     
     }
     
-    private void addPatientAction() {
-        
-    }
-    
     /**  
-     * Elimina el paciente de la consulta
-     * @param patientId Identifiador del paciente
+     * Agrega pacientes a la consulta
      */
-    public void setConsultationPatientPaid(String patientId) {
+    private void callDialogToAddConsultationPatients() {
         try {
-            listener.setConsultationPatientPaid(consultationId, patientId);
-            Toast.show(this, Toast.Type.SUCCESS, "Pago de consulta exitosamente");
-            initActionsData();
-            loadConsultationPatientsData();
+            Boolean aggregate = ConsultationPatientsDialog.showDialog(this);  
+            if (aggregate) {
+                Toast.show(this, Toast.Type.SUCCESS, "Pacientes agregados exitosamente");
+            }
         } catch (Exception ex) {
-            showErrorMessage("Error al  tratar de pagar la consulta: " + ex.getMessage());
+            showErrorMessage("Error al agregar pacientes: " + ex.getMessage());
         } 
     }
     
+    @Override
+    public List<PatientDTO> getAllPatients() {
+        return listener.getAllPatients();
+    }
+    
+    @Override
+    public void updateConsultationPatientsDTO(List<PatientDTO> newConsultationPatientsDTO) {
+        System.out.println(consultationPatientsDTO.toString());
+        
+        consultationPatientsDTO.addAll(newConsultationPatientsDTO);
+        
+        initActionsData();
+        loadConsultationPatientsData();
+    }
+    
+    /**  
+     * Cambia el estado del pago de la consulta (is_paid = true)
+     * @param patientId Identifiador del paciente
+     */
+    private void setConsultationPatientPaid(String patientId) {
+        PatientDTO pacienteDTO = consultationPatientsDTO.stream()
+            .filter(p -> patientId.equals(p.getPatientDTOId()))
+            .findFirst()
+            .orElse(null);
+
+        if (pacienteDTO != null) {
+            pacienteDTO.setPaid(true);
+        } 
+        
+        initActionsData();
+        loadConsultationPatientsData();
+            
+    }
+    
     /**  
      * Elimina el paciente de la consulta
      * @param patientId Identifiador del paciente
      */
-    public void callDialogToDeleteConsultationPatient(String patientId) {
+    private void callDialogToDeleteConsultationPatient(String patientId) {
         try {
             Boolean deleted = showConfirmAction("¿Está seguro de eliminar este paciente?");  
             if (deleted) {
@@ -390,7 +419,7 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
      * @param consultationId
      * @return true si el guardado fue exitoso, false si canceló o hubo error.  
      */
-    public static boolean showDialog(IConsultationDialogListener listener, ViewType viewType, String consultationId) {
+    public static boolean showDialog(IConsultationDialog listener, ViewType viewType, String consultationId) {
         Frame ownerFrame = JOptionPane.getFrameForComponent((Component) listener);
         ConsultationDialog dialog = new ConsultationDialog(ownerFrame, listener, viewType, consultationId);
         dialog.setVisible(true);  
@@ -664,7 +693,7 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
     }//GEN-LAST:event_jButtonCancelActionPerformed
 
     private void jButtonAddPatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddPatientActionPerformed
-        addPatientAction();
+        callDialogToAddConsultationPatients();
     }//GEN-LAST:event_jButtonAddPatientActionPerformed
 
     private void jButtonViewNotesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonViewNotesActionPerformed

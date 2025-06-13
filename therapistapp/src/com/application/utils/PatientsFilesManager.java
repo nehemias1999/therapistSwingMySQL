@@ -54,40 +54,19 @@ public class PatientsFilesManager {
 
     /**
      * Inicializa las carpetas base para un paciente:
-     * /photo, /notes, /notes/single, /notes/group.
+     * /photo
      * @param patientId
      * @throws java.io.IOException
      */
     public void initPatientFolders(UUID patientId) throws IOException {
         Path root = baseDir.resolve(patientId.toString());
         Files.createDirectories(root.resolve("photo"));
-        Files.createDirectories(root.resolve("notes/single"));
-        Files.createDirectories(root.resolve("notes/group"));
-    }
-
-    /**
-     * Copia notas de consulta a la carpeta "consultations" de cada paciente.
-     * @param consultationId ID de la consulta
-     * @param patientId      ID del paciente
-     * @param originalNotePath ruta del archivo de notas fuente
-     * @return la ruta al archivo copiado
-     * @throws java.io.IOException
-     */
-    public Path copyConsultationNoteForPatient(
-            UUID consultationId,
-            UUID patientId,
-            Path originalNotePath) throws IOException {
-        Path destDir = baseDir.resolve(patientId.toString()).resolve("consultations");
-        Files.createDirectories(destDir);
-        String fileName = consultationId + getExtension(originalNotePath);
-        Path target = destDir.resolve(fileName);
-        return Files.copy(originalNotePath, target, StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**
      * Marca u oculta la carpeta raíz de un paciente en Windows (atributo DOS).
      * @param patientId ID del paciente
-     * @param hidden    true=ocultar, false=mostrar
+     * @param hidden true=ocultar, false=mostrar
      * @throws java.io.IOException
      */
     public void setHidden(UUID patientId, boolean hidden) throws IOException {
@@ -197,30 +176,6 @@ public class PatientsFilesManager {
         return deleted;
     }
     
-    public Path createWordNoteFile(UUID consultationId, UUID patientId, boolean isGroupSession) throws IOException {
-        String subFolder = isGroupSession ? "notes/group" : "notes/single";
-        Path dir = baseDir.resolve(patientId.toString()).resolve(subFolder);
-        Files.createDirectories(dir);
-
-        String fileName = String.valueOf(consultationId) + ".docx";
-        Path noteFile = dir.resolve(fileName);
-
-        return Files.createFile(noteFile);
-    }
-    
-    public void openWordFile(Path wordFilePath) throws IOException {
-        if (Desktop.isDesktopSupported()) {
-            Desktop desktop = Desktop.getDesktop();
-            if (Files.exists(wordFilePath)) {
-                desktop.open(wordFilePath.toFile());
-            } else {
-                throw new IOException("El archivo no existe: " + wordFilePath.toString());
-            }
-        } else {
-            throw new UnsupportedOperationException("El sistema no soporta Desktop.open()");
-        }
-    }
-
     /**
      * Extrae la extensión del archivo (ej. ".docx"), o cadena vacía si no tiene.
      */
