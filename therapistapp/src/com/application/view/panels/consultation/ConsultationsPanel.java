@@ -205,13 +205,13 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
     }
     
     @Override
-    public void insertConsultation(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
-        consultationsPanelController.insertConsultation(consultationDTO, consultationPatientsDTO);
+    public void insertConsultationWithPatients(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
+        consultationsPanelController.insertConsultationWithPatients(consultationDTO, consultationPatientsDTO);
     } 
     
     @Override
-    public void updateConsultation(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
-        consultationsPanelController.updateConsultation(consultationDTO, consultationPatientsDTO);
+    public void updateConsultationWithPatients(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
+        consultationsPanelController.updateConsultationWithPatients(consultationDTO, consultationPatientsDTO);
     }
     
     @Override
@@ -224,16 +224,6 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
         return consultationsPanelController.getPatientById(patientId);
     }
     
-    @Override
-    public Boolean isConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException {
-        return consultationsPanelController.isConsultationPatientPaid(consultationId, patientId);
-    }
-    
-    @Override
-    public void setConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException {
-        consultationsPanelController.setConsultationPatientPaid(consultationId, patientId);
-    }
-
     @Override
     public List<CityDTO> getAllCities() {
         return consultationsPanelController.getAllCities();

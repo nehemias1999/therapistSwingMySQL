@@ -16,17 +16,9 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import com.application.Application;
-import com.application.controllers.entities.CityController;
-import com.application.controllers.entities.ConsultationController;
-import com.application.controllers.entities.ConsultationPatientController;
 import com.application.controllers.entities.ControllerRegistry;
-import com.application.controllers.entities.PatientController;
 import com.application.controllers.panels.ConsultationsPanelController;
 import com.application.controllers.panels.PatientsPanelController;
-import com.application.services.CityService;
-import com.application.services.ConsultationPatientService;
-import com.application.services.ConsultationService;
-import com.application.services.PatientService;
 import com.application.view.menu.Menu;
 import com.application.view.menu.MenuAction;
 

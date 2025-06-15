@@ -13,17 +13,13 @@ public interface IConsultationDialog {
     
     List<PatientDTO> getPatientsByConsultationId(String consultationId);
     
-    void insertConsultation(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException;
+    void insertConsultationWithPatients(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException;
     
-    void updateConsultation(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException;
+    void updateConsultationWithPatients(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException;
     
     List<PatientDTO> getAllPatients();
     
     PatientDTO getPatientById(String patientId);
-    
-    Boolean isConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException;
-    
-    void setConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException;
-        
+      
 }
 

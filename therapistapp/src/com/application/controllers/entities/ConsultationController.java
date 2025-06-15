@@ -3,6 +3,7 @@ package com.application.controllers.entities;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.ConsultationDTO;
+import com.application.model.dto.PatientDTO;
 import com.application.services.ConsultationService;
 import java.io.IOException;
 
@@ -19,24 +20,30 @@ public class ConsultationController {
     /**
      * Inserta una nueva consulta en el sistema
      * @param consultationDTO Datos de la consulta a insertar
+     * @param consultationPatientsDTO Lista de pacientes
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
      * @throws BusinessException Si ocurre un error durante el proceso
      * @throws java.io.IOException
      */
-    public void insertConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException, IOException {
+    public void insertConsultationWithPatients(
+            ConsultationDTO consultationDTO, 
+            List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
         validateBasicFields(consultationDTO);
-        consultationService.insertConsultation(consultationDTO);
+        consultationService.insertConsultationWithPatients(consultationDTO, consultationPatientsDTO);
     }
     
     /**
      * Modifica una consulta existente en el sistema
      * @param consultationDTO Datos de la consulta a modificar
+     * @param consultationPatientsDTO Lista de pacientes
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
      * @throws BusinessException Si ocurre un error durante el proceso
      */
-    public void updateConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
+    public void updateConsultationWithPatients(
+            ConsultationDTO consultationDTO, 
+            List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException {
         validateBasicFields(consultationDTO);
-        consultationService.updateConsultation(consultationDTO);
+        consultationService.updateConsultationWithPatients(consultationDTO, consultationPatientsDTO);
     }
     
     /**

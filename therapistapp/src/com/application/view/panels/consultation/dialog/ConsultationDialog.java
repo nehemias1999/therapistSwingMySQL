@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
@@ -30,7 +29,6 @@ import com.application.interfaces.IConsultationDialog;
 import com.application.interfaces.IConsultationPatientsDialog;
 import com.application.view.panels.consultation.patient.dialog.ConsultationPatientsDialog;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ConsultationDialog extends javax.swing.JDialog implements IPanelMessages, IConsultationPatientsDialog {
@@ -64,7 +62,7 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
         
         setComponents();
         
-        consultationPatientsDTO = new ArrayList<PatientDTO>();
+        consultationPatientsDTO = new ArrayList<>();
         
         if (viewType == ViewType.INSERT) {
             loadPatientDataForInsertView();
@@ -96,6 +94,8 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
         }
 
         tableModel.setRowCount(0);
+        
+        jButtonViewNotes.setVisible(false);
         
         jButtonAdd.setText("Agregar");
         
@@ -285,11 +285,11 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
         try {
             
             if (viewType == ViewType.INSERT) {
-                listener.insertConsultation(getConsultationDTO(), consultationPatientsDTO);
+                listener.insertConsultationWithPatients(getConsultationDTO(), consultationPatientsDTO);
             } 
             
             if (viewType == ViewType.UPDATE) {
-                listener.updateConsultation(getConsultationDTO(), consultationPatientsDTO);
+                listener.updateConsultationWithPatients(getConsultationDTO(), consultationPatientsDTO);
             }
 
             operationSuccess = true;
@@ -646,8 +646,8 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
                         .addComponent(jLabelPatients)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButtonViewNotes, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButtonAddPatient, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonAddPatient, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPanePatiens, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(40, Short.MAX_VALUE))

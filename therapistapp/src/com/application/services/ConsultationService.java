@@ -5,8 +5,12 @@ import com.application.exceptions.businessException.ValidationException;
 import com.application.exceptions.runtimeExceptions.dataAccessException.DataAccessException;
 import com.application.exceptions.runtimeExceptions.dataAccessException.EntityNotFoundException;
 import com.application.model.dao.ConsultationDAO;
+import com.application.model.dao.ConsultationPatientDAO;
 import com.application.model.dto.ConsultationDTO;
+import com.application.model.dto.ConsultationPatientDTO;
+import com.application.model.dto.PatientDTO;
 import com.application.model.entities.Consultation;
+import com.application.model.entities.ConsultationPatient;
 import com.application.model.enumerations.ConsultationStatus;
 import com.application.utils.ConsultationsFilesManager;
 import java.io.IOException;
@@ -20,27 +24,44 @@ import java.util.stream.Collectors;
 
 public class ConsultationService {
     private final ConsultationDAO consultationDAO;
+    private final ConsultationPatientDAO consultationPatientDAO;
     private final ConsultationsFilesManager fileManager;
 
     public ConsultationService() {
         this.consultationDAO = new ConsultationDAO();
+        this.consultationPatientDAO = new ConsultationPatientDAO();
         this.fileManager = new ConsultationsFilesManager(); 
     }
     
     /**
      * Inserta una nueva consulta en el sistema
      * @param consultationDTO Datos de la consulta a insertar
+     * @param consultationPatientsDTO Lista de pacientes
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
      * @throws BusinessException Si ocurre un error durante el proceso
      * @throws java.io.IOException
      */
-    public void insertConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException, IOException {
+    public void insertConsultationWithPatients(
+            ConsultationDTO consultationDTO, 
+            List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
         try {
+            
             validateConsultationData(consultationDTO);
-            Consultation consultation = createConsultationFromDTO(consultationDTO);
+            Consultation consultation = createConsultationFromConsultationDTO(consultationDTO);
             consultationDAO.insertConsultation(consultation);
+            
+            for(PatientDTO patientDTO: consultationPatientsDTO) {
+                ConsultationPatient consultationPatient = new ConsultationPatient(
+                        consultation.getConsultationId(),
+                        UUID.fromString(patientDTO.getPatientDTOId()),
+                        patientDTO.isPaid()
+                );
+                consultationPatientDAO.insertConsultationPatient(consultationPatient);
+            }
+            
             fileManager.initConsultationFolders(consultation.getConsultationId());
             fileManager.createNotesFile(consultation.getConsultationId());
+
         } catch (DataAccessException e) {
             throw new BusinessException("Error al guardar la consulta en el sistema", e);
         } catch (IllegalArgumentException e) {
@@ -51,17 +72,17 @@ public class ConsultationService {
     /**
      * Modifica una consulta existente en el sistema
      * @param consultationDTO Datos de la consulta a modificar
+     * @param consultationPatientsDTO Lista de pacientes
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
      * @throws BusinessException Si ocurre un error durante el proceso
      */
-    public void updateConsultation(ConsultationDTO consultationDTO) throws ValidationException, BusinessException {
+    public void updateConsultationWithPatients(
+            ConsultationDTO consultationDTO, 
+            List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException {
         try {
-            
             validateConsultationData(consultationDTO);
-            
-            Consultation consultation = createConsultationFromDTO(consultationDTO);
+            Consultation consultation = createConsultationFromConsultationDTO(consultationDTO);
             consultationDAO.updateConsultation(consultation);
-
         } catch (DataAccessException e) {
             throw new BusinessException("Error al guardar la consulta en el sistema", e);
         } catch (IllegalArgumentException e) {
@@ -93,7 +114,7 @@ public class ConsultationService {
      */
     public ConsultationDTO getConsultationById(String consultationId) throws BusinessException {
         try {
-            return convertToDTO(consultationDAO.getConsultationById(UUID.fromString(consultationId)));
+            return createConsultationDTOFromConsultation(consultationDAO.getConsultationById(UUID.fromString(consultationId)));
         } catch (DataAccessException e) {
             throw new BusinessException("Error al listar consultas", e);
         }
@@ -113,7 +134,7 @@ public class ConsultationService {
             return consultationDAO
                     .getConsultationsByDate(sqlDate)
                     .stream()
-                    .map(this::convertToDTO)
+                    .map(this::createConsultationDTOFromConsultation)
                     .collect(Collectors.toList());
 
         } catch (DateTimeParseException e) {
@@ -182,7 +203,7 @@ public class ConsultationService {
     /**
      * Crea un objeto Consultation a partir de un ConsultationDTO
      */
-    private Consultation createConsultationFromDTO(ConsultationDTO consultationDTO) {
+    private Consultation createConsultationFromConsultationDTO(ConsultationDTO consultationDTO) {
         UUID consultationId = Optional.ofNullable(consultationDTO.getConsultationDTOId())
                                 .filter(s -> !s.isBlank())
                                 .map(UUID::fromString)
@@ -201,7 +222,7 @@ public class ConsultationService {
     /**
      * Crea un objeto ConsultationDTO a partir de un Consultation
      */
-    private ConsultationDTO convertToDTO(Consultation c) {
+    private ConsultationDTO createConsultationDTOFromConsultation(Consultation c) {
         ConsultationDTO dto = new ConsultationDTO();
         dto.setConsultationDTOId(c.getConsultationId().toString());
         dto.setConsultationDTODate(c.getConsultationDate().toString());
@@ -209,6 +230,29 @@ public class ConsultationService {
         dto.setConsultationDTOEndTime(c.getConsultationEndTime().toString());
         dto.setConsultationDTOAmount(c.getConsultationAmount().toString());
         dto.setConsultationDTOStatus(c.getConsultationStatus().toString());
+        
+        return dto;
+    }
+    
+        /**
+     * Crea un objeto ConsultationPatient a partir de un ConsultationPatientDTO
+     */
+    private ConsultationPatient createConsultationPatientFromConsultationPatientDTO(ConsultationPatientDTO dto) {
+        return new ConsultationPatient(
+            UUID.fromString(dto.getConsultationId()),
+            UUID.fromString(dto.getPatientId()),
+            Boolean.valueOf(dto.getIsPaid())
+        );
+    }
+    
+    /**
+     * Crea un objeto ConsultationPatientDTO a partir de un ConsultationPatient
+     */
+    private ConsultationPatientDTO createConsultationPatientDTOFromConsultationPatient(ConsultationPatient cp) {
+        ConsultationPatientDTO dto = new ConsultationPatientDTO();
+        dto.setConsultationId(cp.getConsultationId().toString());
+        dto.setPatientId(cp.getPatientId().toString());
+        dto.setIsPaid(cp.getIsPaid().toString());
         
         return dto;
     }

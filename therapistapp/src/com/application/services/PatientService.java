@@ -5,6 +5,7 @@ import com.application.exceptions.businessException.ValidationException;
 import com.application.exceptions.runtimeExceptions.dataAccessException.ConstraintViolationException;
 import com.application.exceptions.runtimeExceptions.dataAccessException.DataAccessException;
 import com.application.exceptions.runtimeExceptions.dataAccessException.EntityNotFoundException;
+import com.application.model.dao.ConsultationPatientDAO;
 import com.application.model.dao.PatientDAO;
 import com.application.model.dto.PatientDTO;
 import com.application.model.entities.Patient;
@@ -14,12 +15,14 @@ import java.nio.file.Path;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class PatientService {
     private final PatientDAO patientDAO;
+    private final ConsultationPatientDAO consultationPatientDAO;
     private final PatientsFilesManager fileManager;
     
     // Patron simple para validar e-mail (puede ajustarse si se requiere más estricto)
@@ -32,6 +35,7 @@ public class PatientService {
     
     public PatientService() {
         this.patientDAO = new PatientDAO();
+        this.consultationPatientDAO = new ConsultationPatientDAO();
         this.fileManager = new PatientsFilesManager(); 
     }
     
@@ -43,7 +47,7 @@ public class PatientService {
     public List<PatientDTO> getAllPatients() throws BusinessException {
         try {
             return patientDAO.getAllPatients().stream()
-                    .map(this::convertToDTO)
+                    .map(this::createPatientDTOFromPatient)
                     .collect(Collectors.toList());
         } catch (DataAccessException e) {
             throw new BusinessException("Error al listar pacientes", e);
@@ -60,7 +64,7 @@ public class PatientService {
     public void insertPatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {
         try {
             validatePatientData(patientDTO);
-            Patient patient = createPatientFromDTO(patientDTO, false);
+            Patient patient = createPatientFromPatientDTO(patientDTO);
             patientDAO.insertPatient(patient);
             fileManager.initPatientFolders(patient.getPatientId());
             movePatientPhotoIfExists(patientDTO, patient.getPatientId());
@@ -81,7 +85,7 @@ public class PatientService {
     public void updatePatient(PatientDTO patientDTO) throws ValidationException, BusinessException, IOException {       
         try {
             validatePatientData(patientDTO);
-            Patient patient = createPatientFromDTO(patientDTO, true);
+            Patient patient = createPatientFromPatientDTO(patientDTO);
             patientDAO.updatePatient(patient);
             managePatientPhoto(patientDTO, patient.getPatientId());
         } catch (EntityNotFoundException e) {
@@ -118,13 +122,33 @@ public class PatientService {
      */
     public PatientDTO getPatientById(String patientId) throws ValidationException, BusinessException {
         try {
-            return convertToDTO(patientDAO.getPatientById(UUID.fromString(patientId)));
+            Patient patient = patientDAO.getPatientById(UUID.fromString(patientId));
+            return createPatientDTOFromPatient(patient);
         } catch (EntityNotFoundException e) {
             throw new ValidationException("No existe paciente con Id '" + patientId + "'");
         } catch (DataAccessException e) {
             throw new BusinessException("Error al buscar paciente", e);
         }
     }
+    
+    /**
+     * Obtiene los pacientes de una consulta determinada
+     * @param consultationId
+     * @return Lista de PatientDTO
+     * @throws BusinessException Si ocurre un error al acceder a los datos
+     */
+    public List<PatientDTO> getPatientsByConsultationId(String consultationId) throws BusinessException {
+        try {
+            UUID cId = UUID.fromString(consultationId);
+            return consultationPatientDAO.getPatientsByConsultationId(cId)
+                .stream().map(this::createPatientDTOFromPatient)
+                .collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException("Id de consulta mal formado", e);
+        } catch (DataAccessException e) {
+            throw new BusinessException("Error al listar pacientes", e);
+        }
+    }    
     
     /**
      * Valida los datos del paciente antes de la inserción
@@ -204,45 +228,50 @@ public class PatientService {
     /**
      * Crea un objeto Patient a partir de un PatientDTO
      */
-    private Patient createPatientFromDTO(PatientDTO dto, boolean isUpdate) {
+    private Patient createPatientFromPatientDTO(PatientDTO patientDTO) {
+        UUID patientId = Optional.ofNullable(patientDTO.getPatientDTOId())
+                .filter(s -> !s.isBlank())
+                .map(UUID::fromString)
+                .orElseGet(UUID::randomUUID);
+        
         return new Patient(
-                isUpdate ? UUID.fromString(dto.getPatientDTOId()) : UUID.randomUUID(),
-                dto.getPatientDTODNI().trim(),
-                dto.getPatientDTOName().trim().toLowerCase(),
-                dto.getPatientDTOLastName().trim().toLowerCase(),
-                LocalDate.parse(dto.getPatientDTOBirthDate().trim()),
-                dto.getPatienDTOOccupation().trim().toLowerCase(),
-                dto.getPatientDTOPhone().trim(),
-                dto.getPatientDTOEmail().trim().toLowerCase(),
-                UUID.fromString(dto.getCityId().trim()),
-                dto.getPatientDTOAddress().trim().toLowerCase(),
-                Integer.parseInt(dto.getPatientDTOAddressNumber().trim()),
-                dto.getPatientDTOAddressFloor() != null && !dto.getPatientDTOAddressFloor().isEmpty()
-                        ? Integer.parseInt(dto.getPatientDTOAddressFloor().trim()) : 0,
-                dto.getPatientDTOAddressDepartment() != null ? dto.getPatientDTOAddressDepartment().trim().toLowerCase() : null
+                patientId,
+                patientDTO.getPatientDTODNI().trim(),
+                patientDTO.getPatientDTOName().trim().toLowerCase(),
+                patientDTO.getPatientDTOLastName().trim().toLowerCase(),
+                LocalDate.parse(patientDTO.getPatientDTOBirthDate().trim()),
+                patientDTO.getPatienDTOOccupation().trim().toLowerCase(),
+                patientDTO.getPatientDTOPhone().trim(),
+                patientDTO.getPatientDTOEmail().trim().toLowerCase(),
+                UUID.fromString(patientDTO.getCityId().trim()),
+                patientDTO.getPatientDTOAddress().trim().toLowerCase(),
+                Integer.parseInt(patientDTO.getPatientDTOAddressNumber().trim()),
+                patientDTO.getPatientDTOAddressFloor() != null && !patientDTO.getPatientDTOAddressFloor().isEmpty()
+                        ? Integer.parseInt(patientDTO.getPatientDTOAddressFloor().trim()) : 0,
+                patientDTO.getPatientDTOAddressDepartment() != null ? patientDTO.getPatientDTOAddressDepartment().trim().toLowerCase() : null
         );
     }
 
     /**
      * Crea un objeto PatientDTO a partir de un Patient
      */
-    private PatientDTO convertToDTO(Patient p) {
+    private PatientDTO createPatientDTOFromPatient(Patient patient) {
         PatientDTO dto = new PatientDTO();
-        dto.setPatientDTOId(p.getPatientId().toString());
-        dto.setPatientDTODNI(p.getPatientDNI());
-        dto.setPatientDTOName(p.getPatientName());
-        dto.setPatientDTOLastName(p.getPatientLastName());
-        dto.setPatientDTOBirthDate(p.getPatientBirthDate().toString());
-        dto.setPatientDTOOccupation(p.getPatientOccupation());
-        dto.setPatientDTOPhone(p.getPatientPhone());
-        dto.setPatientDTOEmail(p.getPatientEmail());
-        dto.setCityId(p.getCityId().toString());
-        dto.setPatientDTOAddress(p.getPatientAddress());
-        dto.setPatientDTOAddressNumber(String.valueOf(p.getPatientAddressNumber()));
-        dto.setPatientDTOAddressFloor(p.getPatientAddressFloor() > 0 ? String.valueOf(p.getPatientAddressFloor()) : "");
-        dto.setPatientDTOAddressDepartment(p.getPatientAddressDepartment() != null ? p.getPatientAddressDepartment() : "");
+        dto.setPatientDTOId(patient.getPatientId().toString());
+        dto.setPatientDTODNI(patient.getPatientDNI());
+        dto.setPatientDTOName(patient.getPatientName());
+        dto.setPatientDTOLastName(patient.getPatientLastName());
+        dto.setPatientDTOBirthDate(patient.getPatientBirthDate().toString());
+        dto.setPatientDTOOccupation(patient.getPatientOccupation());
+        dto.setPatientDTOPhone(patient.getPatientPhone());
+        dto.setPatientDTOEmail(patient.getPatientEmail());
+        dto.setCityId(patient.getCityId().toString());
+        dto.setPatientDTOAddress(patient.getPatientAddress());
+        dto.setPatientDTOAddressNumber(String.valueOf(patient.getPatientAddressNumber()));
+        dto.setPatientDTOAddressFloor(patient.getPatientAddressFloor() > 0 ? String.valueOf(patient.getPatientAddressFloor()) : "");
+        dto.setPatientDTOAddressDepartment(patient.getPatientAddressDepartment() != null ? patient.getPatientAddressDepartment() : "");
         try {
-            dto.setPatientDTOPhotoPath(fileManager.hasPatientPhoto(p.getPatientId()) ? fileManager.getPatientPhoto(p.getPatientId()).toString() : "");
+            dto.setPatientDTOPhotoPath(fileManager.hasPatientPhoto(patient.getPatientId()) ? fileManager.getPatientPhoto(patient.getPatientId()).toString() : "");
         } catch (IOException e) {
             dto.setPatientDTOPhotoPath("");
         }

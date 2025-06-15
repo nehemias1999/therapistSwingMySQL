@@ -76,6 +76,23 @@ public class PatientController {
     }
     
     /**
+     * Obtiene los pacientes de una consulta determinada
+     * @param consultationId Identificador de la consulta
+     * @return Lista de PatientDTO
+     * @throws ValidationException Si los datos no son válidos o la consulta no existe
+     * @throws BusinessException Si ocurre un error durante el proceso
+     */
+    public List<PatientDTO> getPatientsByConsultationId(String consultationId) throws ValidationException, BusinessException {
+        if (consultationId == null || consultationId.trim().isEmpty()) {
+            throw new ValidationException("El Identificador de la consulta es requerido");
+        }
+        
+        List<PatientDTO> consultationPatientsDTO = patientService.getPatientsByConsultationId(consultationId);
+        
+        return consultationPatientsDTO;
+    }
+    
+    /**
      * Busca pacientes en base a su apellido o su nombre
      * @param patientData Search term
      * @return Lista de pacientes que coincidan

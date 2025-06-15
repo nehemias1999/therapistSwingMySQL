@@ -20,8 +20,8 @@ public class ConsultationPatientDAO {
         "INSERT INTO tbl_consultation_patient ( " +
         "consultation_id, " +
         "patient_id, " +
-        "is_paid, " +
-        ") VALUES (?, ?, ?, ?)";
+        "is_paid " +
+        ") VALUES (?, ?, ?)";
     
     private static final String UPDATE_SQL =
         "UPDATE tbl_consultation_patient SET " +

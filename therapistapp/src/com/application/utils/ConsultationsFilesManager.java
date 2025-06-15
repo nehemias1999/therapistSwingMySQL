@@ -98,7 +98,7 @@ public class ConsultationsFilesManager {
         Path dir = baseDir.resolve(consultationId.toString()).resolve("notes");
         Files.createDirectories(dir);
 
-        String fileName = String.valueOf(consultationId) + ".docx";
+        String fileName = "notas_de_consulta.docx";
         Path notesFile = dir.resolve(fileName);
 
         return Files.createFile(notesFile);
