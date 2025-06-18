@@ -27,16 +27,16 @@ import raven.datetime.component.time.TimeSelectionListener;
 import raven.modal.Toast;
 import com.application.interfaces.IConsultationDialog;
 import com.application.interfaces.IConsultationPatientsDialog;
+import com.application.model.dto.ConsultationPatientDTO;
 import com.application.view.panels.consultation.patient.dialog.ConsultationPatientsDialog;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 public class ConsultationDialog extends javax.swing.JDialog implements IPanelMessages, IConsultationPatientsDialog {
     private final IConsultationDialog listener;
     private final ViewType viewType;
     private final String consultationId;
     private ConsultationDTO consultationDTO;
-    private List<PatientDTO> consultationPatientsDTO;
+    private List<ConsultationPatientDTO> consultationPatientsDTO;
     
     private boolean operationSuccess = false;
 
@@ -123,9 +123,17 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
                 
         loadConsultationData();
         
+        jFormattedTextFieldConsultationDate.setEnabled(false);
+        datePickerConsultationDate.setEditorIcon(null);
+        jFormattedTextFieldStartTime.setEnabled(false);
+        timePickerStartTime.setEditorIcon(null);
+        jFormattedTextFieldEndTime.setEnabled(false);
+        timePickerEndTime.setEditorIcon(null);
+        jTextFieldAmount.setEnabled(false);
         jButtonAddPatient.setEnabled(false);
         jButtonCancel.setVisible(false);
         jButtonAdd.setText("Volver");
+        jTablePatients.setEnabled(false);
         
     }
     
@@ -135,24 +143,18 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
         
         timePickerStartTime.set24HourView(true);
         timePickerStartTime.setOrientation(SwingConstants.HORIZONTAL);
-        timePickerStartTime.addTimeSelectionListener(new TimeSelectionListener() {
-            @Override
-            public void timeSelected(TimeEvent te) {
-                if (timePickerStartTime.isTimeSelected()) {
-                    DateTimeFormatter df = DateTimeFormatter.ofPattern("hh:mm a");
-                }
+        timePickerStartTime.addTimeSelectionListener((TimeEvent te) -> {
+            if (timePickerStartTime.isTimeSelected()) {
+                DateTimeFormatter df = DateTimeFormatter.ofPattern("hh:mm a");
             }
         });
         timePickerStartTime.setEditor(jFormattedTextFieldStartTime);
         
         timePickerEndTime.set24HourView(true);
         timePickerEndTime.setOrientation(SwingConstants.HORIZONTAL);
-        timePickerEndTime.addTimeSelectionListener(new TimeSelectionListener() {
-            @Override
-            public void timeSelected(TimeEvent te) {
-                if (timePickerEndTime.isTimeSelected()) {
-                    DateTimeFormatter df = DateTimeFormatter.ofPattern("hh:mm a");
-                }
+        timePickerEndTime.addTimeSelectionListener((TimeEvent te) -> {
+            if (timePickerEndTime.isTimeSelected()) {
+                DateTimeFormatter df = DateTimeFormatter.ofPattern("hh:mm a");
             }
         });
         timePickerEndTime.setEditor(jFormattedTextFieldEndTime);
@@ -162,12 +164,10 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
         IConsultationPatientActionsEvent event = new IConsultationPatientActionsEvent() {
             @Override
             public void onIsPaid(String patientId) {
-                System.out.println("SETEAR ES PAGO → paciente con ID = " + patientId);
                 setConsultationPatientPaid(patientId);
             }
             @Override
             public void onDelete(String patientId) {
-                System.out.println("BORRAR → paciente con ID = " + patientId);
                 callDialogToDeleteConsultationPatient(patientId);
             }  
         };
@@ -218,7 +218,7 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
         loadConsultationPatientsData();
         
     }
-        
+    
     /**  
      * Carga los datos cargados de los objetos Paciente asociados con el objeto Consulta
      */
@@ -236,16 +236,18 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
         }
 
         if(consultationPatientsDTO.isEmpty()) {
-            consultationPatientsDTO = listener.getPatientsByConsultationId(consultationId);
+            consultationPatientsDTO = listener.getConsultationPatientsByConsultationId(consultationId);
         }        
         
         if (!consultationPatientsDTO.isEmpty()) {
             
-            for (PatientDTO patientDTO : consultationPatientsDTO) {
+            for (ConsultationPatientDTO consultationPatientDTO : consultationPatientsDTO) {
+                
+                PatientDTO patientDTO = listener.getPatientById(consultationPatientDTO.getPatientId());
                 
                 tableModel.addRow(new Object[]{
                     patientDTO, 
-                    patientDTO
+                    consultationPatientDTO
                 });
                 
             }
@@ -267,33 +269,29 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
                 ConsultationStatus.SCHEDULED.toString()
         );
     }
-    
-    /**  
-     * Crea un istado de los Identificadores de cada paciente asociado a la consulta  
-     * @return List String 
-     */
-    private List<String> getConsultationPatientsId() {       
-        return consultationPatientsDTO.stream()
-               .map(PatientDTO::getPatientDTOId)
-               .collect(Collectors.toList());
-    }
-    
+        
     /**  
      * Elige la accion a realizar por el objeto jButtonAdd
      */
     private void saveAction() {
         try {
             
-            if (viewType == ViewType.INSERT) {
-                listener.insertConsultationWithPatients(getConsultationDTO(), consultationPatientsDTO);
-            } 
+            if(!consultationPatientsDTO.isEmpty()) {
             
-            if (viewType == ViewType.UPDATE) {
-                listener.updateConsultationWithPatients(getConsultationDTO(), consultationPatientsDTO);
-            }
+                if (viewType == ViewType.INSERT) {
+                    listener.insertConsultationWithPatients(getConsultationDTO(), consultationPatientsDTO);
+                } 
 
-            operationSuccess = true;
-            dispose(); 
+                if (viewType == ViewType.UPDATE) {
+                    listener.updateConsultationWithPatients(getConsultationDTO(), consultationPatientsDTO);
+                }
+
+                operationSuccess = true;
+                dispose(); 
+            
+            } else {
+                showErrorMessage("La consulta debe tener como minimo un paciente asociado");
+            }
 
         } catch (ValidationException | BusinessException e) {
             showErrorMessage(e.getMessage());
@@ -313,7 +311,7 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
     }
     
     private void viewConsultationNotes() {
-    
+        listener.openConsultationNotesById(consultationId);
     }
     
     /**  
@@ -336,8 +334,8 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
     }
     
     @Override
-    public void updateConsultationPatientsDTO(List<PatientDTO> newConsultationPatientsDTO) {
-        System.out.println(consultationPatientsDTO.toString());
+    public void updateConsultationPatientsDTO(List<String> patientsId) {
+        List<ConsultationPatientDTO> newConsultationPatientsDTO = createConsultationPatients(patientsId);
         
         consultationPatientsDTO.addAll(newConsultationPatientsDTO);
         
@@ -345,18 +343,32 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
         loadConsultationPatientsData();
     }
     
+    private List<ConsultationPatientDTO> createConsultationPatients(List<String> patientsId) {
+        List<ConsultationPatientDTO> consultationPatientsDTO = new ArrayList<>();
+        for(String patientId: patientsId) {
+            ConsultationPatientDTO cpdto = new ConsultationPatientDTO(
+                    consultationId,
+                    patientId,
+                    Boolean.FALSE.toString()
+            );
+            consultationPatientsDTO.add(cpdto);
+        }
+        return consultationPatientsDTO;
+    }
+    
     /**  
      * Cambia el estado del pago de la consulta (is_paid = true)
      * @param patientId Identifiador del paciente
      */
     private void setConsultationPatientPaid(String patientId) {
-        PatientDTO pacienteDTO = consultationPatientsDTO.stream()
-            .filter(p -> patientId.equals(p.getPatientDTOId()))
+        ConsultationPatientDTO consultationPatientDTO = consultationPatientsDTO
+            .stream()
+            .filter(cpDTO -> patientId.equals(cpDTO.getPatientId()))
             .findFirst()
             .orElse(null);
 
-        if (pacienteDTO != null) {
-            pacienteDTO.setPaid(true);
+        if (consultationPatientDTO != null) {
+            consultationPatientDTO.setIsPaid(Boolean.TRUE.toString());
         } 
         
         initActionsData();
@@ -372,7 +384,7 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
         try {
             Boolean deleted = showConfirmAction("¿Está seguro de eliminar este paciente?");  
             if (deleted) {
-                consultationPatientsDTO.removeIf(patientDTO -> patientDTO.getPatientDTOId().equals(patientId));
+                consultationPatientsDTO.removeIf(consultationPatientDTO -> consultationPatientDTO.getPatientId().equals(patientId));
                 Toast.show(this, Toast.Type.SUCCESS, "Paciente eliminado exitosamente");
             }
             initActionsData();

@@ -26,6 +26,7 @@ import static raven.modal.Toast.Type.SUCCESS;
 import com.application.interfaces.IPanelMessages;
 import com.application.interfaces.IConsultationDialog;
 import com.application.interfaces.IPatientDialog;
+import com.application.model.dto.ConsultationPatientDTO;
 
 public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMessages, IConsultationDialog, IPatientDialog {
 
@@ -118,11 +119,11 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
         }
 
         for (ConsultationDTO consultationDTO : consultationsDTO) {
-            List<PatientDTO> patientsDTO = consultationsPanelController.getPatientsByConsultationId(consultationDTO.getConsultationDTOId());
+            List<ConsultationPatientDTO> patientsDTO = consultationsPanelController.getPatientsByConsultationId(consultationDTO.getConsultationDTOId());
 
             if (patientsDTO.isEmpty()) continue;
 
-            PatientDTO patient = patientsDTO.get(0);
+            PatientDTO patient = consultationsPanelController.getPatientById(patientsDTO.get(0).getPatientId());
 
             tableModel.addRow(new Object[]{
                 consultationDTO.getConsultationDTOStartTime(),
@@ -173,12 +174,12 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
     public void callDialogToDeleteConsultation(String consultationId) {
         try {
             Boolean deleted = showConfirmAction("¿Está seguro de eliminar este paciente?");
-            initActionsData();
-            loadTableData(actualSelectedDate);
             if (deleted) {
                 consultationsPanelController.deleteConsultation(consultationId);
                 Toast.show(this, Toast.Type.SUCCESS, "Consulta eliminada exitosamente");
-            }
+            }   
+            initActionsData();
+            loadTableData(actualSelectedDate);
         } catch (Exception ex) {
             showErrorMessage("Error al eliminar consulta: " + ex.getMessage());
         } 
@@ -200,18 +201,22 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
     }
         
     @Override
-    public List<PatientDTO> getPatientsByConsultationId(String consultationId) {
+    public List<ConsultationPatientDTO> getConsultationPatientsByConsultationId(String consultationId) {
         return consultationsPanelController.getPatientsByConsultationId(consultationId);
     }
     
     @Override
-    public void insertConsultationWithPatients(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
-        consultationsPanelController.insertConsultationWithPatients(consultationDTO, consultationPatientsDTO);
+    public void insertConsultationWithPatients(
+            ConsultationDTO consultationDTO, 
+            List<ConsultationPatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
+       consultationsPanelController.insertConsultationWithPatients(consultationDTO, consultationPatientsDTO);
     } 
     
     @Override
-    public void updateConsultationWithPatients(ConsultationDTO consultationDTO, List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
-        consultationsPanelController.updateConsultationWithPatients(consultationDTO, consultationPatientsDTO);
+    public void updateConsultationWithPatients(
+            ConsultationDTO consultationDTO, 
+            List<ConsultationPatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
+       consultationsPanelController.updateConsultationWithPatients(consultationDTO, consultationPatientsDTO);
     }
     
     @Override
@@ -222,6 +227,11 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
     @Override
     public PatientDTO getPatientById(String patientId) {
         return consultationsPanelController.getPatientById(patientId);
+    }
+    
+    @Override
+    public void openConsultationNotesById(String consultationId) {
+        consultationsPanelController.openConsultationNotesById(consultationId);
     }
     
     @Override

@@ -93,7 +93,13 @@ public class ConsultationsFilesManager {
         Path notesPath = getConsultationNotes(consultationId);
         return notesPath != null ? notesPath.toAbsolutePath().toString() : "";
     }
-        
+    
+    /**
+     * Crea un archivo .docx asociada a una consulta
+     * @param consultationId UUID de la consulta 
+     * @return Path del archivo de las notas
+     * @throws IOException si hay error durante la operacion
+     */    
     public Path createNotesFile(UUID consultationId) throws IOException {
         Path dir = baseDir.resolve(consultationId.toString()).resolve("notes");
         Files.createDirectories(dir);
@@ -104,7 +110,14 @@ public class ConsultationsFilesManager {
         return Files.createFile(notesFile);
     }
     
-    public void openNotesFile(Path notesFilePath) throws IOException {
+    /**
+    * Abre el archivo de notas de una consulta en Microsoft Word.
+    * @param consultationId ID de la consulta
+    * @throws IOException si el archivo no existe o no puede abrirse
+    */
+    public void openConsultationNotesFile(UUID consultationId) throws IOException {
+        Path notesFilePath = getConsultationNotes(consultationId);
+  
         if (Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
             if (Files.exists(notesFilePath)) {
@@ -115,6 +128,34 @@ public class ConsultationsFilesManager {
         } else {
             throw new UnsupportedOperationException("El sistema no soporta Desktop.open()");
         }
+    }
+
+    /**
+     * Elimina completamente la carpeta asociada a una consulta (incluyendo notas y subcarpetas).
+     * @param consultationId UUID de la consulta a eliminar
+     * @throws IOException si hay error durante el borrado
+     */
+    public void deleteConsultationFolder(UUID consultationId) throws IOException {
+        Path consultationFolder = baseDir.resolve(consultationId.toString());
+        if (Files.exists(consultationFolder) && Files.isDirectory(consultationFolder)) {
+            deleteDirectoryRecursively(consultationFolder);
+        }
+    }
+
+    /**
+     * Borra un directorio y todo su contenido recursivamente.
+     */
+    private void deleteDirectoryRecursively(Path path) throws IOException {
+        try (DirectoryStream<Path> entries = Files.newDirectoryStream(path)) {
+            for (Path entry : entries) {
+                if (Files.isDirectory(entry)) {
+                    deleteDirectoryRecursively(entry);
+                } else {
+                    Files.deleteIfExists(entry);
+                }
+            }
+        }
+        Files.deleteIfExists(path);
     }
 
     /**

@@ -22,13 +22,16 @@ public class PatientDAO {
     private static final String PASSWORD = "root";
     
     private static final String SELECT_ALL =
-        "SELECT * FROM tbl_patient WHERE is_active = true ORDER BY patient_last_name";
+        "SELECT * FROM tbl_patient " +
+        "WHERE is_active = true ORDER BY patient_last_name";
 
     private static final String SELECT_BY_ID =
-        "SELECT * FROM tbl_patient WHERE patient_id = ? AND is_active = true";
+        "SELECT * FROM tbl_patient " +
+        "WHERE patient_id = ? AND is_active = true";
 
     private static final String SELECT_BY_DNI =
-        "SELECT * FROM tbl_patient WHERE patient_dni = ? AND is_active = true";
+        "SELECT * FROM tbl_patient " +
+        "WHERE patient_dni = ? AND is_active = true";
 
     private static final String INSERT_SQL =
         "INSERT INTO tbl_patient ( " +
@@ -64,13 +67,17 @@ public class PatientDAO {
         "WHERE patient_id = ?";
 
     private static final String DELETE_SQL =
-        "UPDATE tbl_patient SET is_active = false WHERE patient_id = ?";
+        "UPDATE tbl_patient SET " +
+        "is_active = false " +
+        "WHERE patient_id = ?";
 
     private static final String EXISTS_DNI_SQL =
-        "SELECT 1 FROM tbl_patient WHERE patient_dni = ? AND is_active = true LIMIT 1";
+        "SELECT 1 FROM tbl_patient " +
+        "WHERE patient_dni = ? AND is_active = true LIMIT 1";
 
     private static final String EXISTS_EMAIL_SQL =
-        "SELECT 1 FROM tbl_patient WHERE patient_email = ? AND is_active = true LIMIT 1";
+        "SELECT 1 FROM tbl_patient " +
+        "WHERE patient_email = ? AND is_active = true LIMIT 1";
     
     private static final int MYSQL_DUPLICATE_ERROR   = 1062;
     private static final String UNIQUE_DNI_CONSTRAINT   = "uk_patient_dni";

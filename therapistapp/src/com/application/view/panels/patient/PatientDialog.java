@@ -105,6 +105,7 @@ public class PatientDialog extends javax.swing.JDialog implements IPanelMessages
         jTextFieldName.setEnabled(false);
         jTextFieldLastName.setEnabled(false);
         jFormattedTextFieldBirthDate.setEnabled(false);
+        datePicker.setEditorIcon(null);
         jTextFieldOccupation.setEnabled(false);
         jTextFieldPhone.setEnabled(false);
         jTextFieldEmail.setEnabled(false);

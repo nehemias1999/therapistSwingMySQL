@@ -3,7 +3,7 @@ package com.application.controllers.entities;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.ConsultationDTO;
-import com.application.model.dto.PatientDTO;
+import com.application.model.dto.ConsultationPatientDTO;
 import com.application.services.ConsultationService;
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ public class ConsultationController {
      */
     public void insertConsultationWithPatients(
             ConsultationDTO consultationDTO, 
-            List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
+            List<ConsultationPatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
         validateBasicFields(consultationDTO);
         consultationService.insertConsultationWithPatients(consultationDTO, consultationPatientsDTO);
     }
@@ -41,7 +41,7 @@ public class ConsultationController {
      */
     public void updateConsultationWithPatients(
             ConsultationDTO consultationDTO, 
-            List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException {
+            List<ConsultationPatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException {
         validateBasicFields(consultationDTO);
         consultationService.updateConsultationWithPatients(consultationDTO, consultationPatientsDTO);
     }
@@ -51,12 +51,13 @@ public class ConsultationController {
      * @param consultationId de la consulta a eliminar
      * @throws ValidationException Si los datos no son válidos o la consulta no existe
      * @throws BusinessException Si ocurre un error durante el proceso
+     * @throws java.io.IOException
      */
-    public void deleteConsultation(String consultationId) throws ValidationException, BusinessException {
+    public void deleteConsultation(String consultationId) throws ValidationException, BusinessException, IOException {
         if (consultationId == null || consultationId.trim().isEmpty()) {
             throw new ValidationException("El Identificador de la consulta es requerido");
         }
-        consultationService.deleteConsultation(consultationId);
+        consultationService.deleteConsultationWithPatients(consultationId);
     }
     
     /**
@@ -75,6 +76,20 @@ public class ConsultationController {
     
     /**
      * Obtiene las consulta para un dia determinado
+     * @param consultationId Identificador de la consulta
+     * @throws ValidationException  Si los datos no son válidos o la consulta no existe
+     * @throws BusinessException Si ocurre un error durante el proceso
+     * @throws java.io.IOException
+     */
+    public void openConsultationNotesById(String consultationId) throws ValidationException, BusinessException, IOException {
+        if (consultationId == null || consultationId.trim().isEmpty()) {
+            throw new ValidationException("el identificador de la consulta es requerido");
+        }
+        consultationService.openConsultationNotesById(consultationId);
+    }   
+        
+    /**
+     * Obtiene las consulta para un dia determinado
      * @param consultationDate fecha de las consultas a buscar
      * @return lista de DTOs de consulta para la fecha especificada
      * @throws ValidationException  Si los datos no son válidos o la consulta no existe
@@ -86,13 +101,14 @@ public class ConsultationController {
         }
         return consultationService.getConsultationsByDate(consultationDate).stream().toList();
     }
-        
+       
+    
     /**
      * Valida los datos estructurales mínimos de la consulta
      * @param consultationDTO datos de la consulta a validar
      * @throws ValidationException si algún dato obligatorio es inválido
      */
-    public void validateBasicFields(ConsultationDTO consultationDTO) throws ValidationException {
+    private void validateBasicFields(ConsultationDTO consultationDTO) throws ValidationException {
         if (consultationDTO == null) {
             throw new ValidationException("Los datos de la consulta no pueden ser nulos");
         }

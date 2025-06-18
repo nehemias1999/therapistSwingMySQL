@@ -23,28 +23,44 @@ public class ConsultationPatientDAO {
         "is_paid " +
         ") VALUES (?, ?, ?)";
     
-    private static final String UPDATE_SQL =
+    private static final String DELETE_SQL =
         "UPDATE tbl_consultation_patient SET " +
-        "is_paid = ?, " +
+        "is_active = false " +
         "WHERE consultation_id = ? and patient_id = ?";
     
-    private static final String DELETE_SQL =
-        "UPDATE tbl_consultation_patient SET is_active = false WHERE consultation_id = ? and patient_id = ?";
-
-    private static final String SELECT_PATIENTS_BY_CONSULTATION_ID =
-            "SELECT * FROM tbl_patient p " +
-            "JOIN tbl_consultation_patient cp ON p.patient_id = cp.patient_id " +
-            "WHERE cp.consultation_id = ?";
+    private static final String UPDATE_PATIENT_IS_ACTIVE = 
+        "UPDATE tbl_consultation_patient SET " +
+        "is_active = true, is_paid = ? " +
+        "WHERE consultation_id = ? AND patient_id = ?";
     
-    private static final String SELECT_IS_PAID =
-            "SELECT cp.is_paid FROM tbl_consultation_patient cp " +
-            "WHERE consultation_id = ? and patient_id = ?";
-        
-    private static final String UPDATE_IS_PAID_TRUE =
+    private static final String SELECT_PATIENT_IS_ACTIVE = 
+        "SELECT COUNT(*) FROM tbl_consultation_patient " +
+        "WHERE consultation_id = ? AND patient_id = ? AND is_active = false";
+    
+    private static final String DELETE_ALL_PATIENTS_BY_CONSULTATION_ID =
+        "UPDATE tbl_consultation_patient SET " +
+        "is_active = false " +
+        "WHERE consultation_id = ?";
+    
+    private static final String DELETE_ALL_CONSULTATION_BY_PATIENT_ID = 
+        "UPDATE tbl_consultation_patient SET " +
+        "is_active = false " +
+        "WHERE patient_id = ?";    
+    
+    private static final String UPDATE_PATIENT_IS_PAID =
         "UPDATE tbl_consultation_patient SET " +
         "is_paid = true " +
         "WHERE consultation_id = ? and patient_id = ?";
+
+    private static final String SELECT_PATIENTS_BY_CONSULTATION_ID =
+        "SELECT * FROM tbl_patient p " +
+        "JOIN tbl_consultation_patient cp ON p.patient_id = cp.patient_id " +
+        "WHERE cp.consultation_id = ? AND cp.is_active = true";
     
+    private static final String SELECT_PATIENTS_ID_BY_CONSULTATION_ID =
+        "SELECT cp.patient_id FROM tbl_consultation_patient cp " +
+        "WHERE cp.consultation_id = ? AND cp.is_active = true";
+        
     private static final String UNIQUE_CONSULTATION_PATIENT_CONSTRAINT = "uk_consultation_time";
 
     /**
@@ -72,7 +88,7 @@ public class ConsultationPatientDAO {
     }
     
     /**
-     * Eliminar un paciente de una consulta existente en la base de datos (borrado logico)
+     * Elimina (logicamente) un paciente de una consulta existente en la base de datos
      * @param consultationId de la consulta a eliminar
      * @param patientId del paciente
      * @throws EntityNotFoundException Si no se encuentra la consulta
@@ -96,65 +112,108 @@ public class ConsultationPatientDAO {
     }
     
     /**
-     * Obtiene todos los pacientes de una consulta determinada
-     * @param consultationId Id de la consulta a buscar
-     * @return Lista de pacientes para la consulta especificada especificada
-     * @throws DataAccessException Si ocurre un error al acceder a la base de datos
+     * Modifica el estado (is_active = true) del paciente en la base de datos
+     * @param consultationId Identificador de la consulta
+     * @param patientId Identificador del paciente
+     * @param isPaid Booleano del estado del pago
+     * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public List<Patient> getPatientsByConsultationId(UUID consultationId) {
+    public void reactivateConsultationPatient(UUID consultationId, UUID patientId, boolean isPaid) {
         try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(SELECT_PATIENTS_BY_CONSULTATION_ID)) {
+             PreparedStatement ps = conn.prepareStatement(UPDATE_PATIENT_IS_ACTIVE)) {
 
-            ps.setString(1, consultationId.toString());
-            try (ResultSet rs = ps.executeQuery()) {
-                List<Patient> patients = new ArrayList<>();
-                while (rs.next()) {
-                    patients.add(mapResultSetToPatient(rs));
-                }
-                return patients;
-            }
+            ps.setBoolean(1, isPaid);
+            ps.setString(2, consultationId.toString());
+            ps.setString(3, patientId.toString());
+
+            ps.executeUpdate();
+
         } catch (SQLException e) {
-            throw new DataAccessException("Error obteniendo pacientes por consulta", e);
+            throw new DataAccessException("Error al reactivar paciente en consulta", e);
         }
     }
     
     /**
-     * Verifica si el estado del pago de la consulta es pago (is_paid = true) o no (is_paid = false)
+     * Verifica el estado del paciente en la base de datos
      * @param consultationId Identificador de la consulta
      * @param patientId Identificador del paciente
-     * @return Boolean indicando si el paciente pagó la consulta
-     * @throws EntityNotFoundException Si no se encuentra la fila correspondiente
-     * @throws DataAccessException Si ocurre un error al acceder a la base de datos
+     * @return Boolean del estado del paciente
+     * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public Boolean isConsultationPatientPaid(UUID consultationId, UUID patientId) {
+    public boolean existsInactiveConsultationPatient(UUID consultationId, UUID patientId) {
         try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(SELECT_IS_PAID)) {
+             PreparedStatement ps = conn.prepareStatement(SELECT_PATIENT_IS_ACTIVE)) {
 
             ps.setString(1, consultationId.toString());
             ps.setString(2, patientId.toString());
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getBoolean("is_paid");
-                } else {
-                    throw new EntityNotFoundException("consulta/paciente", consultationId + "/" + patientId);
+                    return rs.getInt(1) > 0;
                 }
             }
 
+            return false;
+
         } catch (SQLException e) {
-            throw new DataAccessException("Error al verificar si el paciente pagó la consulta", e);
+            throw new DataAccessException("Error al verificar paciente inactivo en consulta", e);
         }
     }
-
+    
     /**
-     * Modifica un tuple de la base de datos indicando que la consulta esta paga (is_paid = true)
-     * @param consultationId de la consulta a modificar
-     * @param patientId del paciente a modificar
-     * @throws DataAccessException Si ocurre un error al acceder a la base de datos
+     * Elimina (logicamente) todos los pacientes de una consulta existente en la base de datos
+     * @param consultationId de la consulta a eliminar
+     * @throws EntityNotFoundException Si no se encuentra la consulta
+     * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
      */
-    public void setConsultationPatientPaid(UUID consultationId, UUID patientId) {
+    public void deleteAllConsultationPatients(UUID consultationId) {
         try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(UPDATE_IS_PAID_TRUE)) {
+             PreparedStatement ps = conn.prepareStatement(DELETE_ALL_PATIENTS_BY_CONSULTATION_ID)) {
+
+            ps.setString(1, consultationId.toString());
+
+            int rows = ps.executeUpdate();
+            if (rows == 0) {
+                throw new EntityNotFoundException("consultation", consultationId.toString());
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Error al eliminar consulta", e);
+        }
+    }
+    
+    /**
+     * Elimina (logicamente) todas las consultas asociadas a un paciente determinado en la base de datos
+     * @param patientId del paciente
+     * @throws EntityNotFoundException Si no se encuentra la consulta
+     * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
+     */
+    public void deletePatientFromAllConsultation(UUID patientId) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(DELETE_ALL_CONSULTATION_BY_PATIENT_ID)) {
+
+            ps.setString(1, patientId.toString());
+
+            int rows = ps.executeUpdate();
+            if (rows == 0) {
+                throw new EntityNotFoundException("patient", patientId.toString());
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Error al eliminar consultas asociadas al paciente", e);
+        }
+    }
+    
+    /**
+     * Se modifica el estado del pago de la consulta existente en la base de datos
+     * @param consultationId de la consulta
+     * @param patientId del paciente
+     * @throws EntityNotFoundException Si no se encuentra la consulta
+     * @throws DataAccessException Si ocurre otro error al acceder a la base de datos
+     */
+    public void setConsultationPatientIsPaid(UUID consultationId, UUID patientId) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(UPDATE_PATIENT_IS_PAID)) {
 
             ps.setString(1, consultationId.toString());
             ps.setString(2, patientId.toString());
@@ -165,7 +224,53 @@ public class ConsultationPatientDAO {
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Error al actualizar estado de pago", e);
+            throw new DataAccessException("Error al eliminar consulta", e);
+        }
+    }
+    
+    /**
+     * Obtiene todos los pacientes de una consulta determinada
+     * @param consultationId Id de la consulta a buscar
+     * @return Lista objetos de ConsultationPatient para la consulta especificada
+     * @throws DataAccessException Si ocurre un error al acceder a la base de datos
+     */
+    public List<ConsultationPatient> getPatientsByConsultationId(UUID consultationId) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_PATIENTS_BY_CONSULTATION_ID)) {
+
+            ps.setString(1, consultationId.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                List<ConsultationPatient> consultationPatients = new ArrayList<>();
+                while (rs.next()) {
+                    consultationPatients.add(mapResultSetToConsultationPatient(rs));
+                }
+                return consultationPatients;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error obteniendo pacientes por consulta", e);
+        }
+    }
+    
+    /**
+     * Obtiene todos los Identificadores de los pacientes de una consulta determinada
+     * @param consultationId Id de la consulta a buscar
+     * @return Lista de los Identificadores de los pacientes para la consulta especificada 
+     * @throws DataAccessException Si ocurre un error al acceder a la base de datos
+     */
+    public List<UUID> getPatientsIdByConsultationId(UUID consultationId) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_PATIENTS_ID_BY_CONSULTATION_ID)) {
+
+            ps.setString(1, consultationId.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                List<UUID> patientsUUID = new ArrayList<>();
+                while (rs.next()) {
+                    patientsUUID.add(UUID.fromString(rs.getString("patient_id")));
+                }
+                return patientsUUID;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error obteniendo pacientes por consulta", e);
         }
     }
     

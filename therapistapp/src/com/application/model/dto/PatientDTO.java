@@ -23,9 +23,7 @@ public class PatientDTO {
     private String patientDTOAddressDepartment;
     // Manejar la imagen asociada al paciente
     private String patientDTOPhotoPath;
-    // Maneja el estado del pago de la consulta
-    private Boolean isPaid;
-    
+
     private static final String DEFAULT_PHOTO_PATH = "C:\\Users\\nsalazar\\Documents\\therapistapp\\appdata\\default_photo_user.jpg"; 
 
     public PatientDTO() {
@@ -60,7 +58,6 @@ public class PatientDTO {
         this.patientDTOAddressFloor = patientDTOAddressFloor;
         this.patientDTOAddressDepartment = patientDTOAddressDepartment;
         this.patientDTOPhotoPath = patientDTOPhotoPath;
-        this.isPaid = false;
     }
 
     public String getPatientDTOId() {
@@ -201,36 +198,9 @@ public class PatientDTO {
     public String getPatientDTOFormattedCompleteName() {
         return patientDTOLastName + ", " + patientDTOName;
     }
-    
-    public boolean isPaid() {
-        return isPaid;
-    }
-
-    public void setPaid(boolean isPaid) {
-        this.isPaid = isPaid;
-    } 
-    
+        
     @Override
     public String toString() {
         return patientDTOLastName + ", " + patientDTOName; 
     }
-    
-    public void imprimirPorConsola() {
-        System.out.println("ID: " + patientDTOId);
-        System.out.println("DNI: " + patientDTODNI);
-        System.out.println("Nombre: " + patientDTOName);
-        System.out.println("Apellido: " + patientDTOLastName);
-        System.out.println("Nacimiento: " + patientDTOBirthDate);
-        System.out.println("Ocupación: " + patientDTOOccupation);
-        System.out.println("Teléfono: " + patientDTOPhone);
-        System.out.println("Email: " + patientDTOEmail);
-        System.out.println("Ciudad ID: " + cityId);
-        System.out.println("Dirección: " + patientDTOAddress);
-        System.out.println("Número: " + patientDTOAddressNumber);
-        System.out.println("Piso: " + patientDTOAddressFloor);
-        System.out.println("Departamento: " + patientDTOAddressDepartment);
-        System.out.println("Foto: " + patientDTOPhotoPath);
-        System.out.println("¿Pagó?: " + isPaid);
-    }
-    
 }

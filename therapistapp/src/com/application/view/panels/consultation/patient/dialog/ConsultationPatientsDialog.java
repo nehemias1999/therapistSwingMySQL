@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
- */
 package com.application.view.panels.consultation.patient.dialog;
 
 import com.application.interfaces.IConsultationPatientsDialog;
@@ -28,12 +24,19 @@ public class ConsultationPatientsDialog extends javax.swing.JDialog {
         this.listener = listener;
         loadPatientsData();
         
-        jButtonAddPatients.setEnabled(false);
-        
+        if(comboBoxPatients.getSelectedItems().isEmpty()) {
+            jButtonAddPatients.setEnabled(false);
+        }
+                
         setLocationRelativeTo(null);
         
+        comboBoxPatients.addPropertyChangeListener("selectionChanged", evt -> {
+            boolean hasSelection = !comboBoxPatients.getSelectedItems().isEmpty();
+            jButtonAddPatients.setEnabled(hasSelection);
+        });
+         
     }
-    
+        
     /**  
      * Carga los datos de los objetos Paciente asociados con el objeto Consulta
      */
@@ -49,19 +52,18 @@ public class ConsultationPatientsDialog extends javax.swing.JDialog {
         
     }
     
-    public List<PatientDTO> getSelectedPatients() {
+    public List<String> getSelectedPatientsId() {
         return comboBoxPatients.getSelectedItems()
                 .stream()
-                .map(obj -> (PatientDTO) obj)
-                .toList(); 
+                .map(item -> ((PatientDTO) item).getPatientDTOId()) 
+                .toList();
     }
         
     /**  
      * Elige la accion a realizar por el objeto jButtonAddPatients
      */
     private void saveAction() {
-        listener.updateConsultationPatientsDTO(getSelectedPatients());
-        System.out.println(getSelectedPatients().toString());
+        listener.updateConsultationPatientsDTO(getSelectedPatientsId());
         operationSuccess = true;
         dispose(); 
     }
@@ -175,11 +177,6 @@ public class ConsultationPatientsDialog extends javax.swing.JDialog {
         comboBoxPatients.setMaximumSize(new java.awt.Dimension(400, 30));
         comboBoxPatients.setMinimumSize(new java.awt.Dimension(400, 30));
         comboBoxPatients.setPreferredSize(new java.awt.Dimension(400, 30));
-        comboBoxPatients.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comboBoxPatientsActionPerformed(evt);
-            }
-        });
 
         jButtonClean.setText("Limpiar");
         jButtonClean.setToolTipText("");
@@ -239,10 +236,6 @@ public class ConsultationPatientsDialog extends javax.swing.JDialog {
     private void jButtonCleanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCleanActionPerformed
         comboBoxPatients.clearSelectedItems();
     }//GEN-LAST:event_jButtonCleanActionPerformed
-
-    private void comboBoxPatientsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxPatientsActionPerformed
-        jButtonAddPatients.setEnabled(true);
-    }//GEN-LAST:event_comboBoxPatientsActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.application.utils.ComboBoxMultiSelection comboBoxPatients;

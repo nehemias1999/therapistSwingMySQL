@@ -89,15 +89,17 @@ public class ComboBoxMultiSelection<E> extends JComboBox<E> {
         setRenderer(new ComboBoxMultiCellRenderer());
         setEditor(comboBoxMultiCellEditor);
         setEditable(true);
-        addActionListener((e) -> {
-            if (e.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-                JComboBox combo = (JComboBox) e.getSource();
-                Object obj = combo.getSelectedItem();
+        addActionListener(e -> {
+            Object obj = getSelectedItem();
+            if (obj != null) {
                 if (selectedItems.contains(obj)) {
                     removeItemObject(obj);
                 } else {
                     addItemObject(obj);
                 }
+
+                // Notificar que cambió la selección (evento para la vista)
+                firePropertyChange("selectionChanged", null, selectedItems.size());
             }
         });
     }

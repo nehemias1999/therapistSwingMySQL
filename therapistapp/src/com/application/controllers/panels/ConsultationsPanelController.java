@@ -5,6 +5,7 @@ import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.CityDTO;
 import com.application.model.dto.ConsultationDTO;
+import com.application.model.dto.ConsultationPatientDTO;
 import com.application.model.dto.PatientDTO;
 import com.application.view.panels.consultation.ConsultationsPanel;
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class ConsultationsPanelController {
      */
     public void insertConsultationWithPatients(
             ConsultationDTO consultationDTO, 
-            List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
+            List<ConsultationPatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
         controllerRegistry.getConsultationController()
                 .insertConsultationWithPatients(consultationDTO, consultationPatientsDTO);
     }
@@ -51,35 +52,10 @@ public class ConsultationsPanelController {
      */
     public void updateConsultationWithPatients(
             ConsultationDTO consultationDTO, 
-            List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException {
+            List<ConsultationPatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException {
         controllerRegistry.getConsultationController()
                 .updateConsultationWithPatients(consultationDTO, consultationPatientsDTO);
     }
-//    
-//    /**
-//     * Verifica si el estado del pago de la consulta es pago o no
-//     * @param consultationId Identificador de la consulta
-//     * @param patientId Identificador del paciente
-//     * @return Boolean Si el estado es pago o no
-//     * @throws ValidationException Si los datos no son válidos o la consulta no existe
-//     * @throws BusinessException Si ocurre un error durante el proceso
-//     */
-//    public Boolean isConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException {
-//        return controllerRegistry.getConsultationPatientController()
-//                .isConsultationPatientPaid(consultationId, patientId);
-//    }
-//    
-//    /**
-//     * Modifica al paciente para que se setee la consulta en paga
-//     * @param consultationId Identificador de la consulta
-//     * @param patientId Identificador del paciente
-//     * @throws ValidationException Si los datos no son válidos o la consulta ya existe
-//     * @throws BusinessException Si ocurre un error durante el proceso
-//     */
-//    public void setConsultationPatientPaid(String consultationId, String patientId) throws ValidationException, BusinessException {
-//        controllerRegistry.getConsultationPatientController()
-//                .setConsultationPatientPaid(consultationId, patientId);
-//    }
     
     /**
      * Elimina una consulta existente en el sistema
@@ -91,6 +67,8 @@ public class ConsultationsPanelController {
         } catch (ValidationException e) {
             consultationsForm.showErrorMessage("Validación: " + e.getMessage());
         } catch (BusinessException e) {
+            consultationsForm.showErrorMessage("Error: " + e.getMessage());
+        } catch (IOException e) {
             consultationsForm.showErrorMessage("Error: " + e.getMessage());
         }
     }
@@ -147,10 +125,10 @@ public class ConsultationsPanelController {
      * @param consultationId Identificador de la consulta
      * @return lista de DTO's de los pacientes asociados a la consulta
      */
-    public List<PatientDTO> getPatientsByConsultationId(String consultationId) {
+    public List<ConsultationPatientDTO> getPatientsByConsultationId(String consultationId) {
         try {
             return controllerRegistry.getPatientController()
-                    .getPatientsByConsultationId(consultationId);
+                .getPatientsByConsultationId(consultationId);
         } catch (ValidationException e) {
             consultationsForm.showErrorMessage("Validación: " + e.getMessage());
             return List.of();
@@ -171,6 +149,20 @@ public class ConsultationsPanelController {
         } catch (ValidationException | BusinessException e) {
             consultationsForm.showErrorMessage(e.getMessage());
             return null;
+        }
+    } 
+    
+    /**
+     * Abre las notas asociadas a la consulta
+     * @param consultationId Identificador de la consulta
+     */
+    public void openConsultationNotesById(String consultationId) {
+        try {
+            controllerRegistry.getConsultationController().openConsultationNotesById(consultationId);
+        } catch (ValidationException | BusinessException e) {
+            consultationsForm.showErrorMessage(e.getMessage());
+        } catch (IOException ex) {
+            consultationsForm.showErrorMessage(ex.getMessage());
         }
     } 
     

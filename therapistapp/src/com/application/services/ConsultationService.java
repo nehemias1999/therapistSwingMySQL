@@ -34,7 +34,7 @@ public class ConsultationService {
     }
     
     /**
-     * Inserta una nueva consulta en el sistema
+     * Inserta una nueva consulta y los pacientes asociados en el sistema
      * @param consultationDTO Datos de la consulta a insertar
      * @param consultationPatientsDTO Lista de pacientes
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
@@ -43,19 +43,15 @@ public class ConsultationService {
      */
     public void insertConsultationWithPatients(
             ConsultationDTO consultationDTO, 
-            List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
+            List<ConsultationPatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException, IOException {
         try {
             
             validateConsultationData(consultationDTO);
             Consultation consultation = createConsultationFromConsultationDTO(consultationDTO);
             consultationDAO.insertConsultation(consultation);
             
-            for(PatientDTO patientDTO: consultationPatientsDTO) {
-                ConsultationPatient consultationPatient = new ConsultationPatient(
-                        consultation.getConsultationId(),
-                        UUID.fromString(patientDTO.getPatientDTOId()),
-                        patientDTO.isPaid()
-                );
+            for(ConsultationPatientDTO consultationPatientDTO: consultationPatientsDTO) {
+                ConsultationPatient consultationPatient = createConsultationPatientFromConsultationPatientDTO(consultationPatientDTO);
                 consultationPatientDAO.insertConsultationPatient(consultationPatient);
             }
             
@@ -70,23 +66,62 @@ public class ConsultationService {
     }
     
     /**
-     * Modifica una consulta existente en el sistema
+     * Modifica una consulta existente y los pacientes asociados en el sistema
      * @param consultationDTO Datos de la consulta a modificar
      * @param consultationPatientsDTO Lista de pacientes
      * @throws ValidationException Si los datos no son válidos o la consulta ya existe
      * @throws BusinessException Si ocurre un error durante el proceso
      */
     public void updateConsultationWithPatients(
-            ConsultationDTO consultationDTO, 
-            List<PatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException {
+            ConsultationDTO consultationDTO,
+            List<ConsultationPatientDTO> consultationPatientsDTO) throws ValidationException, BusinessException {
         try {
+            
             validateConsultationData(consultationDTO);
             Consultation consultation = createConsultationFromConsultationDTO(consultationDTO);
             consultationDAO.updateConsultation(consultation);
+            
+            UUID consultationId = consultation.getConsultationId();
+
+            // Pacientes activos actuales
+            List<UUID> existingPatientIds = consultationPatientDAO.getPatientsIdByConsultationId(consultationId);
+
+            // Pacientes recibidos en la nueva lista
+            List<UUID> newPatientIds = consultationPatientsDTO.stream()
+                    .map(cpdto -> UUID.fromString(cpdto.getPatientId()))
+                    .collect(Collectors.toList());
+
+            // 1. Insertar o reactivar pacientes nuevos
+            for (ConsultationPatientDTO cpdto : consultationPatientsDTO) {
+                UUID patientId = UUID.fromString(cpdto.getPatientId());
+
+                if (!existingPatientIds.contains(patientId)) {
+                    // Verificar si el paciente estaba borrado lógicamente
+                    if (consultationPatientDAO.existsInactiveConsultationPatient(consultationId, patientId)) {
+                        consultationPatientDAO.reactivateConsultationPatient(consultationId, patientId, Boolean.parseBoolean(cpdto.getIsPaid()));
+                    } else {
+                        ConsultationPatient cp = createConsultationPatientFromConsultationPatientDTO(cpdto);
+                        consultationPatientDAO.insertConsultationPatient(cp);
+                    }
+                } else {
+                    // Ya existe, pero puede haber cambiado el estado de pago
+                    if (Boolean.parseBoolean(cpdto.getIsPaid())) {
+                        consultationPatientDAO.setConsultationPatientIsPaid(consultationId, patientId);
+                    }
+                }
+            }
+
+            // 2. Eliminar pacientes que ya no están en la nueva lista
+            for (UUID existingId : existingPatientIds) {
+                if (!newPatientIds.contains(existingId)) {
+                    consultationPatientDAO.deleteConsultationPatient(consultationId, existingId);
+                }
+            }
+
         } catch (DataAccessException e) {
             throw new BusinessException("Error al guardar la consulta en el sistema", e);
         } catch (IllegalArgumentException e) {
-           throw new ValidationException("Formato de fecha inválido");
+            throw new ValidationException("Formato de fecha inválido");
         }
     }
     
@@ -95,10 +130,19 @@ public class ConsultationService {
      * @param consultationId de la consulta a eliminar
      * @throws ValidationException Si los datos no son válidos o la consulta no existe
      * @throws BusinessException Si ocurre un error durante el proceso
+     * @throws java.io.IOException
      */
-    public void deleteConsultation(String consultationId) throws ValidationException, BusinessException {
+    public void deleteConsultationWithPatients(String consultationId) throws ValidationException, BusinessException, IOException {
         try {
-            consultationDAO.deleteConsultation(UUID.fromString(consultationId));
+            
+            UUID consultationUUID = UUID.fromString(consultationId);
+            
+            consultationDAO.deleteConsultation(consultationUUID);
+            
+            consultationPatientDAO.deleteAllConsultationPatients(consultationUUID);
+            
+            fileManager.deleteConsultationFolder(consultationUUID);
+            
         } catch (EntityNotFoundException e) {
             throw new ValidationException("No existe consulta con Id '" + consultationId + "'");
         } catch (DataAccessException e) {
@@ -114,7 +158,11 @@ public class ConsultationService {
      */
     public ConsultationDTO getConsultationById(String consultationId) throws BusinessException {
         try {
-            return createConsultationDTOFromConsultation(consultationDAO.getConsultationById(UUID.fromString(consultationId)));
+            
+            Consultation consultation = consultationDAO.getConsultationById(UUID.fromString(consultationId));
+            
+            return createConsultationDTOFromConsultation(consultation);
+            
         } catch (DataAccessException e) {
             throw new BusinessException("Error al listar consultas", e);
         }
@@ -143,14 +191,34 @@ public class ConsultationService {
             throw new BusinessException("Error al listar consultas por fecha", e);
         }
     }
-       
+    
+    /**
+     * Abre las notas asociadas a una consulta
+     * @param consultationId Identificador de la consulta
+     * @throws ValidationException Si los datos no son válidos o la consulta no existe
+     * @throws BusinessException Si ocurre un error durante el proceso
+     * @throws java.io.IOException
+     */
+   public void openConsultationNotesById(String consultationId) throws ValidationException, BusinessException, IOException {
+        try {
+            
+            UUID consultationUUID = UUID.fromString(consultationId);
+            
+            fileManager.openConsultationNotesFile(consultationUUID);
+            
+        } catch (EntityNotFoundException e) {
+            throw new ValidationException("No existe consulta con Id '" + consultationId + "'");
+        } catch (DataAccessException e) {
+            throw new BusinessException("Error de base de datos al eliminar la consulta", e);
+        }
+    }
+   
     /**
      * Valida los datos de formato y de negocio de la consulta
      * @param consultationDTO datos de la consulta a validar
      * @throws ValidationException si algún dato obligatorio es inválido
      */
     private void validateConsultationData(ConsultationDTO consultationDTO) throws ValidationException {
-
         LocalDate consultationDate;
         LocalTime consultationStartTime;
         LocalTime consultationEndTime;
@@ -167,7 +235,7 @@ public class ConsultationService {
         } catch (Exception e) {
             throw new ValidationException("El horario de inicio tiene un formato inválido. Debe ser HH:mm");
         }
-        
+
         try {
             consultationEndTime = LocalTime.parse(consultationDTO.getConsultationDTOEndTime());
         } catch (Exception e) {
@@ -184,7 +252,6 @@ public class ConsultationService {
             throw new ValidationException("El estado de la consulta no es válido");
         }
 
-        // Validar monto
         try {
             consultationAmount = Double.parseDouble(consultationDTO.getConsultationDTOAmount());
         } catch (NumberFormatException e) {
@@ -195,8 +262,22 @@ public class ConsultationService {
             throw new ValidationException("El monto de la consulta debe ser mayor a cero");
         }
 
-        if (consultationDAO.isConsultationStartDatetimeExists(consultationDate, consultationStartTime)) {
-            throw new ValidationException("Ya existe una consulta en la fecha y hora indicada: " + consultationDate);
+        // Validar duplicidad de fecha y hora de inicio (ignorando la propia consulta si es update)
+        UUID currentId = Optional.ofNullable(consultationDTO.getConsultationDTOId())
+                                 .filter(s -> !s.isBlank())
+                                 .map(UUID::fromString)
+                                 .orElse(null);
+
+        if (currentId != null) {
+            // Validar para update, excluyendo la misma consulta
+            if (consultationDAO.isConsultationStartDatetimeExists(consultationDate, consultationStartTime, currentId)) {
+                throw new ValidationException("Ya existe una consulta en la fecha y hora indicada: " + consultationDate);
+            }
+        } else {
+            // Validar para insert
+            if (consultationDAO.isConsultationStartDatetimeExists(consultationDate, consultationStartTime)) {
+                throw new ValidationException("Ya existe una consulta en la fecha y hora indicada: " + consultationDate);
+            }
         }
     }
     
@@ -234,7 +315,7 @@ public class ConsultationService {
         return dto;
     }
     
-        /**
+    /**
      * Crea un objeto ConsultationPatient a partir de un ConsultationPatientDTO
      */
     private ConsultationPatient createConsultationPatientFromConsultationPatientDTO(ConsultationPatientDTO dto) {

@@ -7,7 +7,9 @@ import com.application.exceptions.runtimeExceptions.dataAccessException.DataAcce
 import com.application.exceptions.runtimeExceptions.dataAccessException.EntityNotFoundException;
 import com.application.model.dao.ConsultationPatientDAO;
 import com.application.model.dao.PatientDAO;
+import com.application.model.dto.ConsultationPatientDTO;
 import com.application.model.dto.PatientDTO;
+import com.application.model.entities.ConsultationPatient;
 import com.application.model.entities.Patient;
 import com.application.utils.PatientsFilesManager;
 import java.io.IOException;
@@ -105,7 +107,9 @@ public class PatientService {
      */
     public void deletePatient(String patientId) throws ValidationException, BusinessException {
         try {
-            patientDAO.deletePatient(UUID.fromString(patientId));
+            UUID patientUUID = UUID.fromString(patientId);
+            patientDAO.deletePatient(patientUUID);
+            consultationPatientDAO.deletePatientFromAllConsultation(patientUUID);
         } catch (EntityNotFoundException e) {
             throw new ValidationException("No existe paciente con Id '" + patientId + "'");
         } catch (DataAccessException e) {
@@ -137,11 +141,11 @@ public class PatientService {
      * @return Lista de PatientDTO
      * @throws BusinessException Si ocurre un error al acceder a los datos
      */
-    public List<PatientDTO> getPatientsByConsultationId(String consultationId) throws BusinessException {
+    public List<ConsultationPatientDTO> getPatientsByConsultationId(String consultationId) throws BusinessException {
         try {
             UUID cId = UUID.fromString(consultationId);
             return consultationPatientDAO.getPatientsByConsultationId(cId)
-                .stream().map(this::createPatientDTOFromPatient)
+                .stream().map(this::createConsultationPatientDTOFromConsultationPatient)
                 .collect(Collectors.toList());
         } catch (IllegalArgumentException e) {
             throw new BusinessException("Id de consulta mal formado", e);
@@ -275,7 +279,29 @@ public class PatientService {
         } catch (IOException e) {
             dto.setPatientDTOPhotoPath("");
         }
-        dto.setPaid(false);
+        return dto;
+    }
+    
+    /**
+     * Crea un objeto ConsultationPatient a partir de un ConsultationPatientDTO
+     */
+    private ConsultationPatient createConsultationPatientFromConsultationPatientDTO(ConsultationPatientDTO dto) {
+        return new ConsultationPatient(
+            UUID.fromString(dto.getConsultationId()),
+            UUID.fromString(dto.getPatientId()),
+            Boolean.valueOf(dto.getIsPaid())
+        );
+    }
+    
+    /**
+     * Crea un objeto ConsultationPatientDTO a partir de un ConsultationPatient
+     */
+    private ConsultationPatientDTO createConsultationPatientDTOFromConsultationPatient(ConsultationPatient cp) {
+        ConsultationPatientDTO dto = new ConsultationPatientDTO();
+        dto.setConsultationId(cp.getConsultationId().toString());
+        dto.setPatientId(cp.getPatientId().toString());
+        dto.setIsPaid(cp.getIsPaid().toString());
+        
         return dto;
     }
     

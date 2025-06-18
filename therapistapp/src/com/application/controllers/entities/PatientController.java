@@ -2,11 +2,14 @@ package com.application.controllers.entities;
 
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
+import com.application.model.dto.ConsultationPatientDTO;
 import com.application.model.dto.PatientDTO;
+import com.application.model.entities.ConsultationPatient;
 import com.application.services.PatientService;
 import java.io.IOException;
 
 import java.util.List;
+import java.util.UUID;
 
 public class PatientController {
     private final PatientService patientService;
@@ -82,12 +85,12 @@ public class PatientController {
      * @throws ValidationException Si los datos no son válidos o la consulta no existe
      * @throws BusinessException Si ocurre un error durante el proceso
      */
-    public List<PatientDTO> getPatientsByConsultationId(String consultationId) throws ValidationException, BusinessException {
+    public List<ConsultationPatientDTO> getPatientsByConsultationId(String consultationId) throws ValidationException, BusinessException {
         if (consultationId == null || consultationId.trim().isEmpty()) {
             throw new ValidationException("El Identificador de la consulta es requerido");
         }
         
-        List<PatientDTO> consultationPatientsDTO = patientService.getPatientsByConsultationId(consultationId);
+        List<ConsultationPatientDTO> consultationPatientsDTO = patientService.getPatientsByConsultationId(consultationId);
         
         return consultationPatientsDTO;
     }

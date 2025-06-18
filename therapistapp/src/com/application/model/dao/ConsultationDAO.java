@@ -38,17 +38,25 @@ public class ConsultationDAO {
         "WHERE consultation_id = ?";
     
     private static final String DELETE_SQL =
-        "UPDATE tbl_consultation SET is_active = false WHERE consultation_id = ?";
+        "UPDATE tbl_consultation SET " +
+        "is_active = false " +
+        "WHERE consultation_id = ?";
 
     private static final String SELECT_CONSULTATION_BY_ID =
-        "SELECT * FROM tbl_consultation WHERE consultation_id = ? and is_active = true";
+        "SELECT * FROM tbl_consultation " +
+        "WHERE consultation_id = ? and is_active = true";
         
     private static final String SELECT_CONSULTATION_BY_DATE =
-        "SELECT * FROM tbl_consultation WHERE consultation_date = ? and is_active = true ORDER BY consultation_start_time";
-    
-    private static final String CHECK_START_DATETIME_SQL =
+        "SELECT * FROM tbl_consultation " +
+        "WHERE consultation_date = ? and is_active = true ORDER BY consultation_start_time";
+
+    private static final String CHECK_START_DATETIME_INSERT_CONSULTATION =
         "SELECT COUNT(*) FROM tbl_consultation " +
         "WHERE consultation_date = ? AND consultation_start_time = ?";
+    
+    private static final String CHECK_START_DATETIME_UPDATE_CONSULTATION =
+        "SELECT COUNT(*) FROM tbl_consultation " +
+        "WHERE consultation_date = ? AND consultation_start_time = ? AND consultation_id <> ? AND is_active = true";
     
     private static final String UNIQUE_CONSULTATION_TIME_CONSTRAINT = "uk_consultation_time";
 
@@ -184,7 +192,7 @@ public class ConsultationDAO {
             throw new DataAccessException("Error al obtener consultas por fecha", e);
         }
     }
-        
+     
     /**
      * Verifica si existe una consulta con la fecha/hora de inicio indicada
      * @param consultationDate Fecha de la consulta
@@ -192,12 +200,43 @@ public class ConsultationDAO {
      * @return true si ya existe, false en caso contrario
      * @throws DataAccessException Si ocurre un error al acceder a la base de datos
      */
-    public boolean isConsultationStartDatetimeExists(LocalDate consultationDate, LocalTime consultationStartTime) {
+    public boolean isConsultationStartDatetimeExists(
+            LocalDate consultationDate, 
+            LocalTime consultationStartTime) {
         try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(CHECK_START_DATETIME_SQL)) {
+             PreparedStatement ps = conn.prepareStatement(CHECK_START_DATETIME_INSERT_CONSULTATION)) {
 
-            ps.setDate(1, Date.valueOf(consultationDate));          // Correcto para LocalDate → java.sql.Date
-            ps.setTime(2, Time.valueOf(consultationStartTime));     // Correcto para LocalTime → java.sql.Time
+            ps.setDate(1, Date.valueOf(consultationDate));       
+            ps.setTime(2, Time.valueOf(consultationStartTime));    
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+
+        } catch (SQLException e) {
+            String message = String.format("Error al verificar existencia de consulta en %s %s", consultationDate, consultationStartTime);
+            throw new DataAccessException(message, e);
+        }
+    }
+    
+    /**
+     * Verifica si existe una consulta con la fecha/hora de inicio indicada y que no sea el IDentificador de la consulta
+     * @param consultationDate Fecha de la consulta
+     * @param consultationStartTime horario de inicio de la consulta
+     * @param consultationId Identificador de la consulta
+     * @return true si ya existe, false en caso contrario
+     * @throws DataAccessException Si ocurre un error al acceder a la base de datos
+     */
+    public boolean isConsultationStartDatetimeExists(
+            LocalDate consultationDate, 
+            LocalTime consultationStartTime,
+            UUID consultationId) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(CHECK_START_DATETIME_UPDATE_CONSULTATION)) {
+
+            ps.setDate(1, Date.valueOf(consultationDate));       
+            ps.setTime(2, Time.valueOf(consultationStartTime));    
+            ps.setString(3, consultationId.toString());
 
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() && rs.getInt(1) > 0;
@@ -209,7 +248,6 @@ public class ConsultationDAO {
         }
     }
 
-    
     /**
      * Mapea un ResultSet a un objeto Consultation
      */

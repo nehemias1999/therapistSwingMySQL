@@ -7,6 +7,6 @@ public interface IConsultationPatientsDialog {
     
     List<PatientDTO> getAllPatients();
     
-    void updateConsultationPatientsDTO(List<PatientDTO> newConsultationPatientsDTO);
+    void updateConsultationPatientsDTO(List<String> patientsId);
     
 }
