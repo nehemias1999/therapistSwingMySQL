@@ -85,15 +85,26 @@ public class PatientsPanel extends javax.swing.JPanel implements IPanelMessages,
     }
 
     public void loadTableData() {
+        
         tableModel = (DefaultTableModel) jTableMain.getModel();
+        
         if (jTableMain.isEditing()) jTableMain.getCellEditor().stopCellEditing();
+        
         tableModel.setRowCount(0);
 
         try {
+            
             List<PatientDTO> patientsDTO = patientsPanelController.getAllPatients();
+            
             for (PatientDTO patientDTO : patientsDTO) {
-                tableModel.addRow(new Object[]{patientDTO, patientDTO.getPatientDTOId()});
+                tableModel.addRow(
+                        new Object[]{
+                            patientDTO, 
+                            patientDTO.getPatientDTOId()
+                        }
+                );
             }
+            
         } catch (Exception ex) {
             showErrorMessage("Error al cargar los pacientes: " + ex.getMessage());
         }

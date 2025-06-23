@@ -6,9 +6,10 @@
             <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/view/panels/consultation/dialog/ConsultationDialog.java</file>
             <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/controllers/entities/ConsultationController.java</file>
             <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/view/panels/consultation/ConsultationsPanel.java</file>
+            <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/Test.java</file>
             <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/controllers/panels/ConsultationsPanelController.java</file>
-            <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/view/panels/consultation/patient/dialog/ConsultationPatientsDialog.java</file>
             <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/services/ConsultationService.java</file>
+            <file>file:/C:/Users/nsalazar/Documents/java/therapistSwingMySQL/therapistapp/src/com/application/model/dao/ConsultationDAO.java</file>
         </group>
     </open-files>
 </project-private>

@@ -53,7 +53,7 @@
     <Component class="javax.swing.JButton" name="jButtonVisualize">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/com/application/view/resources/png/view.png"/>
+          <Image iconType="3" name="/com/application/view/resources/png/ojo_1.png"/>
         </Property>
       </Properties>
     </Component>

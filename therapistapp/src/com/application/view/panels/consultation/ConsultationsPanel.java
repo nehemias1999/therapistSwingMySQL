@@ -119,7 +119,8 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
         }
 
         for (ConsultationDTO consultationDTO : consultationsDTO) {
-            List<ConsultationPatientDTO> patientsDTO = consultationsPanelController.getPatientsByConsultationId(consultationDTO.getConsultationDTOId());
+            List<ConsultationPatientDTO> patientsDTO = consultationsPanelController
+                    .getPatientsByConsultationId(consultationDTO.getConsultationDTOId());
 
             if (patientsDTO.isEmpty()) continue;
 

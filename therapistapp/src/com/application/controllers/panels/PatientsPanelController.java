@@ -1,8 +1,6 @@
 package com.application.controllers.panels;
 
-import com.application.controllers.entities.CityController;
 import com.application.controllers.entities.ControllerRegistry;
-import com.application.controllers.entities.PatientController;
 import com.application.exceptions.businessException.BusinessException;
 import com.application.exceptions.businessException.ValidationException;
 import com.application.model.dto.CityDTO;

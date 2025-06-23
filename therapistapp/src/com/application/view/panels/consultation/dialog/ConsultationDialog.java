@@ -254,7 +254,7 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
             
         }
     }
-    
+
     /**  
      * Crea un objeto ConsultationDTO con los datos cargados en el formulario  
      * @return ConsultationDTO 
@@ -269,7 +269,7 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
                 ConsultationStatus.SCHEDULED.toString()
         );
     }
-        
+            
     /**  
      * Elige la accion a realizar por el objeto jButtonAdd
      */
@@ -277,7 +277,7 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
         try {
             
             if(!consultationPatientsDTO.isEmpty()) {
-            
+
                 if (viewType == ViewType.INSERT) {
                     listener.insertConsultationWithPatients(getConsultationDTO(), consultationPatientsDTO);
                 } 

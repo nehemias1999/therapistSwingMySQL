@@ -64,11 +64,7 @@ public class ConsultationsPanelController {
     public void deleteConsultation(String consultationId) {
         try {
             controllerRegistry.getConsultationController().deleteConsultation(consultationId);
-        } catch (ValidationException e) {
-            consultationsForm.showErrorMessage("Validación: " + e.getMessage());
-        } catch (BusinessException e) {
-            consultationsForm.showErrorMessage("Error: " + e.getMessage());
-        } catch (IOException e) {
+        } catch (ValidationException | BusinessException | IOException e) {
             consultationsForm.showErrorMessage("Error: " + e.getMessage());
         }
     }
@@ -159,10 +155,8 @@ public class ConsultationsPanelController {
     public void openConsultationNotesById(String consultationId) {
         try {
             controllerRegistry.getConsultationController().openConsultationNotesById(consultationId);
-        } catch (ValidationException | BusinessException e) {
+        } catch (ValidationException | BusinessException | IOException e) {
             consultationsForm.showErrorMessage(e.getMessage());
-        } catch (IOException ex) {
-            consultationsForm.showErrorMessage(ex.getMessage());
         }
     } 
     

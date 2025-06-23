@@ -235,6 +235,7 @@ public class ConsultationPatientsDialog extends javax.swing.JDialog {
 
     private void jButtonCleanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCleanActionPerformed
         comboBoxPatients.clearSelectedItems();
+        jButtonAddPatients.setEnabled(false);
     }//GEN-LAST:event_jButtonCleanActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

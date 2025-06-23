@@ -1,6 +1,7 @@
 package com.application;
 
 import com.application.utils.ApplicationFilesManager;
+import com.application.utils.DataBaseManager;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
@@ -20,10 +21,10 @@ public class Application extends javax.swing.JFrame {
     private final MainForm mainForm;
 
     public Application() {
+       
         try {
             new ApplicationFilesManager().ensureBaseFolders();
         } catch (IOException ex) {
-            ex.printStackTrace();
             JOptionPane.showMessageDialog(
                 this,
                 "Error al crear carpetas de datos:\n" + ex.getMessage(),
@@ -31,6 +32,10 @@ public class Application extends javax.swing.JFrame {
                 JOptionPane.ERROR_MESSAGE
             );
         }
+        
+        if (!DataBaseManager.verifyDatabaseStructure()) {
+            DataBaseManager.initializeDatabase();
+        } 
         
         initComponents();
         setExtendedState(JFrame.MAXIMIZED_BOTH);

@@ -18,9 +18,9 @@ public class ApplicationFilesManager {
      */
     public ApplicationFilesManager() {
         String userHome = System.getProperty("user.home");
-        this.baseDir     = Paths.get(userHome, "Documents", "therapistapp");
+        this.baseDir = Paths.get(userHome, "Documents", "therapistapp");
         this.patientsDir = baseDir.resolve("patients");
-        this.appDataDir  = baseDir.resolve("appdata");
+        this.appDataDir = baseDir.resolve("appdata");
     }
 
     /** Crea todas las carpetas base si no existen. */

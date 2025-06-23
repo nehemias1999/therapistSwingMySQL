@@ -8,7 +8,6 @@ import com.application.model.dao.ConsultationDAO;
 import com.application.model.dao.ConsultationPatientDAO;
 import com.application.model.dto.ConsultationDTO;
 import com.application.model.dto.ConsultationPatientDTO;
-import com.application.model.dto.PatientDTO;
 import com.application.model.entities.Consultation;
 import com.application.model.entities.ConsultationPatient;
 import com.application.model.enumerations.ConsultationStatus;
@@ -50,7 +49,10 @@ public class ConsultationService {
             Consultation consultation = createConsultationFromConsultationDTO(consultationDTO);
             consultationDAO.insertConsultation(consultation);
             
+            String consultationId = consultation.getConsultationId().toString();
             for(ConsultationPatientDTO consultationPatientDTO: consultationPatientsDTO) {
+                consultationPatientDTO.setConsultationId(consultationId);
+                validateConsultationPatientData(consultationPatientDTO);
                 ConsultationPatient consultationPatient = createConsultationPatientFromConsultationPatientDTO(consultationPatientDTO);
                 consultationPatientDAO.insertConsultationPatient(consultationPatient);
             }
@@ -59,9 +61,9 @@ public class ConsultationService {
             fileManager.createNotesFile(consultation.getConsultationId());
 
         } catch (DataAccessException e) {
-            throw new BusinessException("Error al guardar la consulta en el sistema", e);
+            throw new BusinessException("Error al guardar la consulta en el sistema", e);  
         } catch (IllegalArgumentException e) {
-           throw new ValidationException("Formato de fecha inválido");
+           throw new ValidationException("Error de validacion", e);
         }
     }
     
@@ -121,7 +123,7 @@ public class ConsultationService {
         } catch (DataAccessException e) {
             throw new BusinessException("Error al guardar la consulta en el sistema", e);
         } catch (IllegalArgumentException e) {
-            throw new ValidationException("Formato de fecha inválido");
+            throw new ValidationException("Formato de fecha inválido", e);
         }
     }
     
@@ -225,19 +227,19 @@ public class ConsultationService {
         double consultationAmount;
 
         try {
-            consultationDate = LocalDate.parse(consultationDTO.getConsultationDTODate());
+            consultationDate = LocalDate.parse(consultationDTO.getConsultationDTODate().trim());
         } catch (Exception e) {
             throw new ValidationException("La fecha tiene un formato inválido. Debe ser yyyy-MM-dd");
         }
 
         try {
-            consultationStartTime = LocalTime.parse(consultationDTO.getConsultationDTOStartTime());
+            consultationStartTime = LocalTime.parse(consultationDTO.getConsultationDTOStartTime().trim());
         } catch (Exception e) {
             throw new ValidationException("El horario de inicio tiene un formato inválido. Debe ser HH:mm");
         }
 
         try {
-            consultationEndTime = LocalTime.parse(consultationDTO.getConsultationDTOEndTime());
+            consultationEndTime = LocalTime.parse(consultationDTO.getConsultationDTOEndTime().trim());
         } catch (Exception e) {
             throw new ValidationException("El horario de fin tiene un formato inválido. Debe ser HH:mm");
         }
@@ -247,13 +249,13 @@ public class ConsultationService {
         }
 
         try {
-            ConsultationStatus.valueOf(consultationDTO.getConsultationDTOStatus());
+            ConsultationStatus.valueOf(consultationDTO.getConsultationDTOStatus().trim());
         } catch (IllegalArgumentException | NullPointerException e) {
             throw new ValidationException("El estado de la consulta no es válido");
         }
 
         try {
-            consultationAmount = Double.parseDouble(consultationDTO.getConsultationDTOAmount());
+            consultationAmount = Double.parseDouble(consultationDTO.getConsultationDTOAmount().trim());
         } catch (NumberFormatException e) {
             throw new ValidationException("El monto debe ser un número válido");
         }
@@ -263,7 +265,7 @@ public class ConsultationService {
         }
 
         // Validar duplicidad de fecha y hora de inicio (ignorando la propia consulta si es update)
-        UUID currentId = Optional.ofNullable(consultationDTO.getConsultationDTOId())
+        UUID currentId = Optional.ofNullable(consultationDTO.getConsultationDTOId().trim())
                                  .filter(s -> !s.isBlank())
                                  .map(UUID::fromString)
                                  .orElse(null);
@@ -279,6 +281,36 @@ public class ConsultationService {
                 throw new ValidationException("Ya existe una consulta en la fecha y hora indicada: " + consultationDate);
             }
         }
+    }
+    
+    /**
+     * Valida los datos de formato y de negocio de los pacientes de una consulta
+     * @param consultationPatientDTO datos del paciente a validar
+     * @throws ValidationException si algún dato obligatorio es inválido
+     */
+    private void validateConsultationPatientData(ConsultationPatientDTO consultationPatientDTO) throws ValidationException {
+        UUID consultationId;
+        UUID patientId;
+        Boolean consultationPatientIsPaid;
+
+        try {
+            consultationId = UUID.fromString(consultationPatientDTO.getConsultationId().trim());
+        } catch (Exception e) {
+            throw new ValidationException("El identificador de la consulta es invalido");
+        }
+
+        try {
+            patientId = UUID.fromString(consultationPatientDTO.getPatientId().trim());
+        } catch (Exception e) {
+            throw new ValidationException("El identificador del paciente es invalido");
+        }
+
+        try {
+            consultationPatientIsPaid = Boolean.valueOf(consultationPatientDTO.getIsPaid().trim());
+        } catch (Exception e) {
+            throw new ValidationException("El Valor del estado del pago de la consulta es invalido");
+        }
+
     }
     
     /**
