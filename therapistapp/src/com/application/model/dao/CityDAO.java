@@ -4,15 +4,13 @@ import com.application.model.entities.City;
 import com.application.exceptions.runtimeExceptions.dataAccessException.ConstraintViolationException;
 import com.application.exceptions.runtimeExceptions.dataAccessException.DataAccessException;
 import com.application.exceptions.runtimeExceptions.dataAccessException.EntityNotFoundException;
+import com.application.utils.DataBaseConnection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class CityDAO {
-    private static final String URL = "jdbc:mysql://localhost:3306/therapist_db?useSSL=false&serverTimezone=UTC";
-    private static final String USER = "root";
-    private static final String PASSWORD = "root";
 
     private static final String SELECT_ALL_CITY =
         "SELECT city_id, city_name, city_zip_code FROM tbl_city ORDER BY city_name";
@@ -218,7 +216,7 @@ public class CityDAO {
      */
     private Connection getConnection() {
         try {
-            return DriverManager.getConnection(URL, USER, PASSWORD);
+            return DataBaseConnection.getConnection();
         } catch (SQLException e) {
             throw new DataAccessException("Error al conectar con la base de datos", e);
         }

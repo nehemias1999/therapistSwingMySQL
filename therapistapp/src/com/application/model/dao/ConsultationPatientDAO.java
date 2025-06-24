@@ -5,6 +5,7 @@ import com.application.exceptions.runtimeExceptions.dataAccessException.DataAcce
 import com.application.exceptions.runtimeExceptions.dataAccessException.EntityNotFoundException;
 import com.application.model.entities.ConsultationPatient;
 import com.application.model.entities.Patient;
+import com.application.utils.DataBaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,9 +13,6 @@ import java.util.List;
 import java.util.UUID;
 
 public class ConsultationPatientDAO {
-    private static final String URL = "jdbc:mysql://localhost:3306/therapist_db?useSSL=false&serverTimezone=UTC";
-    private static final String USER = "root";
-    private static final String PASSWORD = "root";
     
     private static final String INSERT_SQL =
         "INSERT INTO tbl_consultation_patient ( " +
@@ -312,7 +310,7 @@ public class ConsultationPatientDAO {
      */
     private Connection getConnection() {
         try {
-            return DriverManager.getConnection(URL, USER, PASSWORD);
+            return DataBaseConnection.getConnection();
         } catch (SQLException e) {
             throw new DataAccessException("Error al conectar con la base de datos", e);
         }

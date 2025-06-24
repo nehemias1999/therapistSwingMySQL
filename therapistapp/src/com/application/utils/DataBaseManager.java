@@ -1,5 +1,6 @@
 package com.application.utils;
 
+import com.application.exceptions.runtimeExceptions.dataAccessException.DataAccessException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,13 +10,13 @@ import java.util.stream.Collectors;
 
 public class DataBaseManager {
 
-    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/?allowMultiQueries=true";
-    private static final String USER = "root";
-    private static final String PASSWORD = "root";
     private static final String DDL_FILE_PATH = "/com/application/resources/db/therapist_db_struct.sql"; 
 
+    /**
+     * Ejecuta el script de creación de base de datos y estructura desde el archivo SQL
+     */
     public static void initializeDatabase() {
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
+        try (Connection conn = DataBaseConnection.getConnectionWithoutSchema();
              Statement stmt = conn.createStatement()) {
 
             String sql = readSqlFileFromResources(DDL_FILE_PATH);
@@ -26,6 +27,9 @@ public class DataBaseManager {
         }
     }
     
+    /**
+     * Lee el archivo SQL como texto desde el classpath
+     */
     private static String readSqlFileFromResources(String path) throws IOException {
         InputStream inputStream = DataBaseManager.class.getResourceAsStream(path);
         if (inputStream == null) {
@@ -37,8 +41,12 @@ public class DataBaseManager {
         }
     }
     
+    /**
+     * Verifica si la base de datos principal existe
+     * @return Boolean
+     */
     public static boolean verifyDatabaseStructure() {
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, USER, PASSWORD)) {
+        try (Connection conn = DataBaseConnection.getConnectionWithoutSchema()) {
             ResultSet rs = conn.getMetaData().getCatalogs();
             while (rs.next()) {
                 String dbName = rs.getString(1);
@@ -52,9 +60,20 @@ public class DataBaseManager {
         return false;
     }
     
-    private static boolean tableExists(DatabaseMetaData metaData, String dbName, String tableName) throws SQLException {
-        try (ResultSet rs = metaData.getTables(dbName, null, tableName, new String[]{"TABLE"})) {
-            return rs.next(); 
+    /**
+     * Verifica si una tabla existe dentro de la base de datos
+     * @param tableName
+     * @return Boolean
+     */
+    public static boolean tableExists(String tableName) {
+        try (Connection conn = DataBaseConnection.getConnection()) {
+            DatabaseMetaData metaData = conn.getMetaData();
+            try (ResultSet rs = metaData.getTables("therapist_db", null, tableName, new String[]{"TABLE"})) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al verificar existencia de tabla: " + e.getMessage());
+            return false;
         }
     }
 }

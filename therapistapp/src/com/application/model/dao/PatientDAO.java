@@ -15,11 +15,9 @@ import com.application.exceptions.runtimeExceptions.dataAccessException.Constrai
 import com.application.exceptions.runtimeExceptions.dataAccessException.DataAccessException;
 import com.application.exceptions.runtimeExceptions.dataAccessException.EntityNotFoundException;
 import com.application.model.entities.Patient;
+import com.application.utils.DataBaseConnection;
 
 public class PatientDAO {
-    private static final String URL = "jdbc:mysql://localhost:3306/therapist_db?useSSL=false&serverTimezone=UTC";
-    private static final String USER = "root";
-    private static final String PASSWORD = "root";
     
     private static final String SELECT_ALL =
         "SELECT * FROM tbl_patient " +
@@ -335,7 +333,7 @@ public class PatientDAO {
      */
     private Connection getConnection() {
         try {
-            return DriverManager.getConnection(URL, USER, PASSWORD);
+            return DataBaseConnection.getConnection();
         } catch (SQLException e) {
             throw new DataAccessException("Error al conectar con la base de datos", e);
         }
