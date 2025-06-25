@@ -174,7 +174,7 @@ public class ConsultationsPanel extends javax.swing.JPanel implements IPanelMess
     
     public void callDialogToDeleteConsultation(String consultationId) {
         try {
-            Boolean deleted = showConfirmAction("¿Está seguro de eliminar este paciente?");
+            Boolean deleted = showConfirmAction("¿Está seguro de eliminar esta consulta?");
             if (deleted) {
                 consultationsPanelController.deleteConsultation(consultationId);
                 Toast.show(this, Toast.Type.SUCCESS, "Consulta eliminada exitosamente");

@@ -336,24 +336,37 @@ public class ConsultationDialog extends javax.swing.JDialog implements IPanelMes
     @Override
     public void updateConsultationPatientsDTO(List<String> patientsId) {
         List<ConsultationPatientDTO> newConsultationPatientsDTO = createConsultationPatients(patientsId);
-        
-        consultationPatientsDTO.addAll(newConsultationPatientsDTO);
-        
+
+        for (ConsultationPatientDTO newCP : newConsultationPatientsDTO) {
+            consultationPatientsDTO.removeIf(existingCP ->
+                existingCP.getPatientId().equals(newCP.getPatientId())
+            );
+            consultationPatientsDTO.add(newCP);
+        }
+
         initActionsData();
         loadConsultationPatientsData();
     }
     
+
     private List<ConsultationPatientDTO> createConsultationPatients(List<String> patientsId) {
-        List<ConsultationPatientDTO> consultationPatientsDTO = new ArrayList<>();
-        for(String patientId: patientsId) {
-            ConsultationPatientDTO cpdto = new ConsultationPatientDTO(
+        List<ConsultationPatientDTO> newList = new ArrayList<>();
+
+        for (String patientId : patientsId) {
+            // Evitar duplicados o pacientes ya existentes y activos
+            boolean alreadyExists = consultationPatientsDTO.stream()
+                .anyMatch(existing -> existing.getPatientId().equals(patientId));
+
+            if (!alreadyExists) {
+                newList.add(new ConsultationPatientDTO(
                     consultationId,
                     patientId,
                     Boolean.FALSE.toString()
-            );
-            consultationPatientsDTO.add(cpdto);
+                ));
+            }
         }
-        return consultationPatientsDTO;
+
+        return newList;
     }
     
     /**  

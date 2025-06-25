@@ -50,7 +50,7 @@ public class ConsultationDAO {
 
     private static final String CHECK_START_DATETIME_INSERT_CONSULTATION =
         "SELECT COUNT(*) FROM tbl_consultation " +
-        "WHERE consultation_date = ? AND consultation_start_time = ?";
+        "WHERE consultation_date = ? AND consultation_start_time = ? AND is_active = true";
     
     private static final String CHECK_START_DATETIME_UPDATE_CONSULTATION =
         "SELECT COUNT(*) FROM tbl_consultation " +

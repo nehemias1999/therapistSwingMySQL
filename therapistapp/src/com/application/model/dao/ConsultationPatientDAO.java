@@ -58,6 +58,10 @@ public class ConsultationPatientDAO {
     private static final String SELECT_PATIENTS_ID_BY_CONSULTATION_ID =
         "SELECT cp.patient_id FROM tbl_consultation_patient cp " +
         "WHERE cp.consultation_id = ? AND cp.is_active = true";
+    
+    private static final String SELECT_IS_ANY_CONSULTATION = 
+        "SELECT COUNT(*) FROM tbl_consultation_patient cp " +
+        "WHERE cp.patient_id = ? AND cp.is_active = true";
         
     private static final String UNIQUE_CONSULTATION_PATIENT_CONSTRAINT = "uk_consultation_time";
 
@@ -269,6 +273,28 @@ public class ConsultationPatientDAO {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error obteniendo pacientes por consulta", e);
+        }
+    }
+    
+    /**
+    * Verifica si el paciente tiene alguna consulta asociada activa
+    * @param patientId Identificador del paciente
+    * @return true si el paciente tiene al menos una consulta activa
+    */
+    public boolean hasConsultationsForPatient(UUID patientId) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_IS_ANY_CONSULTATION)) {
+
+            ps.setString(1, patientId.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+                return false;
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Error al verificar si el paciente tiene consultas", e);
         }
     }
     

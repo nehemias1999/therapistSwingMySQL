@@ -28,7 +28,7 @@ public class PatientActionsCell extends javax.swing.JPanel {
         setMinimumSize(new java.awt.Dimension(0, 100));
         setPreferredSize(new java.awt.Dimension(250, 100));
 
-        jButtonVisualize.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/application/view/resources/png/ojo_1.png"))); // NOI18N
+        jButtonVisualize.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/application/view/resources/png/view.png"))); // NOI18N
 
         jButtonUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/application/view/resources/png/edit.png"))); // NOI18N
 

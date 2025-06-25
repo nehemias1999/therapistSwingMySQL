@@ -107,9 +107,11 @@ public class PatientService {
      */
     public void deletePatient(String patientId) throws ValidationException, BusinessException {
         try {
-            UUID patientUUID = UUID.fromString(patientId);
+            UUID patientUUID = UUID.fromString(patientId);   
             patientDAO.deletePatient(patientUUID);
-            consultationPatientDAO.deletePatientFromAllConsultation(patientUUID);
+            if(consultationPatientDAO.hasConsultationsForPatient(patientUUID)) {
+               consultationPatientDAO.deletePatientFromAllConsultation(patientUUID); 
+            }
         } catch (EntityNotFoundException e) {
             throw new ValidationException("No existe paciente con Id '" + patientId + "'");
         } catch (DataAccessException e) {
