@@ -1,5 +1,15 @@
 
 --
+-- Database `therapist_db`
+--
+
+CREATE DATABASE IF NOT EXISTS therapist_db
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+USE therapist_db;
+
+--
 -- Table structure for table `tbl_city`
 --
 
@@ -37,22 +47,6 @@ CREATE TABLE `tbl_consultation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Table structure for table `tbl_consultation_patient`
---
-
-DROP TABLE IF EXISTS `tbl_consultation_patient`;
-CREATE TABLE `tbl_consultation_patient` (
-  `consultation_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `patient_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `is_paid` tinyint(1) NOT NULL DEFAULT '0',
-  `is_active` tinyint NOT NULL DEFAULT '1',
-  PRIMARY KEY (`consultation_id`,`patient_id`),
-  KEY `patient_id` (`patient_id`),
-  CONSTRAINT `tbl_consultation_patient_ibfk_1` FOREIGN KEY (`consultation_id`) REFERENCES `tbl_consultation` (`consultation_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `tbl_consultation_patient_ibfk_2` FOREIGN KEY (`patient_id`) REFERENCES `tbl_patient` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
 -- Table structure for table `tbl_patient`
 --
 
@@ -77,4 +71,20 @@ CREATE TABLE `tbl_patient` (
   UNIQUE KEY `uk_patient_email` (`patient_email`),
   KEY `city_id` (`city_id`),
   CONSTRAINT `tbl_patient_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `tbl_city` (`city_id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Table structure for table `tbl_consultation_patient`
+--
+
+DROP TABLE IF EXISTS `tbl_consultation_patient`;
+CREATE TABLE `tbl_consultation_patient` (
+  `consultation_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `patient_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_paid` tinyint(1) NOT NULL DEFAULT '0',
+  `is_active` tinyint NOT NULL DEFAULT '1',
+  PRIMARY KEY (`consultation_id`,`patient_id`),
+  KEY `patient_id` (`patient_id`),
+  CONSTRAINT `tbl_consultation_patient_ibfk_1` FOREIGN KEY (`consultation_id`) REFERENCES `tbl_consultation` (`consultation_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `tbl_consultation_patient_ibfk_2` FOREIGN KEY (`patient_id`) REFERENCES `tbl_patient` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
